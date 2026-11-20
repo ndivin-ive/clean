@@ -116,6 +116,32 @@ textarea { width: 100%; min-height: 76px; resize: vertical; }
 .alist li.done .t { text-decoration: line-through; color: var(--muted); }
 .fields-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 dialog .body { max-height: 68vh; overflow: auto; }
+/* stage-by-stage pipeline chart */
+.pv-controls { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.pv-controls .lbl { font-size: 0.8rem; color: var(--muted); margin-right: 4px; }
+.sc { padding: 8px 16px 14px; display: flex; flex-direction: column; }
+.sc-row { display: grid; grid-template-columns: minmax(140px, 24%) minmax(0, 1fr) 130px 96px 132px; gap: 12px; align-items: center; padding: 8px 4px; border-top: 1px solid var(--border); }
+.sc-row.head { border-top: 0; padding-block: 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+.sc-row:not(.head):hover { background: var(--sunken); }
+.sc-l { display: flex; flex-direction: column; min-width: 0; }
+.sc-l .x { font-size: 0.78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-t { display: flex; gap: 2px; height: 16px; align-items: stretch; }
+.sc-t i { display: block; min-width: 2px; background: var(--accent); }
+.sc-t i:last-child { border-radius: 0 4px 4px 0; }
+.sc-v, .sc-c, .sc-a { font-size: 0.85rem; text-align: right; white-space: nowrap; }
+.sc-c { color: var(--fg); font-weight: 600; }
+.sc-a { color: var(--muted); display: flex; gap: 6px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+.legend { display: flex; gap: 6px 14px; flex-wrap: wrap; padding: 10px 16px 0; font-size: 0.82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend b { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.drop { padding: 0 16px 14px; font-size: 0.85rem; }
+@media (max-width: 820px) {
+  .sc-row { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .sc-row .sc-t { grid-column: 1 / -1; order: 5; }
+  .sc-row .sc-a { display: none; }
+  .sc-row.head { display: none; }
+}
+
 dialog.wide { width: min(720px, calc(100vw - 32px)); }
 main { min-width: 0; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .page { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
@@ -403,6 +429,13 @@ const I18N = {
 /* Additional strings (dashboards, actions, support hub, administration). Merged into I18N. */
 const I18N_EXTRA = {
   en: {
+    pv: { main: "Pipeline by stage", mainLead: "Value and number of open deals per stage, the share that moved on to the next stage, and how long deals sit there.", metric: "Show", value: "Value", count: "Deals", colorBy: "Colour by", none: "None", owner: "Account executive", rel: "Relationship", view: "View", chart: "Chart", table: "Table",
+      stage: "Stage", conv: "To next stage", age: "Average age", stalled: "{n} stalled", toWon: "to won", exit: "Exit: {c}", other: "Other", target: "target {n} d", ageVal: "{n} d",
+      convTitle: "Stage-to-stage conversion", convLead: "Share of deals that reached a stage and moved on to the next one (open and closed deals).", dropOff: "Biggest drop-off: {a} → {b} ({r} %).", wonLabel: "Closed won",
+      forecast: "Forecast by expected close month", forecastLead: "Open pipeline by expected close month, split by stage probability.", bandHigh: "Probability ≥ 70 %", bandMid: "30–69 %", bandLow: "< 30 %", pastDue: "Close date passed",
+      kAvgDeal: "Average deal size", kCycle: "Sales cycle length", wonDeals: "{n} won deals", days: "{n} days",
+      rStalledT: "{n} d in stage (target {t} d)", rNextOverdue: "Next step overdue by {n} d",
+      exitEn: "Exit criterion (EN)", exitFr: "Exit criterion (FR)", targetAge: "Target age (days)" },
     nav: { support: "Support requests", actions: "My actions", actionsMgr: "Team actions", team: "Team", users: "Users", supportTypes: "Support types", templates: "Request templates", stages: "Pipeline stages", setup: "Setup" },
     dash: {
       kPipe: "My pipeline", kTeamPipe: "Team pipeline", kForecast: "Weighted forecast", kWinRate: "Win rate", kTeamReq: "Open support requests", kOverdue: "Overdue actions", kMyReq: "My open requests", kClosing: "Closing in 30 days",
@@ -432,10 +465,18 @@ const I18N_EXTRA = {
       dashMgr: "<b>Scope change to confirm.</b> The brief puts analytics in Phase 2. This manager dashboard brings a first version into Phase 1.",
       actions: "<b>New feature (not in the brief).</b> Managers push follow-up actions to account executives. It needs a new table in the data model and its own audit trail.",
       supportTypes: "<b>Configurable.</b> Each support type has its own form, members, engagement types and service rules. Add as many as you need: presales, technical presales, sales support, and so on.",
+      pipelineViz: "<b>Why bars and not a funnel.</b> Deals skip stages and sometimes go back. A funnel would suggest a smooth narrowing that does not exist. Each bar shows value or count; conversion and age sit beside it.",
       hub: "<b>Account executive view.</b> Start from the type of support, or from a deal page with “Get help on this deal”."
     }
   },
   fr: {
+    pv: { main: "Pipeline par étape", mainLead: "Valeur et nombre d’affaires ouvertes par étape, part des affaires passées à l’étape suivante, et temps passé dans l’étape.", metric: "Afficher", value: "Valeur", count: "Nombre", colorBy: "Couleur par", none: "Aucune", owner: "Commercial", rel: "Relation", view: "Vue", chart: "Graphique", table: "Tableau",
+      stage: "Étape", conv: "Vers l’étape suivante", age: "Âge moyen", stalled: "{n} bloquée(s)", toWon: "vers gagnée", exit: "Sortie : {c}", other: "Autres", target: "cible {n} j", ageVal: "{n} j",
+      convTitle: "Conversion d’une étape à l’autre", convLead: "Part des affaires ayant atteint une étape qui sont passées à la suivante (affaires ouvertes et clôturées).", dropOff: "Plus forte perte : {a} → {b} ({r} %).", wonLabel: "Gagnée",
+      forecast: "Prévision par mois de clôture prévu", forecastLead: "Pipeline ouvert par mois de clôture prévu, réparti par probabilité de l’étape.", bandHigh: "Probabilité ≥ 70 %", bandMid: "30–69 %", bandLow: "< 30 %", pastDue: "Date de clôture dépassée",
+      kAvgDeal: "Taille moyenne des affaires", kCycle: "Durée du cycle de vente", wonDeals: "{n} affaires gagnées", days: "{n} jours",
+      rStalledT: "{n} j dans l’étape (cible {t} j)", rNextOverdue: "Prochaine étape en retard de {n} j",
+      exitEn: "Critère de sortie (EN)", exitFr: "Critère de sortie (FR)", targetAge: "Âge cible (jours)" },
     nav: { support: "Demandes de support", actions: "Mes actions", actionsMgr: "Actions équipe", team: "Équipe", users: "Utilisateurs", supportTypes: "Types de support", templates: "Modèles de demande", stages: "Étapes du pipeline", setup: "Configuration" },
     dash: {
       kPipe: "Mon pipeline", kTeamPipe: "Pipeline de l’équipe", kForecast: "Prévision pondérée", kWinRate: "Taux de gain", kTeamReq: "Demandes d’appui en cours", kOverdue: "Actions en retard", kMyReq: "Mes demandes en cours", kClosing: "Clôture sous 30 jours",
@@ -465,6 +506,7 @@ const I18N_EXTRA = {
       dashMgr: "<b>Changement de périmètre à confirmer.</b> Le cahier des charges place les analyses en phase 2. Ce tableau de bord manager en apporte une première version dès la phase 1.",
       actions: "<b>Nouvelle fonctionnalité (hors cahier des charges).</b> Les managers poussent des actions de suivi aux commerciaux. Il faut une nouvelle table dans le modèle de données, avec sa propre trace d’audit.",
       supportTypes: "<b>Paramétrable.</b> Chaque type de support a son formulaire, ses membres, ses types d’intervention et ses règles de service. Ajoutez-en autant que nécessaire : avant-vente, avant-vente technique, support commercial, etc.",
+      pipelineViz: "<b>Pourquoi des barres et pas un entonnoir.</b> Les affaires sautent des étapes et reviennent parfois en arrière. Un entonnoir suggérerait un rétrécissement régulier qui n’existe pas. Chaque barre montre la valeur ou le nombre ; la conversion et l’âge sont à côté.",
       hub: "<b>Vue commerciale.</b> Partez du type d’appui, ou d’une fiche affaire avec « Demander de l’aide sur cette affaire »."
     }
   }
@@ -519,13 +561,13 @@ function seed() {
     { id: "u10", name: "Léa Garnier", email: "lea.garnier@lumendata.example", roles: ["lead", "specialist"], manager: null, hours: 10, skills: ["Onboarding", "FR"] },
   ];
   const stages = [
-    { id: "s1", name_en: "Qualify", name_fr: "Qualifier", prob: 10, won: false, lost: false },
-    { id: "s2", name_en: "Discover", name_fr: "Découvrir", prob: 25, won: false, lost: false },
-    { id: "s3", name_en: "Solution", name_fr: "Solution", prob: 50, won: false, lost: false },
-    { id: "s4", name_en: "Proposal", name_fr: "Proposition", prob: 70, won: false, lost: false },
-    { id: "s5", name_en: "Negotiate", name_fr: "Négocier", prob: 85, won: false, lost: false },
-    { id: "s6", name_en: "Won", name_fr: "Gagnée", prob: 100, won: true, lost: false },
-    { id: "s7", name_en: "Lost", name_fr: "Perdue", prob: 0, won: false, lost: true },
+    { id: "s1", name_en: "Lead / prospect", name_fr: "Lead / prospect", exit_en: "Contact engaged and fit confirmed", exit_fr: "Contact engagé et adéquation confirmée", prob: 10, target: 14, won: false, lost: false },
+    { id: "s2", name_en: "Discovery", name_fr: "Découverte", exit_en: "Qualified opportunity", exit_fr: "Opportunité qualifiée", prob: 25, target: 21, won: false, lost: false },
+    { id: "s3", name_en: "Solution / demo", name_fr: "Solution / démo", exit_en: "Positive technical or business validation", exit_fr: "Validation technique ou métier positive", prob: 50, target: 21, won: false, lost: false },
+    { id: "s4", name_en: "Proposal / evaluation", name_fr: "Proposition / évaluation", exit_en: "Proposal accepted or under review", exit_fr: "Proposition acceptée ou en revue", prob: 70, target: 30, won: false, lost: false },
+    { id: "s5", name_en: "Negotiation", name_fr: "Négociation", exit_en: "Terms agreed", exit_fr: "Conditions convenues", prob: 85, target: 21, won: false, lost: false },
+    { id: "s6", name_en: "Closed won", name_fr: "Gagnée", exit_en: "Contract signed, revenue recognised", exit_fr: "Contrat signé, chiffre d’affaires reconnu", prob: 100, target: 0, won: true, lost: false },
+    { id: "s7", name_en: "Closed lost", name_fr: "Perdue", exit_en: "Loss reason captured", exit_fr: "Motif de perte renseigné", prob: 0, target: 0, won: false, lost: true },
   ];
   const accounts = [
     ["a1", "Arvalis Logistics", "FR", "Logistics", "new_logo", "u1"], ["a2", "Brightwater Health", "GB", "Healthcare", "expand", "u1"],
@@ -540,8 +582,14 @@ function seed() {
     ["c5", "a5", "Anja Weber", "Head of Data", "influencer"], ["c6", "a5", "Lukas Brandt", "Procurement Lead", "procurement"],
     ["c7", "a8", "Sophie Lambert", "CEO", "decision_maker"], ["c8", "a6", "Daan de Vries", "VP Network", "sponsor"],
   ].map(([id, account, name, title, role]) => ({ id, account, name, title, role }));
-  const o = (id, account, owner, name, amount, stage, close, moved, whyNow, nextStep) => ({ id, account, owner, name, amount, currency: "EUR", stage, close: addDays(close), moved: addDays(-moved), whyNow, nextStep,
-    history: [{ to: "s1", at: addDays(-moved - 30) }, ...(stage !== "s1" ? [{ from: "s1", to: stage, at: addDays(-moved) }] : [])] });
+  // Path through the stages: open deals walk s1→current; won deals s1→s5→s6; lost deals s1→lostFrom→s7.
+  const OPEN_IDS = ["s1", "s2", "s3", "s4", "s5"];
+  const path = (stage, lostFrom) => stage === "s6" ? [...OPEN_IDS, "s6"] : stage === "s7" ? [...OPEN_IDS.slice(0, OPEN_IDS.indexOf(lostFrom || "s1") + 1), "s7"] : OPEN_IDS.slice(0, OPEN_IDS.indexOf(stage) + 1);
+  const o = (id, account, owner, name, amount, stage, close, moved, whyNow, nextStep, lostFrom) => {
+    const steps = path(stage, lostFrom), gap = 8 + (Number(id.slice(1)) % 5) * 4;
+    const history = steps.map((to, i) => ({ from: i ? steps[i - 1] : undefined, to, at: addDays(-moved - (steps.length - 1 - i) * gap) }));
+    return { id, account, owner, name, amount, currency: "EUR", stage, close: addDays(close), moved: addDays(-moved), whyNow, nextStep, nextDue: null, history };
+  };
   const opps = [
     o("o1", "a1", "u1", "Warehouse analytics platform", 180000, "s3", 40, 6, "Peak season starts in March; current reporting breaks under load.", "Technical demo with IT team"),
     o("o2", "a2", "u1", "Patient flow dashboards", 95000, "s4", 21, 3, "Board asked for weekly bed-occupancy reporting.", "Send proposal v2"),
@@ -554,7 +602,7 @@ function seed() {
     o("o9", "a10", "u2", "Passenger insights", 130000, "s1", 100, 2, "", ""),
     o("o10", "a6", "u3", "Network capacity analytics", 260000, "s5", 9, 1, "Budget must be committed before year end.", "Legal review"),
     o("o11", "a9", "u3", "Audience data refresh", 48000, "s6", -5, 5, "", ""),
-    o("o12", "a2", "u1", "Lab results integration", 54000, "s7", -12, 12, "", ""),
+    o("o12", "a2", "u1", "Lab results integration", 54000, "s7", -12, 12, "", "", "s3"),
   ];
   const fns = [
     { id: "f1", name_en: "Presales", name_fr: "Avant-vente", desc_en: "Discovery calls, demos and proofs of concept.", desc_fr: "Appels de découverte, démonstrations et preuves de concept.", lead: "u6", members: ["u4", "u5", "u6"], template: "t1",
@@ -609,17 +657,19 @@ function seed() {
   fns.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   fns.forEach((f) => { f.active = true; });
   // Closed deals from earlier quarters (feed the win-rate comparison).
-  const closedDeal = (id, account, owner, name, amount, won, ago, supported) => ({ ...o(id, account, owner, name, amount, won ? "s6" : "s7", -ago, ago, "", ""), supported });
+  const closedDeal = (id, account, owner, name, amount, won, ago, supported, lostFrom) => ({ ...o(id, account, owner, name, amount, won ? "s6" : "s7", -ago, ago, "", "", lostFrom), supported });
   opps.push(
     closedDeal("o13", "a5", "u2", "Regulatory reporting pack", 90000, true, 40, true),
-    closedDeal("o14", "a7", "u2", "Plant energy dashboards", 40000, false, 55, false),
+    closedDeal("o14", "a7", "u2", "Plant energy dashboards", 40000, false, 55, false, "s2"),
     closedDeal("o15", "a1", "u1", "Cross-dock KPIs", 30000, true, 62, true),
-    closedDeal("o16", "a3", "u2", "Shipping data feed", 65000, false, 70, false),
-    closedDeal("o17", "a4", "u1", "Loyalty analytics", 52000, false, 48, true),
+    closedDeal("o16", "a3", "u2", "Shipping data feed", 65000, false, 70, false, "s4"),
+    closedDeal("o17", "a4", "u1", "Loyalty analytics", 52000, false, 48, true, "s5"),
     closedDeal("o18", "a9", "u3", "Ad inventory forecast", 110000, true, 35, true),
     closedDeal("o19", "a10", "u2", "Timetable analytics", 38000, true, 80, false),
-    closedDeal("o20", "a8", "u1", "Broker portal data", 26000, false, 66, false),
+    closedDeal("o20", "a8", "u1", "Broker portal data", 26000, false, 66, false, "s1"),
   );
+  // Next-step due dates (some overdue).
+  Object.entries({ o1: 3, o2: -2, o3: 1, o6: -4, o7: 5, o8: 2, o10: 0, o5: 6 }).forEach(([id, d]) => { opps.find((x) => x.id === id).nextDue = addDays(d); });
   // Follow-up actions pushed by the sales manager (new feature).
   const actions = [
     { id: "x1", from: "u3", to: "u1", opp: "o4", title: "Book a discovery call with Sophie Lambert and add a next step", note: "Deal has not moved for six weeks.", due: addDays(2), status: "open", created: addDays(-1) },
@@ -819,8 +869,79 @@ function homeAE() {
     </div>
     <div class="grid cols-2">
       ${panelChart(t("dash.myRequests"), myReq.length ? `<div class="next">${myReq.filter((r) => r.status !== "withdrawn").slice(-6).reverse().map((r) => `<a class="item" href="#request-${r.id}"><span class="sev ${r.status === "needs_information" ? "bad" : ["delivered", "outcome_recorded"].includes(r.status) ? "good" : ""}"></span><span>${esc(reqTitle(r))}<br><span class="muted small">${esc(L(fn(r.fn)))}</span></span>${statusChip(r.status)}</a>`).join("")}</div>` : `<p class="empty">${t("deal.noSupport")}</p>`, `<a class="btn sm ghost" href="#support">${t("dash.seeAll")} ›</a>`)}
-      ${panelChart(t("dash.myPipeStage"), hbars(stageRows(open)))}
+      ${panelChart(t("dash.myPipeStage"), stageChart(opps, true))}
     </div></div>`;
+}
+
+/* ── stage-by-stage pipeline analytics ── */
+// Reference palette categorical slots 1–6 (validated: adjacent CVD ΔE ≥ 9.1, normal-vision ≥ 19.6). Colour follows the entity, never its rank.
+const CAT = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"];
+const OTHER = "#8f8e88";
+// Ordinal blue ramp for probability bands (validated --ordinal: light end 2.44:1 on the surface).
+const BANDS = [{ key: "bandHigh", min: 70, color: "#104281" }, { key: "bandMid", min: 30, color: "#2a78d6" }, { key: "bandLow", min: 0, color: "#6da7ec" }];
+S.pv = { metric: "value", colorBy: "none", view: "chart" };
+const openStages = () => S.d.stages.filter((x) => !x.won && !x.lost);
+function reachedIdx(o) {
+  const os = openStages(); if (stage(o.stage).won) return os.length;
+  return Math.max(-1, ...o.history.map((h) => os.findIndex((x) => x.id === h.to)));
+}
+function conversions(opps) {
+  const os = openStages(), r = opps.map(reachedIdx);
+  return os.map((st, i) => { const at = r.filter((x) => x >= i).length, next = r.filter((x) => x >= i + 1).length; return { st, nextLabel: i + 1 < os.length ? L(os[i + 1]) : t("pv.wonLabel"), at, next, rate: at ? Math.round((next / at) * 100) : null }; });
+}
+function segmentKeys(opps, colorBy) {
+  if (colorBy === "owner") { const ids = new Set(opps.map((o) => o.owner)); return S.d.users.filter((u) => ids.has(u.id)).map((u) => ({ key: u.id, label: u.name })); }
+  if (colorBy === "rel") return Object.keys(I18N.en.rel).map((k) => ({ key: k, label: t("rel." + k) }));
+  return [{ key: "all", label: "" }];
+}
+const segOf = (o, colorBy) => (colorBy === "owner" ? o.owner : colorBy === "rel" ? account(o.account).rel : "all");
+function segColors(keys) { return Object.fromEntries(keys.map((k, i) => [k.key, keys.length === 1 ? "var(--accent)" : i < CAT.length ? CAT[i] : OTHER])); }
+function legend(keys, colors) { return keys.length > 1 ? `<div class="legend">${keys.map((k) => `<span><b style="background:${colors[k.key]}"></b>${esc(k.label)}</span>`).join("")}</div>` : ""; }
+const metricOf = (xs, metric) => (metric === "count" ? xs.length : sum(xs, (o) => o.amount));
+const metricText = (xs) => `${money(sum(xs, (o) => o.amount))} · ${xs.length}`;
+
+function stageChart(opps, compact) {
+  const pv = compact ? { metric: "value", colorBy: "none", view: "chart" } : S.pv;
+  const open = opps.filter(isOpenOpp), os = openStages(), conv = conversions(opps);
+  const keys = segmentKeys(open, pv.colorBy), colors = segColors(keys);
+  const rows = os.map((st, i) => { const xs = open.filter((o) => o.stage === st.id); const ages = xs.map((o) => daysAgo(o.moved)); return { st, xs, conv: conv[i], avg: ages.length ? Math.round(sum(ages, (a) => a) / ages.length) : null, stalled: ages.filter((a) => a > st.target).length }; });
+  const max = Math.max(1, ...rows.map((r) => metricOf(r.xs, pv.metric)));
+  const seg = (btns, k) => `<div class="seg" role="group">${btns.map(([v, label]) => `<button data-act="pv" data-k="${k}" data-v="${v}" aria-pressed="${pv[k] === v}">${esc(label)}</button>`).join("")}</div>`;
+  const controls = compact ? "" : `<div class="pv-controls"><span><span class="lbl">${t("pv.metric")}</span>${seg([["value", t("pv.value")], ["count", t("pv.count")]], "metric")}</span>
+    <span><span class="lbl">${t("pv.colorBy")}</span>${seg([["none", t("pv.none")], ["owner", t("pv.owner")], ["rel", t("pv.rel")]], "colorBy")}</span>
+    <span><span class="lbl">${t("pv.view")}</span>${seg([["chart", t("pv.chart")], ["table", t("pv.table")]], "view")}</span></div>`;
+  if (pv.view === "table") {
+    return `${controls}<div class="table-wrap"><table><thead><tr><th>${t("pv.stage")}</th><th class="r">${t("pv.value")}</th><th class="r">${t("pv.count")}</th>${keys.length > 1 ? keys.map((k) => `<th class="r">${esc(k.label)}</th>`).join("") : ""}<th class="r">${t("pv.conv")}</th><th class="r">${t("pv.age")}</th></tr></thead><tbody>
+      ${rows.map((r) => `<tr><td>${esc(L(r.st))}<div class="muted small">${esc(t("pv.exit", { c: L(r.st, "exit") }))}</div></td><td class="r num">${money(sum(r.xs, (o) => o.amount))}</td><td class="r num">${r.xs.length}</td>${keys.length > 1 ? keys.map((k) => { const ys = r.xs.filter((o) => segOf(o, pv.colorBy) === k.key); return `<td class="r num">${pv.metric === "count" ? ys.length : money(sum(ys, (o) => o.amount))}</td>`; }).join("") : ""}<td class="r num">${r.conv.rate == null ? t("misc.none") : `${r.conv.rate} %`}</td><td class="r num">${r.avg == null ? t("misc.none") : t("pv.ageVal", { n: r.avg })}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  return `${controls}${legend(keys, colors)}<div class="sc" role="table" aria-label="${t("pv.main")}">
+    <div class="sc-row head" role="row"><span>${t("pv.stage")}</span><span></span><span style="text-align:right">${pv.metric === "count" ? t("pv.count") : t("pv.value")}</span><span style="text-align:right">${t("pv.conv")}</span><span style="text-align:right">${t("pv.age")}</span></div>
+    ${rows.map((r) => {
+      const parts = keys.map((k) => ({ k, xs: r.xs.filter((o) => segOf(o, pv.colorBy) === k.key) })).filter((x) => x.xs.length);
+      const bars = parts.map((x) => `<i style="width:${(metricOf(x.xs, pv.metric) / max) * 96}%;background:${colors[x.k.key]}" title="${esc(L(r.st))}${x.k.label ? ` · ${esc(x.k.label)}` : ""}: ${esc(metricText(x.xs))}"></i>`).join("");
+      return `<div class="sc-row" role="row" title="${esc(t("pv.exit", { c: L(r.st, "exit") }))}"><div class="sc-l"><b>${esc(L(r.st))}</b><span class="x">${esc(t("pv.exit", { c: L(r.st, "exit") }))}</span></div>
+        <div class="sc-t">${bars}</div><div class="sc-v num">${pv.metric === "count" ? `${r.xs.length} · ${money(sum(r.xs, (o) => o.amount))}` : metricText(r.xs)}</div>
+        <div class="sc-c num" title="${esc(L(r.st))} → ${esc(r.conv.nextLabel)}: ${r.conv.next}/${r.conv.at}">${r.conv.rate == null ? t("misc.none") : `→ ${r.conv.rate} %`}</div>
+        <div class="sc-a num">${r.avg == null ? t("misc.none") : t("pv.ageVal", { n: r.avg })} <span class="muted small">(${t("pv.target", { n: r.st.target })})</span>${r.stalled ? `<span class="chip warn">${t("pv.stalled", { n: r.stalled })}</span>` : ""}</div></div>`; }).join("")}
+  </div>`;
+}
+
+function conversionView(opps) {
+  const conv = conversions(opps).filter((c) => c.at > 0);
+  if (!conv.length) return `<p class="empty">${t("dash.noData")}</p>`;
+  const worst = conv.reduce((a, b) => (b.rate < a.rate ? b : a));
+  return `${hbars(conv.map((c) => ({ label: `${L(c.st)} → ${c.nextLabel}`, value: c.rate, display: `${c.rate} % · ${c.next}/${c.at}` })), 100)}<p class="drop"><span class="chip bad">↓</span> ${esc(t("pv.dropOff", { a: L(worst.st), b: worst.nextLabel, r: worst.rate }))}</p>`;
+}
+
+function forecastView(opps) {
+  const open = opps.filter(isOpenOpp), today = iso(TODAY);
+  const months = [...Array(6)].map((_, i) => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() + i, 1); return { key: iso(d).slice(0, 7), label: d.toLocaleDateString(locale(), { month: "short", year: "numeric" }) }; });
+  const rows = [{ key: "past", label: t("pv.pastDue"), xs: open.filter((o) => o.close < today) }, ...months.map((m) => ({ ...m, xs: open.filter((o) => o.close >= today && o.close.slice(0, 7) === m.key) }))].filter((r, i) => i > 0 || r.xs.length);
+  const max = Math.max(1, ...rows.map((r) => sum(r.xs, (o) => o.amount)));
+  const band = (o) => BANDS.find((b) => stage(o.stage).prob >= b.min);
+  return `<div class="legend">${BANDS.map((b) => `<span><b style="background:${b.color}"></b>${t("pv." + b.key)}</span>`).join("")}</div>
+    <div class="sc">${rows.map((r) => { const parts = BANDS.map((b) => ({ b, xs: r.xs.filter((o) => band(o) === b) })).filter((x) => x.xs.length);
+      return `<div class="sc-row" style="grid-template-columns:minmax(110px,26%) minmax(0,1fr) 130px"><div class="sc-l"><b>${esc(r.label)}</b></div><div class="sc-t">${parts.map((x) => `<i style="width:${(sum(x.xs, (o) => o.amount) / max) * 96}%;background:${x.b.color}" title="${esc(r.label)} · ${esc(t("pv." + x.b.key))}: ${esc(metricText(x.xs))}"></i>`).join("")}</div><div class="sc-v num">${r.xs.length ? metricText(r.xs) : t("misc.none")}</div></div>`; }).join("")}</div>`;
 }
 
 function homeManager() {
@@ -831,22 +952,27 @@ function homeManager() {
   const sent = S.d.actions.filter((x) => x.from === m.id), overdue = sent.filter(actionOverdue).length;
   const teamReq = S.d.requests.filter((r) => team.has(r.requester) && OPEN.includes(r.status) && r.status !== "draft").length;
   const reps = S.d.users.filter((u) => team.has(u.id) && u.roles.includes("ae"));
-  const repRows = reps.map((u) => { const xs = open.filter((o) => o.owner === u.id); return { label: u.name, value: sum(xs, (o) => o.amount), display: `${money(sum(xs, (o) => o.amount))} · ${xs.length}` }; }).sort((a, b) => b.value - a.value);
+  const wonDeals = closed.filter((o) => stage(o.stage).won);
+  const cycle = wonDeals.length ? Math.round(sum(wonDeals, (o) => (new Date(o.history.at(-1).at) - new Date(o.history[0].at)) / 86400000) / wonDeals.length) : 0;
   const watch = open.map((o) => {
     const reasons = [];
-    if (daysAgo(o.moved) > 30) reasons.push(["warn", t("dash.rStalled", { n: daysAgo(o.moved) })]);
+    const age = daysAgo(o.moved), tgt = stage(o.stage).target;
+    if (age > tgt) reasons.push(["warn", t("pv.rStalledT", { n: age, t: tgt })]);
     if (!o.nextStep) reasons.push(["warn", t("dash.rNoStep")]);
+    else if (o.nextDue && o.nextDue < iso(TODAY)) reasons.push(["bad", t("pv.rNextOverdue", { n: daysAgo(o.nextDue) })]);
     if (["s3", "s4", "s5"].includes(o.stage) && !isSupported(o)) reasons.push(["", t("dash.rNoSupport")]);
     const d = -daysAgo(o.close); if (d >= 0 && d <= 14) reasons.push(["bad", t("dash.rClosing", { n: d })]);
     return { o, reasons };
   }).filter((x) => x.reasons.length).sort((a, b) => b.reasons.length - a.reasons.length);
   return `<div class="page">${homeHead(`<button class="btn primary" data-act="push-action">＋ ${t("dash.push")}</button>`)}
     ${note("dashMgr")}
-    <div class="kpis">${kpi(t("dash.kTeamPipe"), money(sum(open, (o) => o.amount)), t("dash.deals", { n: open.length }))}${kpi(t("dash.kForecast"), money(sum(open, (o) => (o.amount * stage(o.stage).prob) / 100)))}${kpi(t("dash.kWinRate"), `${pct(won, closed.length)} %`, t("dash.closed", { n: closed.length }))}${kpi(t("dash.kTeamReq"), teamReq)}${kpi(t("dash.kOverdue"), overdue, overdue ? t("actions.overdue") : "", overdue > 0)}</div>
-    <div class="grid cols-2">${panelChart(t("dash.byStage"), hbars(stageRows(open)))}${panelChart(t("dash.byRep"), hbars(repRows), `<a class="btn sm ghost" href="#team">${t("nav.team")} ›</a>`)}</div>
+    <div class="kpis">${kpi(t("dash.kTeamPipe"), money(sum(open, (o) => o.amount)), t("dash.deals", { n: open.length }))}${kpi(t("dash.kForecast"), money(sum(open, (o) => (o.amount * stage(o.stage).prob) / 100)))}${kpi(t("dash.kWinRate"), `${pct(won, closed.length)} %`, t("dash.closed", { n: closed.length }))}${kpi(t("pv.kAvgDeal"), money(wonDeals.length ? sum(wonDeals, (o) => o.amount) / wonDeals.length : 0), t("pv.wonDeals", { n: wonDeals.length }))}${kpi(t("pv.kCycle"), t("pv.days", { n: cycle }), t("pv.wonDeals", { n: wonDeals.length }))}</div>
+    <section class="panel"><header><div><h2>${t("pv.main")}</h2><p class="muted small">${t("pv.mainLead")}</p></div><a class="btn sm ghost" href="#team">${t("nav.team")} ›</a></header>${stageChart(opps)}</section>
+    ${note("pipelineViz")}
+    <div class="grid cols-2">${panelChart(t("pv.convTitle"), `<p class="muted small" style="padding:10px 16px 0">${t("pv.convLead")}</p>${conversionView(opps)}`)}${panelChart(t("dash.winSupport"), hbars([{ label: t("dash.withSupport"), value: winOf(sup), display: `${winOf(sup)} % · ${t("dash.closed", { n: sup.length })}` }, { label: t("dash.withoutSupport"), value: winOf(unsup), display: `${winOf(unsup)} % · ${t("dash.closed", { n: unsup.length })}` }], 100))}</div>
     ${panelChart(t("dash.watch"), watch.length ? `<div class="table-wrap"><table><thead><tr><th>${t("cols.name")}</th><th>${t("cols.owner")}</th><th>${t("cols.stage")}</th><th class="r">${t("cols.amount")}</th><th></th><th></th></tr></thead><tbody>${watch.map(({ o, reasons }) => `<tr><td><a href="#deal-${o.id}">${esc(o.name)}</a><div class="muted small">${esc(account(o.account).name)}</div></td><td>${esc(user(o.owner).name)}</td><td>${stageChip(stage(o.stage))}</td><td class="r num">${money(o.amount)}</td><td><div class="chips">${reasons.map(([c, txt]) => `<span class="chip ${c}">${esc(txt)}</span>`).join("")}</div></td><td>${o.owner !== m.id ? `<button class="btn sm" data-act="push-action" data-to="${o.owner}" data-opp="${o.id}">${t("dash.push")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty">${t("home.nothing")}</p>`, `<span class="count">${watch.length}</span>`)}
     <div class="grid cols-2">
-      ${panelChart(t("dash.winSupport"), hbars([{ label: t("dash.withSupport"), value: winOf(sup), display: `${winOf(sup)} % · ${t("dash.closed", { n: sup.length })}` }, { label: t("dash.withoutSupport"), value: winOf(unsup), display: `${winOf(unsup)} % · ${t("dash.closed", { n: unsup.length })}` }], 100))}
+      ${panelChart(t("pv.forecast"), `<p class="muted small" style="padding:10px 16px 0">${t("pv.forecastLead")}</p>${forecastView(opps)}`)}
       ${panelChart(t("dash.sentActions"), actionList(sortActions(sent).slice(0, 5), "sent"), `<a class="btn sm ghost" href="#actions">${t("dash.seeAll")} ›</a>`)}
     </div>
     ${note("actions")}</div>`;
@@ -946,7 +1072,7 @@ function viewPipeline() {
   if (S.view === "board") {
     body = `<p class="muted small">${t("pipe.dragHint")}</p><div class="board">${S.d.stages.map((s) => {
       const cards = opps.filter((o) => o.stage === s.id), sum = cards.reduce((a, o) => a + o.amount, 0);
-      return `<section class="col" data-stage="${s.id}"><header><h3>${esc(L(s))} <span class="muted small num">· ${s.prob}%</span></h3><div class="meta"><span>${cards.length === 1 ? t("pipe.deal1") : t("pipe.deals", { n: cards.length })}</span><span class="num">${money(sum)}</span></div></header>
+      return `<section class="col" data-stage="${s.id}"><header title="${esc(t("pv.exit", { c: L(s, "exit") }))}"><h3>${esc(L(s))} <span class="muted small num">· ${s.prob}%</span></h3><p class="muted small">${esc(t("pv.exit", { c: L(s, "exit") }))}</p><div class="meta"><span>${cards.length === 1 ? t("pipe.deal1") : t("pipe.deals", { n: cards.length })}</span><span class="num">${money(sum)}</span></div></header>
         <div class="cards">${cards.map((o) => `<article class="card" draggable="${canEditDeals()}" data-opp="${o.id}">
           <a class="t" href="#deal-${o.id}">${esc(o.name)}</a><div class="row"><span>${esc(account(o.account).name)}</span><span class="num">${money(o.amount)}</span></div>
           <div class="row"><span>${esc(user(o.owner).name)}</span><span class="num">${fmtDate(o.close)}</span></div>
@@ -1169,10 +1295,11 @@ function viewTemplates() {
 
 function viewStages() {
   return `<div class="page">${adminTabs("admin-stages")}<div class="page-head"><div><h1>${t("adm.stTitle")}</h1><p class="lead">${t("adm.stLead")}</p></div><button class="btn" data-act="add-stage">＋ ${t("adm.addStage")}</button></div>
-    <section class="panel table-wrap"><table><thead><tr><th></th><th>${t("adm.nameEn")}</th><th>${t("adm.nameFr")}</th><th>${t("adm.prob")}</th><th>${t("adm.won")}</th><th>${t("adm.lost")}</th></tr></thead><tbody>
+    <section class="panel table-wrap"><table><thead><tr><th></th><th>${t("adm.nameEn")}</th><th>${t("adm.nameFr")}</th><th>${t("pv.exitEn")}</th><th>${t("pv.exitFr")}</th><th>${t("adm.prob")}</th><th>${t("pv.targetAge")}</th><th>${t("adm.won")}</th><th>${t("adm.lost")}</th></tr></thead><tbody>
     ${S.d.stages.map((s, i) => `<tr><td><div class="btn-row"><button class="btn sm ghost" data-act="stage-up" data-i="${i}" aria-label="↑" ${i === 0 ? "disabled" : ""}>↑</button><button class="btn sm ghost" data-act="stage-down" data-i="${i}" aria-label="↓" ${i === S.d.stages.length - 1 ? "disabled" : ""}>↓</button></div></td>
       <td><input type="text" aria-label="${t("adm.nameEn")}" data-stage="${s.id}" data-k="name_en" value="${esc(s.name_en)}"></td><td><input type="text" aria-label="${t("adm.nameFr")}" data-stage="${s.id}" data-k="name_fr" value="${esc(s.name_fr)}"></td>
-      <td><input type="number" min="0" max="100" style="width:80px" aria-label="${t("adm.prob")}" data-stage="${s.id}" data-k="prob" value="${s.prob}"></td>
+      <td><input type="text" aria-label="${t("pv.exitEn")}" data-stage="${s.id}" data-k="exit_en" value="${esc(s.exit_en)}"></td><td><input type="text" aria-label="${t("pv.exitFr")}" data-stage="${s.id}" data-k="exit_fr" value="${esc(s.exit_fr)}"></td>
+      <td><input type="number" min="0" max="100" style="width:80px" aria-label="${t("adm.prob")}" data-stage="${s.id}" data-k="prob" value="${s.prob}"></td><td><input type="number" min="0" max="365" style="width:80px" aria-label="${t("pv.targetAge")}" data-stage="${s.id}" data-k="target" value="${s.target}" ${s.won || s.lost ? "disabled" : ""}></td>
       <td><input type="checkbox" aria-label="${t("adm.won")}" data-stage="${s.id}" data-k="won" ${s.won ? "checked" : ""}></td><td><input type="checkbox" aria-label="${t("adm.lost")}" data-stage="${s.id}" data-k="lost" ${s.lost ? "checked" : ""}></td></tr>`).join("")}</tbody></table></section></div>`;
 }
 
@@ -1369,7 +1496,7 @@ document.addEventListener("input", (e) => {
   if (el.dataset.field && S.draft) { S.draft.a[el.dataset.field] = el.type === "checkbox" ? el.checked : el.value; refreshScore(); }
   else if (el.dataset.multi && S.draft) { const k = el.dataset.multi; S.draft.a[k] = [...document.querySelectorAll(`[data-multi="${k}"]:checked`)].map((x) => x.value); refreshScore(); }
   else if (el.dataset.att !== undefined && S.draft) { S.draft.a.attendees[+el.dataset.att][el.dataset.k] = el.value; refreshScore(); }
-  else if (el.dataset.stage) { const s = stage(el.dataset.stage), k = el.dataset.k; s[k] = el.type === "checkbox" ? el.checked : k === "prob" ? Math.max(0, Math.min(100, +el.value)) : el.value; if (k === "won" && s.won) s.lost = false; if (k === "lost" && s.lost) s.won = false; }
+  else if (el.dataset.stage) { const s = stage(el.dataset.stage), k = el.dataset.k; s[k] = el.type === "checkbox" ? el.checked : k === "prob" ? Math.max(0, Math.min(100, +el.value)) : k === "target" ? Math.max(0, +el.value || 0) : el.value; if (k === "won" && s.won) s.lost = false; if (k === "lost" && s.lost) s.won = false; }
 });
 document.addEventListener("change", (e) => {
   const el = e.target, act = el.dataset.act;
@@ -1434,10 +1561,11 @@ document.addEventListener("click", (e) => {
     case "new-deal": openDialog(t("pipe.newDeal"), `<div class="field"><label for="dl-n" class="req">${t("cols.name")}</label><input type="text" id="dl-n" required></div><div class="field"><label for="dl-acc">${t("cols.account")}</label><select id="dl-acc">${S.d.accounts.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("")}</select></div><div class="inline-fields"><div class="field"><label for="dl-am">${t("cols.amount")} (EUR)</label><input type="number" id="dl-am" min="0" step="1000" value="50000"></div><div class="field"><label for="dl-cd">${t("cols.close")}</label><input type="date" id="dl-cd" value="${addDays(60)}"></div></div>`, t("misc.add"), (d) => { const name = d.querySelector("#dl-n").value.trim(); if (!name) return; S.d.opps.push({ id: uid("o"), account: d.querySelector("#dl-acc").value, owner: me().id, name, amount: +d.querySelector("#dl-am").value, currency: "EUR", stage: "s1", close: d.querySelector("#dl-cd").value, moved: iso(TODAY), whyNow: "", nextStep: "", history: [{ to: "s1", at: iso(TODAY) }] }); toast(name); render(); }); break;
     case "new-account": openDialog(t("acc.new"), `<div class="field"><label for="dl-n" class="req">${t("cols.name")}</label><input type="text" id="dl-n" required></div><div class="inline-fields"><div class="field"><label for="dl-c">${t("cols.country")}</label><input type="text" id="dl-c" maxlength="2" value="FR"></div><div class="field"><label for="dl-i">${t("cols.industry")}</label><input type="text" id="dl-i"></div></div><div class="field"><label for="dl-r">${t("cols.relationship")}</label><select id="dl-r">${Object.keys(I18N.en.rel).map((k) => `<option value="${k}">${t("rel." + k)}</option>`).join("")}</select></div>`, t("misc.add"), (d) => { const name = d.querySelector("#dl-n").value.trim(); if (!name) return; S.d.accounts.push({ id: uid("a"), name, country: d.querySelector("#dl-c").value.toUpperCase(), industry: d.querySelector("#dl-i").value, rel: d.querySelector("#dl-r").value, owner: me().id }); render(); }); break;
     case "import": openImport(); break;
-    case "add-stage": S.d.stages.splice(S.d.stages.length - 2, 0, { id: uid("s"), name_en: "New stage", name_fr: "Nouvelle étape", prob: 60, won: false, lost: false }); render(); break;
+    case "add-stage": S.d.stages.splice(S.d.stages.length - 2, 0, { id: uid("s"), name_en: "New stage", name_fr: "Nouvelle étape", exit_en: "", exit_fr: "", prob: 60, target: 21, won: false, lost: false }); render(); break;
     case "stage-up": case "stage-down": { const i = +b.dataset.i, j = act === "stage-up" ? i - 1 : i + 1; [S.d.stages[i], S.d.stages[j]] = [S.d.stages[j], S.d.stages[i]]; render(); break; }
     case "new-version": { const tpl = TEMPLATES[S.tpl]; if (tpl.versions.some((v) => v.status === "draft")) { toast(t("adm.draftV") + " ✓"); break; } tpl.versions.push({ v: tpl.versions.at(-1).v + 1, status: "draft", at: iso(TODAY) }); render(); break; }
     case "invite": openDialog(t("adm.invite"), `<div class="field"><label for="dl-e" class="req">${t("cols.email")}</label><input type="email" id="dl-e" required placeholder="name@company.example"></div><div class="field"><span class="lbl">${t("cols.roles")}</span><div class="checks">${Object.keys(I18N.en.roles).map((k) => `<label><input type="checkbox" name="inv-role" value="${k}" ${k === "ae" ? "checked" : ""}> ${t("roles." + k)}</label>`).join("")}</div></div>`, t("adm.inviteSend"), (d) => { const email = d.querySelector("#dl-e").value.trim(); if (!email.includes("@")) return; S.d.invitations.push({ email, roles: [...d.querySelectorAll('[name="inv-role"]:checked')].map((x) => x.value) }); toast(t("adm.invited", { e: email })); render(); }); break;
+    case "pv": S.pv[b.dataset.k] = b.dataset.v; render(); break;
     case "push-action": pushActionDialog(b.dataset.to, b.dataset.opp); break;
     case "action-done": { const x = S.d.actions.find((a) => a.id === id); if (x) { x.status = "done"; x.doneAt = iso(TODAY); notify(x.from, `${me().name} completed: “${x.title}”.`, `${me().name} a terminé : « ${x.title} ».`, "actions"); toast(t("actions.doneMsg")); render(); } break; }
     case "actions-filter": S.filters.actions = b.dataset.v; render(); break;

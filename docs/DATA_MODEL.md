@@ -55,6 +55,14 @@ Source of truth: `src/server/db/schema/` (Drizzle) and the SQL migrations in
 
 Phase 2/3 tables (`connector`, `ai_provider_setting`) are not created yet.
 
+## Planned changes (from UAT feedback, not yet migrated)
+
+| Change | Why | When |
+| --- | --- | --- |
+| `pipeline_stage.exit_criterion_en`, `exit_criterion_fr` (text), `target_age_days` (int) | Exit criteria and stalled-deal detection (D-026, D-028) | Checkpoint 4/5 |
+| `opportunity.next_step_due` (date) | "Next step overdue" in the action view | Checkpoint 5 |
+| New tenant table `follow_up_action` (from_user_id, to_user_id, opportunity_id, title, note, due_date, status, done_at) | Manager pushes actions to account executives (prototype v3) — pending product decision | After confirmation |
+
 ## Engagement status flow
 
 ```
