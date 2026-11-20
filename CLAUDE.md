@@ -72,7 +72,7 @@ Pre-pivot work (support booking, checkpoints 1–2) is summarised in `docs/PIVOT
 - [x] P2. Sign-in (magic link; Mailpit locally, SMTP sink in e2e), organisations, invitations, roles, team visibility; iOS-style app shell, EN/FR, light/dark
 - [x] P3. Rules engine: `rankActions`, `assessDeal`, `assessAccount`, coverage + full unit tests; `docs/RULES.md` (done before P2: pure logic, no external dependency)
 - [x] P4. Demo book seed (2 key + 8 accounts, 12 deals, 40 people, 6 months of interactions, signals); Today shows ranked actions (read-only until P7)
-- [ ] P5. Accounts and people: list, account page, relationship map, timeline, signals
+- [x] P5. Accounts and people: list (search, tiers, health, next action), account page (health reasons, coverage, relationship map, people, deals, timeline, signals)
 - [ ] P6. Deals: board/list, deal page, stakeholders, qualification with evidence, close plan, health reasons
 - [ ] P7. Today: ranked actions (do / snooze / dismiss / teach), week-ahead strip
 - [ ] P8. Capture: note / paste (voice off by default), rule-based proposals, review and approve

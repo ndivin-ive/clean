@@ -520,3 +520,238 @@ button.ios-row:active {
   background: var(--accent);
   color: var(--accent-foreground);
 }
+
+/* health ring, pills, dots */
+.ios-ring {
+  --p: 0;
+  --c: var(--success);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--c) calc(var(--p) * 1%),
+    var(--fill-strong) 0
+  );
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ios-ring span {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ios-ring-lg {
+  width: 64px;
+  height: 64px;
+}
+.ios-ring-lg span {
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+}
+.ios-pill-green {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success-ink);
+}
+.ios-pill-orange {
+  background: color-mix(in srgb, var(--warning) 16%, transparent);
+  color: var(--warning-ink);
+}
+.ios-pill-red {
+  background: color-mix(in srgb, var(--danger) 13%, transparent);
+  color: var(--danger-ink);
+}
+.ios-pill-missing {
+  background: transparent;
+  color: var(--danger-ink);
+  box-shadow: inset 0 0 0 1.5px var(--danger);
+}
+.ios-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ios-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+.ios-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fill-strong);
+}
+.ios-dots i.on {
+  background: var(--accent);
+}
+.ios-reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ios-reasons li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 10px 16px;
+  font-size: 15px;
+  position: relative;
+}
+.ios-reasons li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 46px;
+  right: 0;
+  border-top: 0.5px solid var(--border);
+}
+.ios-ok {
+  color: var(--success-ink);
+}
+.ios-part {
+  color: var(--warning-ink);
+}
+.ios-no {
+  color: var(--tertiary);
+}
+
+/* relationship map: role × stance grid, a list by role on phones */
+.ios-rmap {
+  display: grid;
+  grid-template-columns: 120px repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
+}
+.ios-rmap > div {
+  background: var(--card);
+  padding: 8px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ios-rmap .h {
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  justify-content: center;
+  min-height: 32px;
+}
+.ios-rmap .rl {
+  font-weight: 600;
+  justify-content: center;
+}
+.ios-chip {
+  border-radius: 8px;
+  padding: 5px 7px;
+  font-size: 12px;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--fill);
+}
+.ios-chip b {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+.ios-chip .stx {
+  display: none;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+.ios-chip.stale {
+  box-shadow: inset 0 0 0 1.5px var(--warning);
+}
+.st-supporter {
+  background: color-mix(in srgb, var(--success) 16%, var(--card));
+}
+.st-neutral {
+  background: var(--fill);
+}
+.st-sceptic {
+  background: color-mix(in srgb, var(--warning) 16%, var(--card));
+}
+.st-unknown {
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.ios-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  padding: 0 16px;
+}
+.ios-legend span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.ios-legend b {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.ios-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--fill);
+  border-radius: 10px;
+  padding: 7px 10px;
+  color: var(--muted-foreground);
+}
+.ios-search input {
+  border: 0;
+  background: transparent;
+  flex: 1;
+  outline: none;
+  min-width: 0;
+  font: inherit;
+  color: var(--foreground);
+}
+@media (max-width: 560px) {
+  .ios-rmap {
+    grid-template-columns: minmax(0, 1fr);
+    background: var(--card);
+    gap: 0;
+  }
+  .ios-rmap .h,
+  .ios-rmap > div[role="cell"]:empty {
+    display: none;
+  }
+  .ios-rmap .rl {
+    min-height: 0;
+    padding: 12px 12px 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted-foreground);
+    border-top: 0.5px solid var(--border);
+  }
+  .ios-rmap > div[role="cell"] {
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-height: 0;
+    padding: 2px 12px 8px;
+  }
+  .ios-chip .stx {
+    display: inline;
+  }
+}

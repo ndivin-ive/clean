@@ -8,7 +8,8 @@ import {
   DEMO_DEALS,
   DEMO_PEOPLE,
 } from "@/server/seed/demo-data";
-import { seedDemo, type DemoIds } from "@/server/seed/demo";
+import type { DemoIds } from "@/server/seed/demo";
+import { demo } from "./support/demo";
 import { loadBook } from "@/server/services/book";
 import { appDb, closePools } from "./support/db";
 
@@ -17,7 +18,7 @@ let ids: DemoIds;
 let book: Awaited<ReturnType<typeof loadBook>>["book"];
 
 beforeAll(async () => {
-  ids = await seedDemo(appDb, NOW);
+  ids = await demo(NOW);
   ({ book } = await loadBook(
     appDb,
     { organizationId: ids.organizationId, userId: ids.users.seller },
