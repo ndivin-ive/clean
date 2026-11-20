@@ -1,0 +1,1066 @@
+<title>CLEAN Companion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: iOS-style app — translucent nav bar with large titles, inset grouped lists, bottom tab bar on phones; iPad-style floating top tab bar and centred readable column on wide screens. Light mode only, by request. */
+:root {
+  --bg: #f2f2f7;            /* grouped background */
+  --card: #ffffff;          /* secondary grouped background */
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
+  --label: #000000;
+  --label-2: rgba(60, 60, 67, 0.6);
+  --label-3: rgba(60, 60, 67, 0.3);
+  --sep: rgba(60, 60, 67, 0.18);
+  --tint: #007aff;
+  --tint-soft: rgba(0, 122, 255, 0.12);
+  --green: #34c759; --green-ink: #248a3d; --green-soft: rgba(52, 199, 89, 0.15);
+  --orange: #ff9500; --orange-ink: #c93400; --orange-soft: rgba(255, 149, 0, 0.15);
+  --red: #ff3b30; --red-ink: #d70015; --red-soft: rgba(255, 59, 48, 0.12);
+  --indigo: #5856d6; --teal: #30b0c7; --gray: #8e8e93;
+  --bar: rgba(249, 249, 249, 0.82);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --r: 12px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--bg); }
+body { color: var(--label); font-family: var(--font); font-size: 17px; line-height: 1.3; letter-spacing: -0.01em; }
+button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; }
+a { color: var(--tint); text-decoration: none; }
+:focus-visible { outline: 3px solid rgba(0, 122, 255, 0.5); outline-offset: 2px; border-radius: 8px; }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bar); }
+
+/* prototype ribbon */
+.ribbon { font-size: 12px; color: var(--label-2); text-align: center; padding-block: 6px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* navigation bar */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; height: 52px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px));
+  background: transparent; transition: background 0.2s, border-color 0.2s; border-bottom: 0.5px solid transparent; }
+.nav.scrolled { background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom-color: var(--sep); }
+.nav .title { font-weight: 600; font-size: 17px; opacity: 0; transition: opacity 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
+.nav.scrolled .title { opacity: 1; }
+.nav .l { justify-self: start; display: flex; align-items: center; }
+.nav .r { justify-self: end; display: flex; gap: 4px; align-items: center; }
+.navbtn { border: 0; background: none; color: var(--tint); display: inline-flex; align-items: center; gap: 2px; padding: 8px; font-size: 17px; border-radius: 10px; }
+.navbtn svg { width: 22px; height: 22px; }
+.back svg { width: 13px; height: 22px; margin-right: 4px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #5ac8fa, #007aff); color: #fff; font-size: 13px; font-weight: 600; display: grid; place-items: center; border: 0; }
+
+/* page */
+main { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+.page { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 22px; }
+.large { padding-top: 2px; }
+.large h1 { font-family: var(--display); font-size: 34px; font-weight: 700; letter-spacing: 0.01em; margin: 0; line-height: 1.15; text-wrap: balance; }
+.large p { color: var(--label-2); font-size: 15px; margin: 4px 0 0; }
+.large .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+/* grouped lists */
+.group { display: flex; flex-direction: column; gap: 7px; }
+.gh { font-size: 13px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--label-2); padding: 0 16px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.gh a, .gh button { text-transform: none; letter-spacing: 0; font-size: 15px; border: 0; background: none; color: var(--tint); padding: 0; }
+.gf { font-size: 13px; color: var(--label-2); padding: 0 16px; line-height: 1.35; }
+.list { background: var(--card); border-radius: var(--r); overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 10px 16px; position: relative; width: 100%; text-align: left; background: var(--card); border: 0; color: inherit; }
+.row + .row::before, .row + .rowwrap::before, .rowwrap + .row::before { content: ""; position: absolute; top: 0; right: 0; left: var(--inset, 16px); border-top: 0.5px solid var(--sep); }
+.row.tap:active, button.row:active { background: #e5e5ea; }
+.row .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.row .t { font-size: 17px; }
+.row .s { font-size: 14px; color: var(--label-2); line-height: 1.3; }
+.row .v { color: var(--label-2); font-size: 16px; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.chev { width: 8px; height: 13px; color: var(--label-3); flex: none; }
+.ico { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; color: #fff; flex: none; }
+.ico svg { width: 18px; height: 18px; }
+.rank { width: 26px; height: 26px; border-radius: 50%; background: var(--fill); color: var(--label-2); font-size: 14px; font-weight: 600; display: grid; place-items: center; flex: none; }
+.rank.top { background: var(--tint); color: #fff; }
+.with-ico { --inset: 58px; }
+
+/* pills, rings */
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--fill); color: var(--label-2); white-space: nowrap; }
+.pill.blue { background: var(--tint-soft); color: var(--tint); }
+.pill.green { background: var(--green-soft); color: var(--green-ink); }
+.pill.orange { background: var(--orange-soft); color: var(--orange-ink); }
+.pill.red { background: var(--red-soft); color: var(--red-ink); }
+.ring { --p: 0; --c: var(--green); width: 38px; height: 38px; border-radius: 50%; background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--fill-strong) 0); display: grid; place-items: center; flex: none; border: 0; padding: 0; }
+.ring span { width: 30px; height: 30px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--label); }
+.ring.lg { width: 64px; height: 64px; }
+.ring.lg span { width: 52px; height: 52px; font-size: 20px; }
+.dots { display: inline-flex; gap: 2px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--fill-strong); }
+.dots i.on { background: var(--tint); }
+
+/* segmented control */
+.seg { display: flex; background: var(--fill); border-radius: 9px; padding: 2px; gap: 2px; }
+.seg button { flex: 1 1 0; min-width: 0; border: 0; background: transparent; border-radius: 7px; padding: 6px 8px; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seg button[aria-pressed="true"] { background: var(--card); font-weight: 600; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04); }
+.seg.sm button { padding: 4px 8px; font-size: 13px; }
+
+/* search */
+.search { display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 10px; padding: 7px 10px; color: var(--label-2); }
+.search svg { width: 16px; height: 16px; flex: none; }
+.search input { border: 0; background: transparent; flex: 1; outline: none; min-width: 0; font-size: 17px; }
+
+/* buttons */
+.btn { border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 600; font-size: 17px; background: var(--tint); color: #fff; width: 100%; }
+.btn.secondary { background: var(--tint-soft); color: var(--tint); }
+.btn.plain { background: var(--card); color: var(--tint); }
+.btn.danger { background: var(--card); color: var(--red); }
+.btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; }
+.linkbtn { border: 0; background: none; color: var(--tint); padding: 0; font-size: inherit; }
+
+/* toggle */
+.switch { position: relative; width: 51px; height: 31px; flex: none; }
+.switch input { appearance: none; -webkit-appearance: none; margin: 0; width: 51px; height: 31px; border-radius: 999px; background: var(--fill-strong); transition: background 0.2s; cursor: pointer; }
+.switch input:checked { background: var(--green); }
+.switch i { position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 3px 1px rgba(0, 0, 0, 0.06); transition: transform 0.2s; pointer-events: none; }
+.switch input:checked + i { transform: translateX(20px); }
+
+/* inputs */
+.field { width: 100%; border: 0; background: transparent; padding: 12px 16px; font-size: 17px; outline: none; }
+textarea.field { min-height: 160px; resize: vertical; line-height: 1.4; }
+.inline-input { border: 0; background: var(--fill); border-radius: 8px; padding: 6px 8px; font-size: 15px; width: 100%; }
+select.inline-input { width: auto; }
+
+/* week strip */
+.strip { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 2px 6px; margin: 0 -2px; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.wcard { scroll-snap-align: start; flex: 0 0 164px; background: var(--card); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 6px; border: 0; text-align: left; color: inherit; }
+.wcard .d { font-size: 13px; font-weight: 600; color: var(--tint); text-transform: uppercase; letter-spacing: 0.02em; }
+.wcard .t { font-size: 15px; font-weight: 600; line-height: 1.25; }
+.wcard .s { font-size: 13px; color: var(--label-2); }
+.wcard.red .d { color: var(--red-ink); } .wcard.green .d { color: var(--green-ink); }
+
+/* relationship map */
+.rmap { display: grid; grid-template-columns: 116px repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--sep); border-radius: var(--r); overflow: hidden; font-size: 13px; }
+.rmap > div { background: var(--card); padding: 8px; min-height: 44px; display: flex; flex-direction: column; gap: 4px; }
+.rmap .h { font-weight: 600; color: var(--label-2); text-transform: uppercase; font-size: 11px; letter-spacing: 0.03em; justify-content: center; min-height: 32px; }
+.rmap .rl { font-weight: 600; font-size: 13px; justify-content: center; }
+.person-chip { border: 0; border-radius: 8px; padding: 5px 7px; text-align: left; font-size: 12px; line-height: 1.25; display: flex; flex-direction: column; gap: 2px; background: var(--fill); color: var(--label); }
+.person-chip b { font-weight: 600; font-size: 12.5px; }
+.person-chip.stale { box-shadow: inset 0 0 0 1.5px var(--orange); }
+.st-supporter { background: var(--green-soft); } .st-neutral { background: var(--fill); } .st-sceptic { background: var(--orange-soft); } .st-unknown { background: #fff; box-shadow: inset 0 0 0 1px var(--sep); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--label-2); padding: 0 16px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend b { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* coverage */
+.cov { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 16px; }
+.cov .pill { font-weight: 600; }
+.cov .missing { background: transparent; color: var(--red-ink); box-shadow: inset 0 0 0 1.5px var(--red); }
+
+/* bars */
+.bars { padding: 10px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: minmax(96px, 30%) minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+.bar-row .tr { height: 10px; }
+.bar-row .tr i { display: block; height: 100%; background: var(--tint); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar-row .val { color: var(--label-2); white-space: nowrap; }
+
+/* forecast cards */
+.fc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.fc button { background: var(--card); border-radius: var(--r); padding: 12px; border: 0; text-align: left; display: flex; flex-direction: column; gap: 4px; color: inherit; }
+.fc .k { font-size: 13px; color: var(--label-2); font-weight: 600; }
+.fc .n { font-size: 22px; font-weight: 700; font-family: var(--display); }
+.fc .x { font-size: 12px; color: var(--label-2); }
+
+/* whitespace grid */
+.ws { overflow-x: auto; }
+.ws table { border-collapse: separate; border-spacing: 4px; width: 100%; font-size: 13px; }
+.ws th { color: var(--label-2); font-weight: 600; text-align: left; padding: 4px; }
+.ws td button { width: 100%; border: 0; border-radius: 8px; padding: 8px 6px; font-size: 12px; font-weight: 600; }
+.ws-owned { background: var(--green-soft); color: var(--green-ink); } .ws-in_progress { background: var(--tint-soft); color: var(--tint); } .ws-open { background: var(--orange-soft); color: var(--orange-ink); } .ws-not_relevant { background: var(--fill); color: var(--label-2); }
+
+/* tab bar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: 0.5px solid var(--sep);
+  display: flex; justify-content: space-around; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+.tab { border: 0; background: none; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; font-weight: 500; min-width: 64px; padding: 2px 4px; position: relative; }
+.tab svg { width: 26px; height: 26px; }
+.tab.on { color: var(--tint); }
+.tab .badge { position: absolute; top: -2px; left: 50%; margin-left: 6px; background: var(--red); color: #fff; font-size: 11px; font-weight: 600; min-width: 18px; height: 18px; border-radius: 999px; display: grid; place-items: center; padding: 0 5px; }
+.tab.capture .plus { width: 44px; height: 30px; border-radius: 10px; background: var(--tint); color: #fff; display: grid; place-items: center; }
+.tab.capture .plus svg { width: 20px; height: 20px; }
+
+/* sheets */
+.backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.32); z-index: 70; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--bg); width: 100%; max-width: 640px; max-height: 92vh; overflow: auto; border-radius: 14px 14px 0 0; padding: 8px 0 calc(20px + env(safe-area-inset-bottom, 0px)); }
+.sheet .grab { width: 36px; height: 5px; border-radius: 3px; background: var(--label-3); margin: 0 auto 6px; }
+.sheet .sh { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 4px 8px 10px; }
+.sheet .sh h2 { font-size: 17px; font-weight: 600; margin: 0; text-align: center; }
+.sheet .sb { display: flex; flex-direction: column; gap: 22px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.actionsheet { width: 100%; max-width: 520px; padding: 0 8px calc(8px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; }
+.actionsheet .list { border-radius: 14px; background: rgba(255, 255, 255, 0.94); }
+.actionsheet .hd { padding: 14px 16px; text-align: center; font-size: 13px; color: var(--label-2); }
+.actionsheet .hd b { display: block; color: var(--label); font-size: 15px; margin-bottom: 4px; }
+.actionsheet button.opt { width: 100%; border: 0; background: transparent; color: var(--tint); font-size: 20px; padding: 16px; border-top: 0.5px solid var(--sep); }
+.actionsheet button.opt.danger { color: var(--red); }
+.actionsheet button.cancel { border-radius: 14px; background: #fff; border: 0; color: var(--tint); font-weight: 600; font-size: 20px; padding: 16px; }
+@media (prefers-reduced-motion: no-preference) {
+  .sheet, .actionsheet { animation: up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+  .backdrop { animation: fade 0.2s ease-out; }
+  @keyframes up { from { transform: translateY(40px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+}
+
+/* toast (HUD banner) */
+.toast { position: fixed; top: calc(10px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 90; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.16); border-radius: 999px; padding: 10px 18px; font-size: 15px; font-weight: 600; max-width: calc(100vw - 32px); text-align: center; }
+
+.reason-list { list-style: none; margin: 0; padding: 0; }
+.reason-list li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 10px 16px; font-size: 15px; position: relative; }
+.reason-list li + li::before { content: ""; position: absolute; top: 0; left: 46px; right: 0; border-top: 0.5px solid var(--sep); }
+.ok { color: var(--green-ink); } .part { color: var(--orange-ink); } .no { color: var(--label-3); }
+.quote { font-size: 13px; color: var(--label-2); border-left: 3px solid var(--fill-strong); padding-left: 8px; margin-top: 4px; font-style: italic; }
+.empty { padding: 22px 16px; text-align: center; color: var(--label-2); font-size: 15px; }
+.note { background: #f3f0ff; color: #3a2c80; border-radius: var(--r); padding: 12px 14px; font-size: 14px; line-height: 1.4; }
+.note b { color: #5845c9; }
+body.hide-notes .note { display: none; }
+
+@media (min-width: 900px) {
+  .tabbar { top: calc(8px + env(safe-area-inset-top, 0px)); bottom: auto; left: 50%; right: auto; transform: translateX(-50%); border-radius: 999px; border: 0.5px solid var(--sep); padding: 4px; gap: 2px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08); }
+  .tab { flex-direction: row; gap: 6px; font-size: 14px; padding: 7px 14px; border-radius: 999px; min-width: 0; color: var(--label); }
+  .tab svg { width: 18px; height: 18px; }
+  .tab.on { background: var(--card); color: var(--tint); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+  .tab .badge { position: static; margin: 0; }
+  .tab.capture .plus { width: 22px; height: 22px; border-radius: 6px; }
+  .tab.capture .plus svg { width: 14px; height: 14px; }
+  .nav .title { display: none; }
+  .nav { height: 60px; }
+  main { padding-bottom: 48px; }
+  .backdrop { align-items: center; }
+  .toast { top: calc(72px + env(safe-area-inset-top, 0px)); }
+  .sheet { border-radius: 14px; max-height: 86vh; }
+}
+@media (max-width: 520px) {
+  .rmap { grid-template-columns: 84px repeat(4, minmax(0, 1fr)); }
+  .fc .n { font-size: 18px; }
+  .seg button { font-size: 13px; padding: 6px 4px; }
+  /* relationship map becomes a list by role on phones; stance is printed on each chip */
+  .rmap { grid-template-columns: minmax(0, 1fr); background: var(--card); gap: 0; }
+  .rmap .h, .rmap > div[role="cell"]:empty { display: none; }
+  .rmap .rl { min-height: 0; padding: 12px 12px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--label-2); border-top: 0.5px solid var(--sep); }
+  .rmap .rl:nth-child(6) { border-top: 0; }
+  .rmap > div[role="cell"] { flex-direction: row; flex-wrap: wrap; min-height: 0; padding: 2px 12px 8px; }
+  .person-chip .stx { display: inline; }
+}
+.person-chip .stx { display: none; font-weight: 600; color: var(--label-2); }
+</style>
+
+<div id="app"></div>
+<div id="overlay"></div>
+
+<script>
+"use strict";
+/* ───────── i18n ───────── */
+const I18N = {
+  en: {
+    ribbon: "Prototype · demo data · nothing is saved", notes: "Review notes",
+    tabs: { today: "Today", accounts: "Accounts", capture: "Capture", deals: "Deals", pipeline: "Pipeline" },
+    back: "Back", close: "Close", done: "Done", cancel: "Cancel", save: "Save", edit: "Edit", none: "—",
+    today: { title: "Today", week: "Week ahead", focus: "Focus", footer: "Ranked by transparent rules. Tap an action to see why, then do, snooze or dismiss it.", empty: "You're all caught up.", pending: "Updates waiting for approval", score: "Score {n}" },
+    wk: { meeting: "Meeting", close: "Close date", renewal: "Renewal", today: "Today", tomorrow: "Tomorrow" },
+    act: {
+      nextStepMissing: "Set the next step on {deal}", nextStepPassed: "Do the next step on {deal}", stalled: "Unblock {deal}: {days} days in {stage}", single: "Add a second contact on {deal}",
+      criterion: "Confirm the {criterion} on {deal}", forecast: "Call the forecast on {deal}", reconnect: "Reconnect with {person}", signal: "Act on the news at {account}",
+      renewal: "Review the plan for {account} before renewal", prepare: "Prepare for {meeting}", proposals: "Approve {n} updates from your notes",
+      r_nextStepMissing: "Open deal with no next step.", r_nextStepPassed: "Next step was due {d}.", r_stalled: "Typical time in {stage} is {typ} days.", r_single: "Only {n} engaged contact on a {amount} deal.",
+      r_criterion: "Still unknown at the {stage} stage.", r_forecast: "Closes in {n} days and no forecast category is set.", r_reconnect: "{role}: last contact {n} days ago (cadence {c} days).", r_reconnectNever: "{role}: never contacted.",
+      r_signal: "{title}", r_renewal: "Renewal in {n} days; plan last reviewed {m} days ago.", r_prepare: "Meeting {when}; brief not opened yet.", r_proposals: "From your latest capture.",
+      why: "Why this action", data: "The data behind it", doIt: "Do it", snooze: "Snooze", dismiss: "Dismiss", teach: "Not relevant", teachHint: "Lowers this rule's weight for you. Undo in Settings.",
+      snoozeT: "Snooze until", tomorrow: "Tomorrow", in3: "In 3 days", nextWeek: "Next week", snoozed: "Snoozed", dismissed: "Dismissed — it comes back if the situation changes", taught: "Got it — this kind of action will rank lower", rule: "Rule", base: "Base score", amountF: "Amount factor", weightF: "Your weight", total: "Score"
+    },
+    acc: { title: "Accounts", search: "Search accounts", all: "All", key: "Key", growth: "Growth", maintain: "Maintain", prospect: "Prospect", customer: "Customer", renewalIn: "Renewal in {n} d", noAction: "No action needed",
+      overview: "Overview", people: "People", deals: "Deals", timeline: "Timeline", health: "Account health", next: "Next best action", signals: "Signals", plan: "Account plan", planReviewed: "Reviewed {n} days ago", openPlan: "Open the living account plan",
+      details: "Details", industry: "Industry", country: "Country", annual: "Annual value", renewal: "Renewal date", segment: "Segment", tier: "Tier", relationship: "Relationship", map: "Relationship map", mapFoot: "Columns show where each person stands. Dots show relationship strength. An orange outline means no contact for more than 60 days.", coverage: "Coverage of key roles", noDeals: "No deals.", noSignals: "No signals in the last 30 days." },
+    stance: { supporter: "Supporter", neutral: "Neutral", sceptic: "Sceptic", unknown: "Unknown" },
+    role: { economic_buyer: "Economic buyer", decision_maker: "Decision maker", champion: "Champion", influencer: "Influencer", technical_evaluator: "Technical evaluator", user: "User", procurement: "Procurement", blocker: "Blocker", unknown: "Unknown" },
+    roleHelp: { economic_buyer: "The person who controls the budget and can say yes when others say no.", decision_maker: "Signs off on the choice of supplier.", champion: "Sells for you inside the customer when you are not in the room.", influencer: "Shapes the decision without owning it.", technical_evaluator: "Checks that the solution fits technically.", user: "Will use the solution day to day.", procurement: "Runs the buying process and contract terms.", blocker: "Actively opposes the deal.", unknown: "Role not yet known." },
+    cov: { filled: "Covered", weak: "Weak", missing: "Missing" },
+    deal: { title: "Deals", list: "List", board: "By stage", overview: "Overview", stakeholders: "Stakeholders", qual: "Qualification", plan: "Close plan", health: "Deal health", amount: "Amount", stage: "Stage", close: "Close date", forecast: "Forecast", nextStep: "Next step", due: "due {d}", noNext: "No next step", compelling: "Compelling event", pushed: "Close date moved {n} times", noPushed: "Close date never moved",
+      addStep: "Add a step", stepPh: "e.g. Security review with IT", buyer: "Customer", us: "Us", help: "Get help on this deal", helpFoot: "Specialist support requests from the earlier build. Parked behind a feature flag in Phase 1.", flagOff: "Flag off", qualFoot: "Tap a status to change it. Evidence comes from your notes or captures.", evidence: "Evidence", noEvidence: "No evidence yet", stakeFoot: "Engaged means a contact in the last 60 days.", engaged: "Engaged", notEngaged: "Not engaged", lastTouch: "Last contact {n} d ago", never: "Never contacted", inDays: "in {n} d", ago: "{n} d ago", openDeals: "Open", closedDeals: "Closed" },
+    q: { unknown: "Unknown", partial: "Partial", confirmed: "Confirmed" },
+    crit: { metrics: "Metrics", economic_buyer: "Economic buyer", decision_criteria: "Decision criteria", decision_process: "Decision process", paper_process: "Paper process", pain: "Identified pain", champion: "Champion", competition: "Competition" },
+    critHelp: { metrics: "The measurable gain the customer expects.", economic_buyer: "Who controls the budget.", decision_criteria: "How they will compare options.", decision_process: "The steps and dates to reach a decision.", paper_process: "Legal, procurement and signature steps.", pain: "The business problem that makes them act.", champion: "Someone inside who sells for you.", competition: "Who else they are considering, including doing nothing." },
+    fc: { commit: "Commit", best_case: "Best case", pipeline: "Pipeline", omitted: "Omitted", notSet: "Not set" },
+    band: { healthy: "Healthy", watch: "Watch", risk: "At risk" },
+    hr: { qual: "Qualification coverage", stake: "Engaged stakeholders", next: "Next step dated", recency: "Recent buyer contact", age: "Time in stage", pushes: "Close date stable", event: "Compelling event",
+      cover: "Key roles covered", exec: "Recent executive contact", risks: "Open risks", signals: "Signals", renewalH: "Renewal under control", fresh: "Plan up to date" },
+    pipe: { title: "My pipeline", quarter: "This quarter", next: "Next quarter", commitLead: "Signed off by you", bestLead: "Commit + best case", pipeLead: "All open in period", byStage: "Open pipeline by stage", changes: "Changes since last week", noChanges: "No changes this week.", deals: "Deals closing in the period", noDeals: "No deals close in this period.",
+      chStage: "Stage {a} → {b}", chClose: "Close date moved to {d}", chAmount: "Amount {a} → {b}", chForecast: "Forecast {a} → {b}", count: "{n} deals" },
+    cap: { title: "Capture", lead: "Paste meeting notes or an email, or type a quick note. CLEAN proposes updates; nothing changes until you approve.", note: "Note", paste: "Paste", voice: "Dictate", voiceOff: "Dictation is off. In Chrome, speech recognition sends audio to an online service, so it stays off until you choose otherwise.", account: "Account", detect: "Detected automatically", find: "Find updates", sample: "Try a sample", sampleA: "Brightwater meeting", sampleB: "Eskerfield call",
+      ph: "Meeting with…", nothing: "No updates found. Try naming people, dates or a next step.", reviewT: "Review updates", reviewLead: "{n} proposed changes from your note. Approve, edit or turn off each one.", approve: "Approve {n}", rejectAll: "Reject all", source: "From your note, line {n}", applied: "{n} updates applied", logged: "Interaction logged",
+      p_log: "Log a meeting with {people}", p_next: "Set next step", p_forecast: "Set forecast to {v}", p_person: "Add new contact", p_stake: "Add {person} to the deal as {role}", p_qual: "{criterion}: {status}", p_risk: "Add a risk to the account plan", p_touch: "Updates last contact", healthChange: "Deal health {a} → {b}", aiOff: "AI is off. These proposals come from rules: names you already know, dates and keywords." },
+    brief: { title: "Meeting brief", attendees: "Attendees", deal: "Where the deal stands", unknowns: "Still unknown", signals: "Recent signals", commitments: "Last commitments", questions: "Suggested questions", polish: "Polish with AI", polishOff: "AI is off. This brief is built from your data only.", lastI: "Last interaction", none: "Nothing recorded." },
+    qs: { metrics: "What result would make this project a success for you, in numbers?", economic_buyer: "Who will approve the budget, and when can we meet them?", decision_criteria: "How will you compare the options in front of you?", decision_process: "What are the steps between now and a signed decision?", paper_process: "Who handles legal and procurement, and how long does it usually take?", pain: "What happens if nothing changes this year?", champion: "Who else in your team wants this to happen?", competition: "What other options are you considering, including doing nothing?", missingRole: "Who will be involved as {role}?" },
+    plan: { title: "Account plan", reviewed: "Last reviewed {n} days ago", review: "Mark as reviewed", reviewedNow: "Plan marked as reviewed", fromData: "From your data", judgement: "Your judgement", objectives: "Customer objectives", objectivesFoot: "In the customer's words.", goals: "Our goals", whitespace: "Whitespace", wsFoot: "Tap a cell to change its status.", risks: "Risks", addRisk: "Add a risk", value: "Value delivered", moves: "Next moves", openDeals: "Open deals", ws: { owned: "Owned", in_progress: "In progress", open: "Open", not_relevant: "Not relevant" } },
+    set: { title: "Settings", me: "Camille Martin", meSub: "Account executive · Lumen Data", language: "Language", weights: "Today ranking weights", weightsFoot: "Base score of each rule. Changes apply immediately.", cadences: "Contact cadence", days: "{n} days", ai: "AI provider", aiOff: "Off", aiFoot: "Phase 1 runs on rules only. A model can be connected later through the AI gateway.", team: "Team visibility", teamOff: "Only you", teamFoot: "Your accounts are visible only to you unless an admin turns on team visibility.", teach: "Your adjustments", teachNone: "No adjustments.", reset: "Reset adjustments", resetDemo: "Reset demo data", stages: "Stages and typical time", typical: "{n} days" },
+    notesTxt: {
+      today: "<b>Rules first.</b> Every action comes from a rule in the brief (§5.1) with its score and the data behind it. Snoozed and dismissed actions come back only when the situation changes.",
+      capture: "<b>The seller owns the record.</b> Capture only proposes. Each proposal shows the line it came from, and nothing is written until you approve it.",
+      ios: "<b>Design direction.</b> iOS-style layout: large titles, inset grouped lists, bottom tab bar on phones and a floating top tab bar on wide screens."
+    },
+    rel: { days: "{n} d", today: "today" },
+  },
+  fr: {
+    ribbon: "Prototype · données de démonstration · rien n’est enregistré", notes: "Notes de revue",
+    tabs: { today: "Aujourd’hui", accounts: "Comptes", capture: "Capter", deals: "Affaires", pipeline: "Pipeline" },
+    back: "Retour", close: "Fermer", done: "OK", cancel: "Annuler", save: "Enregistrer", edit: "Modifier", none: "—",
+    today: { title: "Aujourd’hui", week: "La semaine", focus: "Priorités", footer: "Classées par des règles transparentes. Touchez une action pour voir pourquoi, puis faites-la, reportez-la ou écartez-la.", empty: "Vous êtes à jour.", pending: "Mises à jour en attente d’approbation", score: "Score {n}" },
+    wk: { meeting: "Réunion", close: "Clôture", renewal: "Renouvellement", today: "Aujourd’hui", tomorrow: "Demain" },
+    act: {
+      nextStepMissing: "Définir la prochaine étape de {deal}", nextStepPassed: "Faire la prochaine étape de {deal}", stalled: "Débloquer {deal} : {days} jours en {stage}", single: "Ajouter un second contact sur {deal}",
+      criterion: "Confirmer : {criterion} sur {deal}", forecast: "Qualifier la prévision de {deal}", reconnect: "Reprendre contact avec {person}", signal: "Réagir à l’actualité de {account}",
+      renewal: "Revoir le plan de {account} avant le renouvellement", prepare: "Préparer {meeting}", proposals: "Approuver {n} mises à jour de vos notes",
+      r_nextStepMissing: "Affaire ouverte sans prochaine étape.", r_nextStepPassed: "La prochaine étape était prévue {d}.", r_stalled: "Durée habituelle en {stage} : {typ} jours.", r_single: "Seulement {n} contact engagé sur une affaire de {amount}.",
+      r_criterion: "Toujours inconnu à l’étape {stage}.", r_forecast: "Clôture dans {n} jours sans catégorie de prévision.", r_reconnect: "{role} : dernier contact il y a {n} jours (cadence {c} jours).", r_reconnectNever: "{role} : jamais contacté.",
+      r_signal: "{title}", r_renewal: "Renouvellement dans {n} jours ; plan revu il y a {m} jours.", r_prepare: "Réunion {when} ; fiche de préparation pas encore ouverte.", r_proposals: "Issues de votre dernière saisie.",
+      why: "Pourquoi cette action", data: "Les données utilisées", doIt: "Y aller", snooze: "Reporter", dismiss: "Écarter", teach: "Pas pertinent", teachHint: "Réduit le poids de cette règle pour vous. Annulable dans Réglages.",
+      snoozeT: "Reporter jusqu’à", tomorrow: "Demain", in3: "Dans 3 jours", nextWeek: "La semaine prochaine", snoozed: "Reportée", dismissed: "Écartée — elle reviendra si la situation change", taught: "Compris — ce type d’action sera moins prioritaire", rule: "Règle", base: "Score de base", amountF: "Facteur montant", weightF: "Votre pondération", total: "Score"
+    },
+    acc: { title: "Comptes", search: "Rechercher un compte", all: "Tous", key: "Clés", growth: "Croissance", maintain: "Maintien", prospect: "Prospect", customer: "Client", renewalIn: "Renouvellement dans {n} j", noAction: "Aucune action requise",
+      overview: "Vue d’ensemble", people: "Personnes", deals: "Affaires", timeline: "Historique", health: "Santé du compte", next: "Prochaine action", signals: "Signaux", plan: "Plan de compte", planReviewed: "Revu il y a {n} jours", openPlan: "Ouvrir le plan de compte vivant",
+      details: "Détails", industry: "Secteur", country: "Pays", annual: "Valeur annuelle", renewal: "Date de renouvellement", segment: "Segment", tier: "Niveau", relationship: "Relation", map: "Carte des relations", mapFoot: "Les colonnes indiquent la position de chaque personne. Les points montrent la force de la relation. Un contour orange signale plus de 60 jours sans contact.", coverage: "Couverture des rôles clés", noDeals: "Aucune affaire.", noSignals: "Aucun signal sur les 30 derniers jours." },
+    stance: { supporter: "Favorable", neutral: "Neutre", sceptic: "Sceptique", unknown: "Inconnue" },
+    role: { economic_buyer: "Décideur budgétaire", decision_maker: "Décideur", champion: "Champion", influencer: "Influenceur", technical_evaluator: "Évaluateur technique", user: "Utilisateur", procurement: "Achats", blocker: "Opposant", unknown: "Inconnu" },
+    roleHelp: { economic_buyer: "La personne qui contrôle le budget et peut dire oui quand les autres disent non.", decision_maker: "Valide le choix du fournisseur.", champion: "Défend votre offre en interne quand vous n’êtes pas là.", influencer: "Pèse sur la décision sans la porter.", technical_evaluator: "Vérifie l’adéquation technique.", user: "Utilisera la solution au quotidien.", procurement: "Pilote le processus d’achat et le contrat.", blocker: "S’oppose activement à l’affaire.", unknown: "Rôle pas encore connu." },
+    cov: { filled: "Couvert", weak: "Fragile", missing: "Manquant" },
+    deal: { title: "Affaires", list: "Liste", board: "Par étape", overview: "Vue d’ensemble", stakeholders: "Interlocuteurs", qual: "Qualification", plan: "Plan de closing", health: "Santé de l’affaire", amount: "Montant", stage: "Étape", close: "Date de clôture", forecast: "Prévision", nextStep: "Prochaine étape", due: "prévue {d}", noNext: "Aucune prochaine étape", compelling: "Événement déclencheur", pushed: "Date de clôture décalée {n} fois", noPushed: "Date de clôture jamais décalée",
+      addStep: "Ajouter une étape", stepPh: "ex. Revue sécurité avec la DSI", buyer: "Client", us: "Nous", help: "Demander de l’aide sur cette affaire", helpFoot: "Les demandes d’appui d’experts du premier développement. Mises en attente derrière un drapeau en phase 1.", flagOff: "Désactivé", qualFoot: "Touchez un statut pour le changer. Les preuves viennent de vos notes ou saisies.", evidence: "Preuve", noEvidence: "Pas encore de preuve", stakeFoot: "Engagé signifie un contact dans les 60 derniers jours.", engaged: "Engagé", notEngaged: "Non engagé", lastTouch: "Dernier contact il y a {n} j", never: "Jamais contacté", inDays: "dans {n} j", ago: "il y a {n} j", openDeals: "Ouvertes", closedDeals: "Clôturées" },
+    q: { unknown: "Inconnu", partial: "Partiel", confirmed: "Confirmé" },
+    crit: { metrics: "Indicateurs", economic_buyer: "Décideur budgétaire", decision_criteria: "Critères de décision", decision_process: "Processus de décision", paper_process: "Processus contractuel", pain: "Problème identifié", champion: "Champion", competition: "Concurrence" },
+    critHelp: { metrics: "Le gain mesurable attendu par le client.", economic_buyer: "Qui contrôle le budget.", decision_criteria: "Comment ils compareront les options.", decision_process: "Les étapes et dates jusqu’à la décision.", paper_process: "Étapes juridiques, achats et signature.", pain: "Le problème métier qui les pousse à agir.", champion: "Quelqu’un en interne qui défend votre offre.", competition: "Les autres options envisagées, y compris ne rien faire." },
+    fc: { commit: "Engagé", best_case: "Meilleur cas", pipeline: "Pipeline", omitted: "Exclu", notSet: "Non défini" },
+    band: { healthy: "Saine", watch: "À surveiller", risk: "À risque" },
+    hr: { qual: "Couverture de la qualification", stake: "Interlocuteurs engagés", next: "Prochaine étape datée", recency: "Contact client récent", age: "Temps dans l’étape", pushes: "Date de clôture stable", event: "Événement déclencheur",
+      cover: "Rôles clés couverts", exec: "Contact récent avec la direction", risks: "Risques ouverts", signals: "Signaux", renewalH: "Renouvellement maîtrisé", fresh: "Plan à jour" },
+    pipe: { title: "Mon pipeline", quarter: "Ce trimestre", next: "Trimestre suivant", commitLead: "Engagé par vous", bestLead: "Engagé + meilleur cas", pipeLead: "Tout l’ouvert sur la période", byStage: "Pipeline ouvert par étape", changes: "Changements depuis la semaine dernière", noChanges: "Aucun changement cette semaine.", deals: "Affaires qui se clôturent sur la période", noDeals: "Aucune affaire sur cette période.",
+      chStage: "Étape {a} → {b}", chClose: "Clôture décalée au {d}", chAmount: "Montant {a} → {b}", chForecast: "Prévision {a} → {b}", count: "{n} affaires" },
+    cap: { title: "Capter", lead: "Collez des notes de réunion ou un e-mail, ou tapez une note rapide. CLEAN propose des mises à jour ; rien ne change sans votre accord.", note: "Note", paste: "Coller", voice: "Dicter", voiceOff: "La dictée est désactivée. Dans Chrome, la reconnaissance vocale envoie l’audio à un service en ligne ; elle reste donc désactivée tant que vous n’en décidez pas autrement.", account: "Compte", detect: "Détecté automatiquement", find: "Trouver les mises à jour", sample: "Essayer un exemple", sampleA: "Réunion Brightwater", sampleB: "Appel Eskerfield",
+      ph: "Réunion avec…", nothing: "Aucune mise à jour trouvée. Essayez de citer des personnes, des dates ou une prochaine étape.", reviewT: "Vérifier les mises à jour", reviewLead: "{n} changements proposés à partir de votre note. Approuvez, modifiez ou désactivez chacun.", approve: "Approuver {n}", rejectAll: "Tout rejeter", source: "Depuis votre note, ligne {n}", applied: "{n} mises à jour appliquées", logged: "Interaction enregistrée",
+      p_log: "Enregistrer une réunion avec {people}", p_next: "Définir la prochaine étape", p_forecast: "Passer la prévision à {v}", p_person: "Ajouter un nouveau contact", p_stake: "Ajouter {person} à l’affaire comme {role}", p_qual: "{criterion} : {status}", p_risk: "Ajouter un risque au plan de compte", p_touch: "Met à jour le dernier contact", healthChange: "Santé de l’affaire {a} → {b}", aiOff: "L’IA est désactivée. Ces propositions viennent de règles : personnes déjà connues, dates et mots-clés." },
+    brief: { title: "Fiche de préparation", attendees: "Participants", deal: "Où en est l’affaire", unknowns: "Encore inconnu", signals: "Signaux récents", commitments: "Derniers engagements", questions: "Questions suggérées", polish: "Améliorer avec l’IA", polishOff: "L’IA est désactivée. Cette fiche est construite uniquement à partir de vos données.", lastI: "Dernière interaction", none: "Rien d’enregistré." },
+    qs: { metrics: "Quel résultat chiffré ferait de ce projet un succès pour vous ?", economic_buyer: "Qui validera le budget, et quand pouvons-nous le rencontrer ?", decision_criteria: "Comment allez-vous comparer les options ?", decision_process: "Quelles sont les étapes d’ici une décision signée ?", paper_process: "Qui s’occupe du juridique et des achats, et combien de temps cela prend-il ?", pain: "Que se passe-t-il si rien ne change cette année ?", champion: "Qui d’autre dans votre équipe souhaite que cela se fasse ?", competition: "Quelles autres options envisagez-vous, y compris ne rien faire ?", missingRole: "Qui interviendra comme {role} ?" },
+    plan: { title: "Plan de compte", reviewed: "Revu il y a {n} jours", review: "Marquer comme revu", reviewedNow: "Plan marqué comme revu", fromData: "Issu de vos données", judgement: "Votre jugement", objectives: "Objectifs du client", objectivesFoot: "Avec les mots du client.", goals: "Nos objectifs", whitespace: "Potentiel inexploité", wsFoot: "Touchez une case pour changer son statut.", risks: "Risques", addRisk: "Ajouter un risque", value: "Valeur apportée", moves: "Prochaines actions", openDeals: "Affaires ouvertes", ws: { owned: "Acquis", in_progress: "En cours", open: "À prendre", not_relevant: "Non pertinent" } },
+    set: { title: "Réglages", me: "Camille Martin", meSub: "Commerciale · Lumen Data", language: "Langue", weights: "Pondération du classement", weightsFoot: "Score de base de chaque règle. Les changements s’appliquent immédiatement.", cadences: "Cadence de contact", days: "{n} jours", ai: "Fournisseur d’IA", aiOff: "Désactivé", aiFoot: "La phase 1 fonctionne uniquement avec des règles. Un modèle pourra être connecté plus tard via la passerelle IA.", team: "Visibilité équipe", teamOff: "Vous seulement", teamFoot: "Vos comptes ne sont visibles que par vous, sauf si un administrateur active la visibilité équipe.", teach: "Vos ajustements", teachNone: "Aucun ajustement.", reset: "Réinitialiser les ajustements", resetDemo: "Réinitialiser la démo", stages: "Étapes et durée habituelle", typical: "{n} jours" },
+    notesTxt: {
+      today: "<b>Règles d’abord.</b> Chaque action vient d’une règle du cahier des charges (§5.1), avec son score et les données utilisées. Une action reportée ou écartée ne revient que si la situation change.",
+      capture: "<b>Le commercial reste maître de ses données.</b> La saisie ne fait que proposer. Chaque proposition indique la ligne d’origine, et rien n’est écrit sans votre accord.",
+      ios: "<b>Direction de design.</b> Mise en page de style iOS : grands titres, listes groupées en encart, barre d’onglets en bas sur téléphone et barre flottante en haut sur grand écran."
+    },
+    rel: { days: "{n} j", today: "aujourd’hui" },
+  },
+};
+
+/* ───────── helpers ───────── */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+function t(key, vars) {
+  let v = key.split(".").reduce((o, k) => (o ? o[k] : undefined), I18N[S.lang]);
+  if (v === undefined) v = key;
+  if (vars) v = String(v).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+  return v;
+}
+const loc = () => (S.lang === "fr" ? "fr-FR" : "en-GB");
+const money = (n) => new Intl.NumberFormat(loc(), { style: "currency", currency: "EUR", notation: n >= 1e6 ? "compact" : "standard", maximumFractionDigits: n >= 1e6 ? 1 : 0 }).format(n || 0);
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const TODAY = (() => { const d = new Date(); d.setHours(12, 0, 0, 0); return d; })();
+const TODAY_ISO = iso(TODAY);
+const addDays = (n, from = TODAY) => { const d = new Date(from); d.setDate(d.getDate() + n); return iso(d); };
+const diffDays = (a, b = TODAY_ISO) => Math.round((new Date(a + "T12:00:00") - new Date(b + "T12:00:00")) / 86400000);
+const ago = (d) => (d ? -diffDays(d) : null);
+const fmtDate = (d, opts = { day: "numeric", month: "short" }) => (d ? new Date(d + "T12:00:00").toLocaleDateString(loc(), opts) : t("none"));
+const rel = (d) => { const n = diffDays(d); return n === 0 ? t("wk.today") : n === 1 ? t("wk.tomorrow") : fmtDate(d, { weekday: "short", day: "numeric", month: "short" }); };
+const sum = (xs, f) => xs.reduce((a, x) => a + f(x), 0);
+const L = (o, k = "name") => o[`${k}_${S.lang}`] ?? o[k];
+let uidN = 500; const uid = (p) => `${p}${++uidN}`;
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } }
+
+/* icons (drawn for this prototype) */
+const IC = {
+  today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
+  accounts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 21V5.5L12 3v18M12 8h8v13M2.5 21h19"/><path d="M7 8h2M7 12h2M7 16h2M15 12h2M15 16h2" stroke-linecap="round"/></svg>',
+  deals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 12.5h18"/></svg>',
+  pipeline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 10.5h11M4 15h7M4 19.5h4"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  chev: '<svg class="chev" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg>',
+  back: '<svg viewBox="0 0 13 22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2 2 11l9 9"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6" stroke-linecap="round"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.8a3.3 3.3 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.3 3.5 5.2"/></svg>',
+  flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>',
+  wave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h2l2-6 3 12 3-9 2 5 2-2h4"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3" stroke-linecap="round"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4.5 6v6c0 4.4 3.2 7.8 7.5 9 4.3-1.2 7.5-4.6 7.5-9V6z"/></svg>',
+  globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/></svg>',
+};
+
+/* ───────── demo book (all invented) ───────── */
+const STAGES = [
+  { id: "s1", name_en: "Lead / prospect", name_fr: "Lead / prospect", typical: 14, prob: 10 },
+  { id: "s2", name_en: "Discovery", name_fr: "Découverte", typical: 21, prob: 25 },
+  { id: "s3", name_en: "Solution / demo", name_fr: "Solution / démo", typical: 21, prob: 50 },
+  { id: "s4", name_en: "Proposal / evaluation", name_fr: "Proposition / évaluation", typical: 30, prob: 70 },
+  { id: "s5", name_en: "Negotiation", name_fr: "Négociation", typical: 21, prob: 85 },
+  { id: "s6", name_en: "Closed won", name_fr: "Gagnée", typical: 0, prob: 100, won: true },
+  { id: "s7", name_en: "Closed lost", name_fr: "Perdue", typical: 0, prob: 0, lost: true },
+];
+const CRITERIA = ["metrics", "economic_buyer", "decision_criteria", "decision_process", "paper_process", "pain", "champion", "competition"];
+const REQUIRED_ROLES = ["economic_buyer", "decision_maker", "champion", "technical_evaluator", "procurement"];
+const MAP_ROLES = ["economic_buyer", "decision_maker", "champion", "influencer", "technical_evaluator", "user", "procurement", "blocker"];
+const PRODUCTS = [{ id: "pl", name_en: "Analytics platform", name_fr: "Plateforme analytique" }, { id: "di", name_en: "Data integration", name_fr: "Intégration de données" }, { id: "ms", name_en: "Managed service", name_fr: "Service managé" }];
+
+function seed() {
+  const A = (id, name, tier, relationship, country, industry, annual, renewal, extra = {}) => ({ id, name, tier, relationship, country, industry, annual, renewal: renewal == null ? null : addDays(renewal), ...extra });
+  const accounts = [
+    A("a1", "Arvalis Logistics", "key", "customer", "FR", "Logistics", 420000, 70, { segment: "Enterprise" }),
+    A("a2", "Eskerfield Bank", "key", "prospect", "DE", "Banking", 0, null, { segment: "Enterprise" }),
+    A("a3", "Brightwater Health", "growth", "customer", "GB", "Healthcare", 120000, 200, { segment: "Mid-market" }),
+    A("a4", "Calder Energy", "growth", "prospect", "NO", "Energy", 0, null, { segment: "Enterprise" }),
+    A("a5", "Delmont Retail", "maintain", "customer", "FR", "Retail", 60000, 40, { segment: "Mid-market" }),
+    A("a6", "Fennick Telecom", "growth", "customer", "NL", "Telecom", 210000, 150, { segment: "Enterprise" }),
+    A("a7", "Granvale Foods", "maintain", "customer", "FR", "Food & beverage", 45000, 260, { segment: "Mid-market" }),
+    A("a8", "Halden Insurance", "growth", "prospect", "BE", "Insurance", 0, null, { segment: "Mid-market" }),
+    A("a9", "Ivory Lane Media", "maintain", "customer", "IE", "Media", 48000, 310, { segment: "SMB" }),
+    A("a10", "Juniper Rail", "growth", "prospect", "ES", "Transport", 0, null, { segment: "Enterprise" }),
+  ];
+  // person + seller's relationship: role, stance, strength 1–5, last contact (days ago, null = never)
+  const P = (id, account, name, title, role, stance, strength, last) => ({ id, account, name, title, role, stance, strength, last: last == null ? null : addDays(-last) });
+  const people = [
+    P("p1", "a1", "Nathalie Fournier", "Chief Operating Officer", "economic_buyer", "supporter", 4, 35), P("p2", "a1", "Karim Benali", "Head of IT", "champion", "supporter", 5, 26),
+    P("p3", "a1", "Lucie Moreau", "Procurement Manager", "procurement", "neutral", 2, 90), P("p4", "a1", "Paul Girard", "Warehouse Operations Director", "user", "supporter", 3, 12),
+    P("p5", "a2", "Anja Weber", "Head of Data", "champion", "supporter", 4, 9), P("p6", "a2", "Lukas Brandt", "Procurement Lead", "procurement", "neutral", 2, 40),
+    P("p7", "a2", "Henrik Vogel", "Chief Risk Officer", "economic_buyer", "unknown", 1, null), P("p8", "a2", "Mia Schulz", "Enterprise Architect", "technical_evaluator", "sceptic", 2, 20),
+    P("p9", "a3", "Olivia Grant", "Director of Digital", "champion", "supporter", 3, 18), P("p10", "a3", "James Holt", "Chief Financial Officer", "economic_buyer", "unknown", 1, null),
+    P("p11", "a4", "Erik Solberg", "Chief Financial Officer", "economic_buyer", "neutral", 2, 50), P("p12", "a4", "Ingrid Dahl", "Head of Trading Operations", "champion", "supporter", 3, 6),
+    P("p13", "a5", "Claire Rousseau", "Store Operations Director", "decision_maker", "supporter", 4, 15), P("p14", "a5", "Marc Lefebvre", "IT Manager", "technical_evaluator", "neutral", 3, 30),
+    P("p15", "a6", "Daan de Vries", "VP Network", "decision_maker", "supporter", 4, 8), P("p16", "a6", "Sanne Bakker", "Procurement Officer", "procurement", "neutral", 2, 25),
+    P("p17", "a6", "Pieter Jansen", "Network Architect", "technical_evaluator", "supporter", 3, 10), P("p18", "a6", "Femke Visser", "Head of Finance", "economic_buyer", "neutral", 2, 70),
+    P("p19", "a7", "Hélène Marchand", "Supply Chain Director", "decision_maker", "neutral", 3, 60),
+    P("p20", "a8", "Sophie Lambert", "Chief Executive Officer", "economic_buyer", "supporter", 4, 45), P("p21", "a8", "Thomas Wouters", "Head of Claims", "champion", "supporter", 3, 41),
+    P("p22", "a10", "Javier Ortega", "Head of Passenger Experience", "champion", "neutral", 2, 20), P("p23", "a10", "Carmen Ruiz", "Chief Information Officer", "economic_buyer", "unknown", 1, null),
+    P("p24", "a9", "Aoife Byrne", "Head of Audience", "decision_maker", "supporter", 3, 28), P("p25", "a3", "Rahul Mehta", "Clinical Systems Lead", "technical_evaluator", "unknown", 1, null),
+  ];
+  const q = (s) => Object.fromEntries(CRITERIA.map((c, i) => [c, { s: s[i] || "u", ev: "" }]));
+  const D = (id, account, name, amount, stage, close, inStage, next, nextDate, forecast, compelling, stakeholders, qual, pushes = 0) => ({ id, account, name, amount, stage, close: addDays(close), stageSince: addDays(-inStage), next, nextDate: nextDate == null ? null : addDays(nextDate), forecast, compelling, stakeholders, qual: q(qual), pushes, steps: [], risks: [] });
+  const deals = [
+    D("d1", "a1", "Warehouse analytics expansion", 180000, "s4", 40, 12, "Send the revised proposal to Nathalie", -2, "best_case", "Peak season starts in March", [{ p: "p1", r: "economic_buyer" }, { p: "p2", r: "champion" }, { p: "p4", r: "user" }], ["c", "p", "c", "p", "u", "c", "c", "p"]),
+    D("d2", "a2", "Risk data lake", 410000, "s2", 120, 36, "Discovery workshop with the risk team", 1, "pipeline", "Supervisor findings due in Q2", [{ p: "p5", r: "champion" }, { p: "p8", r: "technical_evaluator" }], ["u", "u", "u", "u", "u", "p", "p", "u"]),
+    D("d3", "a3", "Patient flow dashboards", 95000, "s4", 21, 10, "Proposal walkthrough", 4, null, "Board wants weekly bed-occupancy reporting", [{ p: "p9", r: "champion" }], ["p", "u", "p", "u", "u", "c", "p", "u"], 1),
+    D("d4", "a4", "Trading data hub", 320000, "s3", 55, 9, "Executive briefing with the CFO", 6, "best_case", "Merger needs a single data model", [{ p: "p11", r: "economic_buyer" }, { p: "p12", r: "champion" }], ["p", "p", "p", "p", "u", "c", "c", "p"]),
+    D("d5", "a5", "Store data renewal", 60000, "s5", 12, 5, "Agree the final discount", 1, "commit", "Contract ends 31 January", [{ p: "p13", r: "decision_maker" }, { p: "p14", r: "technical_evaluator" }], ["c", "c", "c", "c", "p", "c", "c", "c"]),
+    D("d6", "a6", "Network capacity analytics", 260000, "s5", 9, 3, "Legal review call", 2, "commit", "Budget must be committed before year end", [{ p: "p15", r: "decision_maker" }, { p: "p16", r: "procurement" }, { p: "p17", r: "technical_evaluator" }, { p: "p18", r: "economic_buyer" }], ["c", "c", "c", "c", "p", "c", "c", "c"]),
+    D("d7", "a8", "Claims data modernisation", 240000, "s2", 75, 41, "", null, "pipeline", "", [{ p: "p20", r: "economic_buyer" }, { p: "p21", r: "champion" }], ["p", "p", "u", "u", "u", "p", "p", "u"], 2),
+    D("d8", "a10", "Passenger insights", 130000, "s1", 100, 10, "Qualification call", 3, "pipeline", "", [{ p: "p22", r: "champion" }], ["u", "u", "u", "u", "u", "p", "u", "u"]),
+    D("d9", "a7", "Supply chain visibility", 72000, "s3", 35, 25, "Pilot results review", -5, "pipeline", "Two recalls last year", [{ p: "p19", r: "decision_maker" }], ["p", "u", "p", "u", "u", "c", "u", "u"], 1),
+    D("d10", "a9", "Audience data refresh", 48000, "s6", -20, 20, "", null, "commit", "", [{ p: "p24", r: "decision_maker" }], ["c", "c", "c", "c", "c", "c", "c", "c"]),
+    D("d11", "a3", "Lab results integration", 54000, "s7", -30, 30, "", null, "omitted", "", [{ p: "p9", r: "champion" }], ["p", "u", "p", "u", "u", "p", "p", "p"]),
+    D("d12", "a1", "Fleet telemetry pilot", 35000, "s1", 90, 4, "Scope call with Paul", 7, "pipeline", "", [{ p: "p4", r: "user" }], ["u", "u", "u", "u", "u", "p", "u", "u"]),
+  ];
+  deals.find((d) => d.id === "d1").qual.metrics.ev = "Cut daily reporting from 4 hours to 20 minutes (Karim, 12 Oct).";
+  deals.find((d) => d.id === "d1").qual.champion.ev = "Karim presented our pilot results to the COO.";
+  deals.find((d) => d.id === "d3").qual.pain.ev = "Board asked for weekly bed-occupancy reporting.";
+  const step = (title, owner, due, done = false) => ({ id: uid("cs"), title, owner, due: addDays(due), done });
+  deals.find((d) => d.id === "d1").steps = [step("Pilot results shared with the COO", "us", -20, true), step("Revised proposal sent", "us", -2), step("Security review with IT", "buyer", 10), step("Procurement and legal", "buyer", 25), step("Signature", "buyer", 38)];
+  deals.find((d) => d.id === "d3").steps = [step("Proposal sent", "us", -6, true), step("Proposal walkthrough", "us", 4), step("Board approval", "buyer", 18)];
+  deals.find((d) => d.id === "d6").steps = [step("Commercial terms agreed", "us", -5, true), step("Legal review", "buyer", 2), step("Purchase order", "buyer", 8)];
+  // deal events in the last week (for "changes since last week")
+  const events = [
+    { deal: "d5", kind: "forecast", from: "best_case", to: "commit", at: addDays(-3) },
+    { deal: "d3", kind: "close", from: addDays(7), to: addDays(21), at: addDays(-4) },
+    { deal: "d6", kind: "amount", from: 240000, to: 260000, at: addDays(-2) },
+    { deal: "d6", kind: "stage", from: "s4", to: "s5", at: addDays(-3) },
+    { deal: "d1", kind: "stage", from: "s3", to: "s4", at: addDays(-12) },
+  ];
+  const I = (id, account, deal, type, daysAgo, people, summary) => ({ id, account, deal, type, at: addDays(-daysAgo), people, summary });
+  const interactions = [
+    I("i1", "a1", "d1", "meeting", 12, ["p4"], "Walked Paul through the warehouse dashboards; he wants mobile access for shift leads."),
+    I("i2", "a1", "d1", "call", 26, ["p2"], "Karim confirmed the pilot met the 20-minute reporting target."),
+    I("i3", "a1", null, "meeting", 35, ["p1", "p2"], "Quarterly review with Nathalie: renewal on track, wants a roadmap for transport."),
+    I("i4", "a2", "d2", "call", 9, ["p5"], "Anja shared the supervisor's findings timeline; workshop agreed."),
+    I("i5", "a2", "d2", "meeting", 20, ["p5", "p8"], "First architecture session. Mia worried about integration with the risk engine."),
+    I("i6", "a3", "d3", "meeting", 18, ["p9"], "Olivia reviewed the proposal draft; asked for a phased go-live."),
+    I("i7", "a4", "d4", "call", 6, ["p12"], "Ingrid confirmed the CFO briefing slot."),
+    I("i8", "a5", "d5", "meeting", 15, ["p13"], "Claire accepted the renewal scope; discount still open."),
+    I("i9", "a6", "d6", "meeting", 8, ["p15", "p17"], "Terms agreed with Daan; legal review next."),
+    I("i10", "a8", "d7", "meeting", 41, ["p21"], "Thomas outlined claims backlog; wanted a business case before involving the CEO."),
+    I("i11", "a7", "d9", "meeting", 60, ["p19"], "Pilot kicked off with Hélène's team."),
+    I("i12", "a10", "d8", "call", 20, ["p22"], "Intro call with Javier; interested in passenger flow analytics."),
+    I("i13", "a1", null, "event", 110, ["p1"], "Met Nathalie at the logistics summit in Lyon."),
+    I("i14", "a6", null, "call", 150, ["p18"], "Budget planning call with Femke."),
+    I("i15", "a9", "d10", "meeting", 28, ["p24"], "Contract signed with Aoife."),
+  ];
+  const upcoming = [
+    { id: "m1", account: "a2", deal: "d2", title: "Discovery workshop · Eskerfield Bank", at: addDays(1), time: "10:00", people: ["p5", "p8"], viewed: false },
+    { id: "m2", account: "a6", deal: "d6", title: "Legal review call · Fennick Telecom", at: addDays(2), time: "14:30", people: ["p16"], viewed: false },
+    { id: "m3", account: "a1", deal: null, title: "Quarterly business review · Arvalis", at: addDays(3), time: "09:30", people: ["p1", "p2"], viewed: false },
+  ];
+  const S_ = (id, account, person, type, title_en, title_fr, daysAgo, relevance) => ({ id, account, person, type, title_en, title_fr, at: addDays(-daysAgo), relevance });
+  const signals = [
+    S_("g1", "a8", "p20", "job_change", "Sophie Lambert announced she is leaving Halden Insurance", "Sophie Lambert annonce son départ de Halden Insurance", 2, 5),
+    S_("g2", "a2", null, "tender", "Eskerfield Bank published a tender for a regulatory data platform", "Eskerfield Bank publie un appel d’offres pour une plateforme de données réglementaires", 3, 4),
+    S_("g3", "a4", null, "news", "Calder Energy completed its merger with Nordvik Power", "Calder Energy finalise sa fusion avec Nordvik Power", 5, 3),
+    S_("g4", "a3", null, "hiring", "Brightwater Health is hiring a Chief Data Officer", "Brightwater Health recrute un Chief Data Officer", 20, 2),
+  ];
+  const plans = {
+    a1: { reviewed: addDays(-80), objectives: "Same-day visibility of every warehouse by peak season; cut reporting effort by 80 %.", goals: "Renew at €420k and expand into transport (+€180k).", ws: { Warehousing: { pl: "owned", di: "owned", ms: "in_progress" }, Transport: { pl: "open", di: "open", ms: "not_relevant" }, Finance: { pl: "open", di: "in_progress", ms: "open" } },
+      risks: ["Procurement contact not met for 3 months."], value: [{ at: addDays(-150), text: "Warehouse reporting live in 6 sites" }, { at: addDays(-60), text: "Daily report time cut from 4 h to 20 min" }], moves: "QBR with Nathalie; transport discovery with Paul." },
+    a2: { reviewed: addDays(-20), objectives: "Answer the supervisor's findings with one trusted risk data source by Q2.", goals: "Land the risk data lake (€410k) as a first project.", ws: { Risk: { pl: "in_progress", di: "in_progress", ms: "open" }, Finance: { pl: "open", di: "open", ms: "open" }, Retail: { pl: "not_relevant", di: "open", ms: "not_relevant" } },
+      risks: ["Economic buyer (CRO) not met yet.", "Architect sceptical about risk-engine integration."], value: [], moves: "Workshop tomorrow; ask Anja for an introduction to the CRO." },
+  };
+  return { accounts, people, deals, events, interactions, upcoming, signals, plans, proposals: [] };
+}
+
+/* ───────── settings (admin-tunable defaults, brief §5) ───────── */
+const DEFAULT_WEIGHTS = { nextStep: 30, stalled: 25, single: 25, criterion: 20, forecast: 20, reconnect: 15, signal: 15, renewal: 20, prepare: 30, proposals: 10 };
+const CADENCE = { champion: 14, economic_buyer: 30, decision_maker: 30 };
+const AMOUNT_MAX = 15, SINGLE_THRESHOLD = 50000, ENGAGED_DAYS = 60, TOP_N = 7;
+
+/* ───────── state ───────── */
+const S = { lang: store("cc.lang") === "fr" ? "fr" : "en", d: seed(), weights: { ...DEFAULT_WEIGHTS }, teach: {}, act: {}, tabSeg: {}, accFilter: "all", accQuery: "", dealView: "board", period: "q0", capture: { mode: "paste", text: "", account: "" }, toast: null };
+const acc = (id) => S.d.accounts.find((a) => a.id === id);
+const per = (id) => S.d.people.find((p) => p.id === id);
+const deal = (id) => S.d.deals.find((d) => d.id === id);
+const stage = (id) => STAGES.find((s) => s.id === id);
+const isOpen = (d) => !stage(d.stage).won && !stage(d.stage).lost;
+const peopleOf = (aid) => S.d.people.filter((p) => p.account === aid);
+const dealsOf = (aid) => S.d.deals.filter((d) => d.account === aid);
+const engaged = (p) => p.last != null && ago(p.last) <= ENGAGED_DAYS;
+const stageIdx = (id) => STAGES.findIndex((s) => s.id === id);
+
+/* ───────── rules: deal health (§5.2) ───────── */
+function assessDeal(d) {
+  const r = [];
+  const qPts = sum(CRITERIA, (c) => (d.qual[c].s === "confirmed" || d.qual[c].s === "c" ? 1 : d.qual[c].s === "partial" || d.qual[c].s === "p" ? 0.5 : 0));
+  r.push({ k: "qual", pts: Math.round((qPts / CRITERIA.length) * 30), max: 30, d: `${qPts}/${CRITERIA.length}` });
+  const eng = d.stakeholders.map((s) => per(s.p)).filter(engaged);
+  const senior = eng.some((p) => ["economic_buyer", "decision_maker"].includes(p.role));
+  r.push({ k: "stake", pts: eng.length >= 3 && senior ? 20 : eng.length >= 2 ? 12 : eng.length === 1 ? 5 : 0, max: 20, d: String(eng.length) });
+  r.push({ k: "next", pts: d.next && d.nextDate && d.nextDate >= TODAY_ISO ? 15 : d.next ? 7 : 0, max: 15, d: d.next ? (d.nextDate ? fmtDate(d.nextDate) : t("none")) : t("deal.noNext") });
+  const lastBuyer = Math.min(...eng.map((p) => ago(p.last)), 999);
+  r.push({ k: "recency", pts: lastBuyer <= 14 ? 15 : lastBuyer <= 30 ? 8 : 0, max: 15, d: lastBuyer === 999 ? t("deal.never") : t("rel.days", { n: lastBuyer }) });
+  const age = ago(d.stageSince), typ = stage(d.stage).typical || 1;
+  r.push({ k: "age", pts: age <= typ ? 10 : age <= typ * 1.5 ? 5 : 0, max: 10, d: `${age}/${typ} ${S.lang === "fr" ? "j" : "d"}` });
+  r.push({ k: "pushes", pts: d.pushes === 0 ? 5 : d.pushes === 1 ? 2 : 0, max: 5, d: String(d.pushes) });
+  r.push({ k: "event", pts: d.compelling ? 5 : 0, max: 5, d: d.compelling || t("none") });
+  const score = sum(r, (x) => x.pts);
+  return { score, band: score >= 70 ? "healthy" : score >= 40 ? "watch" : "risk", reasons: r };
+}
+/* account health (§5.3) */
+function coverage(people) {
+  return REQUIRED_ROLES.map((role) => {
+    const ps = people.filter((p) => p.role === role);
+    const good = ps.find((p) => p.strength >= 3 && engaged(p));
+    return { role, status: good ? "filled" : ps.length ? "weak" : "missing", people: ps };
+  });
+}
+function assessAccount(a) {
+  const ps = peopleOf(a.id), cov = coverage(ps), r = [];
+  const covPts = sum(cov, (c) => (c.status === "filled" ? 1 : c.status === "weak" ? 0.5 : 0));
+  r.push({ k: "cover", pts: Math.round((covPts / cov.length) * 30), max: 30, d: `${covPts}/${cov.length}` });
+  const exec = ps.filter((p) => ["economic_buyer", "decision_maker"].includes(p.role) && p.last).map((p) => ago(p.last));
+  const lastExec = exec.length ? Math.min(...exec) : null;
+  r.push({ k: "exec", pts: lastExec != null && lastExec <= 60 ? 15 : lastExec != null && lastExec <= 120 ? 7 : 0, max: 15, d: lastExec == null ? t("deal.never") : t("rel.days", { n: lastExec }) });
+  const plan = S.d.plans[a.id], risks = (plan?.risks.length || 0) + sum(dealsOf(a.id), (d) => d.risks.length);
+  r.push({ k: "risks", pts: risks === 0 ? 15 : risks <= 2 ? 8 : 0, max: 15, d: String(risks) });
+  const sig = S.d.signals.filter((g) => g.account === a.id && ago(g.at) <= 30);
+  const neg = sig.filter((g) => ["job_change", "usage_drop"].includes(g.type)).length, pos = sig.length - neg;
+  r.push({ k: "signals", pts: Math.max(0, Math.min(10, 5 + pos * 2 - neg * 5)), max: 10, d: `+${pos} / −${neg}` });
+  const ren = a.renewal ? diffDays(a.renewal) : null, fresh = plan ? ago(plan.reviewed) : null;
+  r.push({ k: "renewalH", pts: a.relationship !== "customer" || ren == null || ren > 90 || (fresh != null && fresh <= 60) ? 15 : 0, max: 15, d: ren == null ? t("none") : t("acc.renewalIn", { n: ren }) });
+  r.push({ k: "fresh", pts: !plan ? (a.tier === "key" ? 0 : 15) : fresh <= 60 ? 15 : fresh <= 120 ? 7 : 0, max: 15, d: plan ? t("rel.days", { n: fresh }) : t("none") });
+  const score = sum(r, (x) => x.pts);
+  return { score, band: score >= 70 ? "healthy" : score >= 40 ? "watch" : "risk", reasons: r, cov };
+}
+
+/* ───────── rules: Today ranking (§5.1) ───────── */
+function candidates() {
+  const out = [], open = S.d.deals.filter(isOpen), total = sum(open, (d) => d.amount) || 1;
+  const af = (d) => Math.round(AMOUNT_MAX * Math.log10(1 + 9 * (d.amount / total)));
+  const W = S.weights, add = (c) => out.push({ ...c, weight: S.teach[c.rule] ?? 1 });
+  for (const d of open) {
+    const a = acc(d.account), st = stage(d.stage);
+    if (!d.next || (d.nextDate && d.nextDate < TODAY_ISO)) add({ rule: "nextStep", key: `nextStep:${d.id}`, fp: `${d.next}|${d.nextDate}`, base: W.nextStep, amount: af(d), title: t(d.next ? "act.nextStepPassed" : "act.nextStepMissing", { deal: d.name }), reason: d.next ? t("act.r_nextStepPassed", { d: rel(d.nextDate) }) : t("act.r_nextStepMissing"), facts: [[t("deal.nextStep"), d.next || t("none")], [t("deal.amount"), money(d.amount)], [t("acc.title"), a.name]], go: `deal-${d.id}` });
+    const age = ago(d.stageSince);
+    if (age > st.typical) add({ rule: "stalled", key: `stalled:${d.id}`, fp: `${d.stage}`, base: W.stalled, amount: af(d), title: t("act.stalled", { deal: d.name, days: age, stage: L(st) }), reason: t("act.r_stalled", { stage: L(st), typ: st.typical }), facts: [[t("deal.stage"), L(st)], [t("deal.amount"), money(d.amount)]], go: `deal-${d.id}` });
+    const eng = d.stakeholders.map((s) => per(s.p)).filter(engaged);
+    if (eng.length <= 1 && d.amount >= SINGLE_THRESHOLD) add({ rule: "single", key: `single:${d.id}`, fp: `${eng.length}`, base: W.single, amount: 0, title: t("act.single", { deal: d.name }), reason: t("act.r_single", { n: eng.length, amount: money(d.amount) }), facts: d.stakeholders.map((s) => [per(s.p).name, engaged(per(s.p)) ? t("deal.engaged") : t("deal.notEngaged")]), go: `deal-${d.id}` });
+    if (stageIdx(d.stage) >= 2) for (const c of ["economic_buyer", "decision_process"]) if (["u", "unknown"].includes(d.qual[c].s)) add({ rule: "criterion", key: `criterion:${d.id}:${c}`, fp: d.qual[c].s, base: W.criterion, amount: 0, title: t("act.criterion", { criterion: t("crit." + c).toLowerCase(), deal: d.name }), reason: t("act.r_criterion", { stage: L(st) }), facts: [[t("crit." + c), t("q.unknown")], [t("deal.stage"), L(st)]], go: `deal-${d.id}`, seg: "qual" });
+    const toClose = diffDays(d.close);
+    if (toClose >= 0 && toClose <= 30 && !d.forecast) add({ rule: "forecast", key: `forecast:${d.id}`, fp: "unset", base: W.forecast, amount: 0, title: t("act.forecast", { deal: d.name }), reason: t("act.r_forecast", { n: toClose }), facts: [[t("deal.close"), fmtDate(d.close)], [t("deal.forecast"), t("fc.notSet")]], go: `deal-${d.id}` });
+  }
+  for (const p of S.d.people) {
+    const cad = CADENCE[p.role]; if (!cad) continue;
+    const a = acc(p.account); if (!S.d.deals.some((d) => d.account === a.id && isOpen(d)) && a.tier !== "key") continue;
+    const n = p.last ? ago(p.last) : null;
+    if (n == null || n > cad) add({ rule: "reconnect", key: `reconnect:${p.id}`, fp: `${p.last}`, base: W.reconnect, amount: p.strength, title: t("act.reconnect", { person: p.name }), reason: n == null ? t("act.r_reconnectNever", { role: t("role." + p.role) }) : t("act.r_reconnect", { role: t("role." + p.role), n, c: cad }), facts: [[t("acc.title"), a.name], [t("role." + p.role), p.title]], go: `account-${a.id}`, seg: "people" });
+  }
+  for (const g of S.d.signals) if (ago(g.at) <= 7) add({ rule: "signal", key: `signal:${g.id}`, fp: g.id, base: W.signal, amount: g.relevance, title: t("act.signal", { account: acc(g.account).name }), reason: t("act.r_signal", { title: L(g, "title") }), facts: [[t("acc.signals"), L(g, "title")], ["Date", rel(g.at)]], go: `account-${g.account}` });
+  for (const a of S.d.accounts) {
+    const plan = S.d.plans[a.id]; if (!a.renewal) continue;
+    const n = diffDays(a.renewal), m = plan ? ago(plan.reviewed) : 999;
+    if (n >= 0 && n <= 90 && m > 60) add({ rule: "renewal", key: `renewal:${a.id}`, fp: plan?.reviewed || "none", base: W.renewal, amount: 0, title: t("act.renewal", { account: a.name }), reason: t("act.r_renewal", { n, m: m === 999 ? "—" : m }), facts: [[t("acc.renewal"), fmtDate(a.renewal)], [t("acc.annual"), money(a.annual)]], go: plan ? `plan-${a.id}` : `account-${a.id}` });
+  }
+  for (const m of S.d.upcoming) if (diffDays(m.at) <= 1 && diffDays(m.at) >= 0 && !m.viewed) add({ rule: "prepare", key: `prepare:${m.id}`, fp: "unviewed", base: W.prepare, amount: 0, title: t("act.prepare", { meeting: m.title }), reason: t("act.r_prepare", { when: `${rel(m.at).toLowerCase()} ${m.time}` }), facts: m.people.map((id) => [per(id).name, t("role." + per(id).role)]), go: `brief-${m.id}` });
+  const pend = S.d.proposals.filter((p) => p.status === "pending").length;
+  if (pend) add({ rule: "proposals", key: "proposals", fp: String(pend), base: Math.min(40, W.proposals * pend), amount: 0, title: t("act.proposals", { n: pend }), reason: t("act.r_proposals"), facts: [], go: "review" });
+  return out.map((c) => ({ ...c, score: Math.round((c.base + c.amount) * c.weight) }));
+}
+function rankActions() {
+  return candidates().filter((c) => {
+    const st = S.act[c.key]; if (!st || st.fp !== c.fp) return true;
+    if (st.status === "snoozed") return st.until <= TODAY_ISO;
+    return false; // done / dismissed: hidden until the condition (fingerprint) changes
+  }).sort((a, b) => b.score - a.score).slice(0, TOP_N);
+}
+const accountNextAction = (aid) => candidates().filter((c) => (c.go.endsWith(aid) || c.go.includes(`-${aid}`) || (c.go.startsWith("deal-") && deal(c.go.slice(5))?.account === aid)) && !(S.act[c.key] && S.act[c.key].fp === c.fp)).sort((a, b) => b.score - a.score)[0];
+
+/* ───────── capture: rule-based extraction ───────── */
+const WEEKDAYS = { en: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], fr: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"] };
+const MONTHS = { en: ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"], fr: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"] };
+function parseDate(text) {
+  const s = text.toLowerCase();
+  if (/\b(tomorrow|demain)\b/.test(s)) return addDays(1);
+  if (/\b(next week|semaine prochaine)\b/.test(s)) return addDays(7);
+  for (const lang of ["en", "fr"]) {
+    const mi = MONTHS[lang].findIndex((m) => new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th|er)?\\s+${m}\\b`).test(s));
+    if (mi >= 0) { const day = +s.match(new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th|er)?\\s+${MONTHS[lang][mi]}\\b`))[1]; let y = TODAY.getFullYear(); const d = new Date(y, mi, day, 12); if (d < TODAY) d.setFullYear(y + 1); return iso(d); }
+    const wi = WEEKDAYS[lang].findIndex((w) => new RegExp(`\\b${w}\\b`).test(s));
+    if (wi >= 0) { let n = (wi - TODAY.getDay() + 7) % 7 || 7; if (/\bnext\b|prochain/.test(s) && n < 7 && n <= 2) n += 7; return addDays(n); }
+  }
+  return null;
+}
+const KEYWORDS = [
+  { c: "economic_buyer", re: /\b(budget|signs?|approves?|owns the budget|valide le budget|signe|budget)\b/i },
+  { c: "decision_process", re: /\b(decision process|steering committee|board (sign-off|approval)|processus de décision|comité|validation du conseil)\b/i },
+  { c: "paper_process", re: /\b(procurement|legal|purchase order|achats|juridique|bon de commande)\b/i },
+  { c: "competition", re: /\b(competitor|competing|also talking to|concurrent|concurrence)\b/i },
+  { c: "metrics", re: /\b(roi|save|saving|reduce|cut .* (hours|days)|économ|réduire|gain de)\b/i },
+  { c: "pain", re: /\b(pain|problem|issue|struggle|problème|difficulté)\b/i },
+  { c: "decision_criteria", re: /\b(criteria|requirements|critères|exigences)\b/i },
+];
+const RISK_RE = /\b(risk|worr(y|ied)|concern|delay|risque|inquiet\w*|inquièt\w*|crainte|retard)/i;
+const roleFromTitle = (title) => /\b(cfo|ceo|cro|coo|chief|finance director|directeur financier|dg|daf)\b/i.test(title) ? "economic_buyer" : /procure|purchas|achat/i.test(title) ? "procurement" : /architect|it\b|cto|cio|engineer|systems|technique/i.test(title) ? "technical_evaluator" : /director|head|vp|directeur|directrice|responsable/i.test(title) ? "influencer" : "unknown";
+function detectAccount(text) {
+  const s = text.toLowerCase();
+  const byName = S.d.accounts.find((a) => s.includes(a.name.toLowerCase()) || s.includes(a.name.split(" ")[0].toLowerCase()));
+  if (byName) return byName.id;
+  const p = S.d.people.find((x) => s.includes(x.name.toLowerCase()));
+  return p ? p.account : "";
+}
+function extract(text, accountId) {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const aid = accountId || detectAccount(text); if (!aid) return { account: "", proposals: [] };
+  const ppl = peopleOf(aid), d = dealsOf(aid).filter(isOpen).sort((x, y) => y.amount - x.amount)[0];
+  const props = [], seenPeople = new Set();
+  const find = (name) => ppl.find((p) => p.name.toLowerCase() === name.toLowerCase() || p.name.split(" ")[0].toLowerCase() === name.toLowerCase());
+  lines.forEach((line, i) => {
+    const src = { line: i + 1, quote: line };
+    const mentioned = ppl.filter((p) => line.includes(p.name) || new RegExp(`\\b${p.name.split(" ")[0]}\\b`).test(line));
+    mentioned.forEach((p) => seenPeople.add(p.id));
+    // new person: "New contact: Name Surname, Title" / "Nouveau contact : …"
+    const np = line.match(/(?:[Nn]ew contact|[Nn]ouveau contact|introduced|a présenté)\s*:?\s*([A-Z][\p{L}'-]+(?:\s[A-Z][\p{L}'-]+)+),\s*([^.;]+)/u);
+    if (np && !find(np[1])) { const role = roleFromTitle(np[2]); props.push({ id: uid("pr"), kind: "person", name: np[1].trim(), title: np[2].trim(), role, src, on: true }); }
+    const nx = line.match(/^(?:next step|prochaine étape|next)\s*:?\s*(.+)$/i);
+    if (nx && d) props.push({ id: uid("pr"), kind: "next", deal: d.id, text: nx[1].replace(/\.$/, ""), date: parseDate(nx[1]) || addDays(7), src, on: true });
+    const fc = line.match(/(?:forecast|prévision)\s*:?\s*(commit|best case|pipeline|engagé|meilleur cas)/i);
+    if (fc && d) { const v = { commit: "commit", "best case": "best_case", pipeline: "pipeline", "engagé": "commit", "meilleur cas": "best_case" }[fc[1].toLowerCase()]; props.push({ id: uid("pr"), kind: "forecast", deal: d.id, value: v, src, on: true }); }
+    if (d && !nx) for (const k of KEYWORDS) if (k.re.test(line)) {
+      const status = k.c === "economic_buyer" && mentioned.some((p) => p.role === "economic_buyer") ? "c" : k.c === "decision_process" && parseDate(line) ? "c" : "p";
+      const cur = d.qual[k.c].s; if (cur === "c" || (cur === "p" && status === "p")) continue;
+      if (!props.some((x) => x.kind === "qual" && x.criterion === k.c)) props.push({ id: uid("pr"), kind: "qual", deal: d.id, criterion: k.c, status, evidence: line, src, on: true });
+    }
+    if (RISK_RE.test(line) && !nx) props.push({ id: uid("pr"), kind: "risk", account: aid, text: line.replace(/^(risk|risque)\s*:\s*/i, ""), src, on: true });
+  });
+  // participants (first line) → log interaction; known people not yet on the deal → add as stakeholders
+  const first = lines[0] || "";
+  const participants = ppl.filter((p) => first.includes(p.name) || new RegExp(`\\b${p.name.split(" ")[0]}\\b`).test(first));
+  const touched = participants.length ? participants : [...seenPeople].map(per);
+  if (touched.length) props.unshift({ id: uid("pr"), kind: "log", account: aid, deal: d?.id || null, people: touched.map((p) => p.id), summary: lines.slice(0, 2).join(" ").slice(0, 160), src: { line: 1, quote: first }, on: true });
+  if (d) for (const pid of seenPeople) if (!d.stakeholders.some((s) => s.p === pid)) { const p = per(pid); props.push({ id: uid("pr"), kind: "stake", deal: d.id, person: pid, role: p.role, src: { line: lines.findIndex((l) => l.includes(p.name.split(" ")[0])) + 1, quote: lines.find((l) => l.includes(p.name.split(" ")[0])) }, on: true }); }
+  props.forEach((p) => (p.status = "pending"));
+  return { account: aid, deal: d?.id, proposals: props };
+}
+function applyProposals(list) {
+  let n = 0;
+  for (const p of list.filter((x) => x.on)) {
+    n++; p.status = "approved";
+    if (p.kind === "log") { S.d.interactions.unshift({ id: uid("i"), account: p.account, deal: p.deal, type: "note", at: TODAY_ISO, people: p.people, summary: p.summary }); p.people.forEach((id) => { const x = per(id); x.last = TODAY_ISO; if (x.strength < 3) x.strength++; }); }
+    if (p.kind === "next") { const d = deal(p.deal); d.next = p.text; d.nextDate = p.date; }
+    if (p.kind === "forecast") { const d = deal(p.deal); S.d.events.push({ deal: d.id, kind: "forecast", from: d.forecast || "notSet", to: p.value, at: TODAY_ISO }); d.forecast = p.value; }
+    if (p.kind === "qual") { const d = deal(p.deal); d.qual[p.criterion] = { s: p.status, ev: p.evidence }; }
+    if (p.kind === "risk") { (S.d.plans[p.account] ||= { reviewed: addDays(-999), objectives: "", goals: "", ws: {}, risks: [], value: [], moves: "" }).risks.push(p.text); }
+    if (p.kind === "person") { const id = uid("p"); S.d.people.push({ id, account: S.cap.account, name: p.name, title: p.title, role: p.role, stance: "unknown", strength: 2, last: TODAY_ISO }); if (S.cap.deal) deal(S.cap.deal).stakeholders.push({ p: id, r: p.role }); }
+    if (p.kind === "stake") { const d = deal(p.deal); if (!d.stakeholders.some((s) => s.p === p.person)) d.stakeholders.push({ p: p.person, r: p.role }); }
+  }
+  list.filter((x) => !x.on).forEach((x) => (x.status = "rejected"));
+  return n;
+}
+const SAMPLES = {
+  a: { en: "Meeting with Olivia Grant and James Holt (Brightwater Health).\nOlivia introduced James, the CFO — he owns the budget and will approve the proposal.\nDecision process: board sign-off on 10 December.\nNew contact: Priya Shah, Head of Procurement\nThey worry about the go-live date before winter.\nForecast: commit\nNext step: proposal walkthrough with James next Tuesday",
+       fr: "Réunion avec Olivia Grant et James Holt (Brightwater Health).\nOlivia a présenté James, le CFO — il valide le budget et approuvera la proposition.\nProcessus de décision : validation du conseil le 10 décembre.\nNouveau contact : Priya Shah, responsable des achats\nIls sont inquiets pour la date de mise en service avant l’hiver.\nPrévision : engagé\nProchaine étape : présentation de la proposition à James mardi prochain" },
+  b: { en: "Call with Anja Weber and Mia Schulz (Eskerfield Bank).\nAnja said Henrik Vogel signs anything above €250k.\nSteering committee on 15 January, then procurement with Lukas.\nMia is still worried about integration with the risk engine.\nThey are also talking to a competitor.\nNext step: send the architecture pack to Mia by Friday",
+       fr: "Appel avec Anja Weber et Mia Schulz (Eskerfield Bank).\nAnja indique que Henrik Vogel signe tout ce qui dépasse 250 k€.\nComité de pilotage le 15 janvier, puis achats avec Lukas.\nMia reste inquiète pour l’intégration avec le moteur de risque.\nIls discutent aussi avec un concurrent.\nProchaine étape : envoyer le dossier d’architecture à Mia d’ici vendredi" },
+};
+
+/* ───────── small components ───────── */
+const bandColor = (b) => (b === "healthy" ? "var(--green)" : b === "watch" ? "var(--orange)" : "var(--red)");
+const bandPill = (b) => `<span class="pill ${b === "healthy" ? "green" : b === "watch" ? "orange" : "red"}">${t("band." + b)}</span>`;
+const ring = (h, lg, act) => `<button class="ring ${lg ? "lg" : ""}" style="--p:${h.score};--c:${bandColor(h.band)}" ${act ? `data-act="${act}"` : 'tabindex="-1"'} aria-label="${h.score} / 100 · ${t("band." + h.band)}"><span class="num">${h.score}</span></button>`;
+const dots = (n) => `<span class="dots" aria-label="${n}/5">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`;
+const row = ({ href, act, data = "", ico, icoBg, lead = "", title, sub, value = "", chev = true, cls = "" }) => {
+  const inner = `${ico ? `<span class="ico" style="background:${icoBg}">${IC[ico]}</span>` : ""}${lead}<span class="main"><span class="t">${title}</span>${sub ? `<span class="s">${sub}</span>` : ""}</span>${value ? `<span class="v">${value}</span>` : ""}${chev && (href || act) ? IC.chev : ""}`;
+  if (href) return `<a class="row tap ${ico ? "with-ico" : ""} ${cls}" href="#${href}">${inner}</a>`;
+  if (act) return `<button class="row ${ico ? "with-ico" : ""} ${cls}" data-act="${act}" ${data}>${inner}</button>`;
+  return `<div class="row ${ico ? "with-ico" : ""} ${cls}">${inner}</div>`;
+};
+const group = (header, body, footer = "", headerAction = "") => `<section class="group">${header ? `<h2 class="gh"><span>${header}</span>${headerAction}</h2>` : ""}<div class="list">${body}</div>${footer ? `<p class="gf">${footer}</p>` : ""}</section>`;
+const seg = (key, opts, cur, cls = "") => `<div class="seg ${cls}" role="group">${opts.map(([v, label]) => `<button data-act="seg" data-k="${key}" data-v="${v}" aria-pressed="${cur === v}">${esc(label)}</button>`).join("")}</div>`;
+const reasonsList = (rs) => `<ul class="reason-list">${rs.map((r) => { const st = r.pts >= r.max ? "ok" : r.pts > 0 ? "part" : "no"; return `<li><span class="${st}">${st === "ok" ? "✓" : st === "part" ? "◐" : "○"}</span><span>${t("hr." + r.k)}<br><span style="font-size:13px;color:var(--label-2)">${esc(r.d)}</span></span><span class="num" style="color:var(--label-2)">${r.pts}/${r.max}</span></li>`; }).join("")}</ul>`;
+const note = (k) => `<div class="note">${t("notesTxt." + k)}</div>`;
+const fcPill = (f) => (f ? `<span class="pill ${f === "commit" ? "green" : f === "best_case" ? "blue" : ""}">${t("fc." + f)}</span>` : `<span class="pill orange">${t("fc.notSet")}</span>`);
+function toast(msg) { S.toast = msg; let el = $(".toast"); if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.append(el); } el.textContent = msg; clearTimeout(toast.h); toast.h = setTimeout(() => el.remove(), 2600); }
+
+/* ───────── screens ───────── */
+function screenToday() {
+  const acts = rankActions();
+  const week = [
+    ...S.d.upcoming.map((m) => ({ at: m.at, kind: "meeting", title: m.title, sub: m.time, href: `brief-${m.id}`, cls: "" })),
+    ...S.d.deals.filter((d) => isOpen(d) && diffDays(d.close) >= 0 && diffDays(d.close) <= 14).map((d) => ({ at: d.close, kind: "close", title: d.name, sub: money(d.amount), href: `deal-${d.id}`, cls: "green" })),
+    ...S.d.accounts.filter((a) => a.renewal && diffDays(a.renewal) >= 0 && diffDays(a.renewal) <= 45).map((a) => ({ at: a.renewal, kind: "renewal", title: a.name, sub: money(a.annual), href: `account-${a.id}`, cls: "red" })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+  return {
+    title: t("today.title"), right: `<button class="avatar" data-act="go" data-href="settings" aria-label="${t("set.title")}">CM</button>`,
+    body: `<div class="large"><h1>${t("today.title")}</h1><p>${fmtDate(TODAY_ISO, { weekday: "long", day: "numeric", month: "long" })}</p></div>
+    ${note("ios")}
+    <section class="group"><h2 class="gh"><span>${t("today.week")}</span></h2><div class="strip">${week.map((w) => `<a class="wcard ${w.cls}" href="#${w.href}"><span class="d">${rel(w.at)} · ${t("wk." + w.kind)}</span><span class="t">${esc(w.title)}</span><span class="s num">${esc(w.sub)}</span></a>`).join("")}</div></section>
+    ${group(t("today.focus"), acts.length ? acts.map((a, i) => row({ act: "action", data: `data-key="${a.key}"`, lead: `<span class="rank ${i === 0 ? "top" : ""} num">${i + 1}</span>`, title: esc(a.title), sub: esc(a.reason), value: `<span class="pill num">${a.score}</span>` })).join("") : `<p class="empty">${t("today.empty")}</p>`, t("today.footer"))}
+    ${note("today")}`,
+  };
+}
+
+function screenAccounts() {
+  const f = S.accFilter, qy = S.accQuery.toLowerCase();
+  const list = S.d.accounts.filter((a) => (f === "all" || a.tier === f) && (!qy || a.name.toLowerCase().includes(qy)));
+  return {
+    title: t("acc.title"),
+    body: `<div class="large"><h1>${t("acc.title")}</h1></div>
+    <label class="search">${IC.search}<span class="sr">${t("acc.search")}</span><input id="acc-search" type="search" placeholder="${t("acc.search")}" value="${esc(S.accQuery)}" autocomplete="off"></label>
+    ${seg("accFilter", [["all", t("acc.all")], ["key", t("acc.key")], ["growth", t("acc.growth")], ["maintain", t("acc.maintain")]], f)}
+    ${group("", list.map((a) => { const h = assessAccount(a), na = accountNextAction(a.id); return row({ href: `account-${a.id}`, lead: ring(h), title: `${esc(a.name)} ${a.tier === "key" ? `<span class="pill blue" style="margin-left:4px">${t("acc.key")}</span>` : ""}`, sub: `${a.relationship === "customer" ? t("acc.customer") : t("acc.prospect")}${a.renewal ? ` · ${t("acc.renewalIn", { n: diffDays(a.renewal) })}` : ""}<br><span style="color:var(--tint)">${na ? esc(na.title) : t("acc.noAction")}</span>` }); }).join("") || `<p class="empty">${t("none")}</p>`)}`,
+  };
+}
+
+function relationshipMap(people) {
+  const stances = ["supporter", "neutral", "sceptic", "unknown"];
+  const roles = MAP_ROLES.filter((r) => people.some((p) => p.role === r) || REQUIRED_ROLES.includes(r));
+  return `<div class="rmap" role="table"><div class="h" role="columnheader"></div>${stances.map((s) => `<div class="h" role="columnheader">${t("stance." + s)}</div>`).join("")}
+    ${roles.map((r) => `<div class="rl" role="rowheader" title="${esc(t("roleHelp." + r))}">${t("role." + r)}</div>${stances.map((s) => `<div role="cell">${people.filter((p) => p.role === r && p.stance === s).map((p) => `<button class="person-chip st-${s} ${!engaged(p) ? "stale" : ""}" data-act="person" data-id="${p.id}" title="${esc(p.title)}"><b>${esc(p.name)}</b><span class="stx">${t("stance." + s)}</span>${dots(p.strength)}<span style="color:var(--label-2)">${p.last ? t("deal.ago", { n: ago(p.last) }) : t("deal.never")}</span></button>`).join("")}</div>`).join("")}`).join("")}</div>
+    <div class="legend"><span><b class="st-supporter"></b>${t("stance.supporter")}</span><span><b class="st-neutral"></b>${t("stance.neutral")}</span><span><b class="st-sceptic"></b>${t("stance.sceptic")}</span><span><b class="st-unknown"></b>${t("stance.unknown")}</span></div>`;
+}
+const coverageHtml = (cov) => `<div class="cov">${cov.map((c) => `<span class="pill ${c.status === "filled" ? "green" : c.status === "weak" ? "orange" : "missing"}" title="${esc(t("roleHelp." + c.role))}">${c.status === "filled" ? "✓" : c.status === "weak" ? "!" : "○"} ${t("role." + c.role)} · ${t("cov." + c.status)}</span>`).join("")}</div>`;
+
+function screenAccount(id) {
+  const a = acc(id); if (!a) return screenNotFound();
+  const h = assessAccount(a), ps = peopleOf(id), ds = dealsOf(id), segv = S.tabSeg[`a:${id}`] || "overview";
+  const na = accountNextAction(id), plan = S.d.plans[id];
+  const sig = S.d.signals.filter((g) => g.account === id && ago(g.at) <= 30);
+  let content = "";
+  if (segv === "overview") content = `
+    ${group(t("acc.health"), `<div class="row">${ring(h, true, `health-account" data-id="${id}`)}<span class="main"><span class="t">${bandPill(h.band)}</span><span class="s">${h.reasons.filter((r) => r.pts < r.max).map((r) => t("hr." + r.k)).join(" · ") || t("band.healthy")}</span></span></div>`)}
+    ${na ? group(t("acc.next"), row({ href: na.go, ico: "bolt", icoBg: "var(--orange)", title: esc(na.title), sub: esc(na.reason) })) : ""}
+    ${plan || a.tier === "key" ? group(t("acc.plan"), row({ href: `plan-${id}`, ico: "doc", icoBg: "var(--indigo)", title: t("acc.openPlan"), sub: plan ? t("acc.planReviewed", { n: ago(plan.reviewed) }) : t("none") })) : ""}
+    ${group(t("acc.signals"), sig.length ? sig.map((g) => row({ ico: "wave", icoBg: "var(--teal)", title: esc(L(g, "title")), sub: rel(g.at), chev: false })).join("") : `<p class="empty">${t("acc.noSignals")}</p>`)}
+    ${group(t("acc.details"), [[t("acc.relationship"), a.relationship === "customer" ? t("acc.customer") : t("acc.prospect")], [t("acc.tier"), t("acc." + a.tier)], [t("acc.segment"), a.segment], [t("acc.industry"), a.industry], [t("acc.country"), a.country], [t("acc.annual"), a.annual ? money(a.annual) : t("none")], [t("acc.renewal"), a.renewal ? fmtDate(a.renewal, { day: "numeric", month: "long", year: "numeric" }) : t("none")]].map(([k, v]) => row({ title: k, value: esc(v), chev: false })).join(""))}`;
+  if (segv === "people") content = `${group(t("acc.coverage"), coverageHtml(h.cov))}<section class="group"><h2 class="gh"><span>${t("acc.map")}</span></h2>${relationshipMap(ps)}<p class="gf">${t("acc.mapFoot")}</p></section>
+    ${group(t("acc.people"), ps.map((p) => row({ act: "person", data: `data-id="${p.id}"`, title: esc(p.name), sub: `${esc(p.title)} · ${t("role." + p.role)}`, value: dots(p.strength) })).join(""))}`;
+  if (segv === "deals") content = group("", ds.length ? ds.map((d) => { const dh = assessDeal(d); return row({ href: `deal-${d.id}`, lead: isOpen(d) ? ring(dh) : "", title: esc(d.name), sub: `${L(stage(d.stage))} · ${money(d.amount)} · ${fmtDate(d.close)}` }); }).join("") : `<p class="empty">${t("acc.noDeals")}</p>`);
+  if (segv === "timeline") content = group("", S.d.interactions.filter((i) => i.account === id).sort((x, y) => y.at.localeCompare(x.at)).map((i) => row({ ico: i.type === "meeting" ? "people" : i.type === "call" ? "wave" : i.type === "event" ? "flag" : "doc", icoBg: i.type === "meeting" ? "var(--tint)" : i.type === "call" ? "var(--green)" : "var(--gray)", title: esc(i.summary), sub: `${fmtDate(i.at, { day: "numeric", month: "short", year: "numeric" })} · ${i.people.map((pid) => per(pid).name).join(", ")}`, chev: false })).join("") || `<p class="empty">${t("brief.none")}</p>`);
+  return {
+    title: a.name, back: ["accounts", t("acc.title")],
+    body: `<div class="large"><h1>${esc(a.name)}</h1><div class="meta"><span class="pill ${a.tier === "key" ? "blue" : ""}">${t("acc." + a.tier)}</span><span class="pill">${a.relationship === "customer" ? t("acc.customer") : t("acc.prospect")}</span>${a.renewal ? `<span class="pill ${diffDays(a.renewal) <= 90 ? "orange" : ""}">${t("acc.renewalIn", { n: diffDays(a.renewal) })}</span>` : ""}</div></div>
+    ${seg(`a:${id}`, [["overview", t("acc.overview")], ["people", t("acc.people")], ["deals", t("acc.deals")], ["timeline", t("acc.timeline")]], segv)}${content}`,
+  };
+}
+
+function screenDeals() {
+  const open = S.d.deals.filter(isOpen), closed = S.d.deals.filter((d) => !isOpen(d));
+  const rowOf = (d) => { const h = assessDeal(d); return row({ href: `deal-${d.id}`, lead: isOpen(d) ? ring(h) : "", title: esc(d.name), sub: `${esc(acc(d.account).name)} · ${money(d.amount)} · ${fmtDate(d.close)}`, value: isOpen(d) ? fcPill(d.forecast) : "" }); };
+  const body = S.dealView === "board"
+    ? STAGES.filter((s) => !s.won && !s.lost).map((s) => { const xs = open.filter((d) => d.stage === s.id); return xs.length ? group(`${L(s)} · ${money(sum(xs, (d) => d.amount))}`, xs.map(rowOf).join("")) : ""; }).join("") + group(t("deal.closedDeals"), closed.map(rowOf).join(""))
+    : group(t("deal.openDeals"), open.sort((a, b) => a.close.localeCompare(b.close)).map(rowOf).join("")) + group(t("deal.closedDeals"), closed.map(rowOf).join(""));
+  return { title: t("deal.title"), body: `<div class="large"><h1>${t("deal.title")}</h1></div>${seg("dealView", [["board", t("deal.board")], ["list", t("deal.list")]], S.dealView)}${body}` };
+}
+
+function screenDeal(id) {
+  const d = deal(id); if (!d) return screenNotFound();
+  const a = acc(d.account), h = assessDeal(d), segv = S.tabSeg[`d:${id}`] || "overview", st = stage(d.stage);
+  let content = "";
+  if (segv === "overview") content = `
+    ${group(t("deal.health"), `<div class="row">${ring(h, true, `health-deal" data-id="${id}`)}<span class="main"><span class="t">${bandPill(h.band)}</span><span class="s">${t("act.why")}: ${h.reasons.filter((r) => r.pts < r.max).map((r) => t("hr." + r.k)).join(" · ") || "—"}</span></span></div>${reasonsList(h.reasons)}`)}
+    ${group(t("deal.nextStep"), `<div class="row" style="flex-wrap:wrap"><input class="inline-input" id="next-text" value="${esc(d.next)}" placeholder="${t("deal.noNext")}" aria-label="${t("deal.nextStep")}"><input class="inline-input" type="date" id="next-date" value="${d.nextDate || ""}" style="width:auto" aria-label="${t("deal.due", { d: "" })}"><button class="btn secondary" style="width:auto;padding:8px 14px;font-size:15px" data-act="save-next" data-id="${id}">${t("save")}</button></div>`, d.nextDate && d.nextDate < TODAY_ISO ? `<span style="color:var(--red-ink)">${t("act.r_nextStepPassed", { d: rel(d.nextDate) })}</span>` : "")}
+    ${group(t("acc.details"), [[t("deal.amount"), money(d.amount)], [t("deal.stage"), L(st)], [t("deal.close"), fmtDate(d.close, { day: "numeric", month: "long", year: "numeric" })], [t("deal.forecast"), fcPill(d.forecast)], [t("deal.compelling"), esc(d.compelling) || t("none")], ["", d.pushes ? t("deal.pushed", { n: d.pushes }) : t("deal.noPushed")]].map(([k, v]) => row({ title: k || `<span style="color:var(--label-2)">${v}</span>`, value: k ? v : "", chev: false })).join(""))}
+    ${group("", row({ ico: "people", icoBg: "var(--gray)", title: t("deal.help"), value: `<span class="pill">${t("deal.flagOff")}</span>`, chev: false, cls: "" }), t("deal.helpFoot"))}`;
+  if (segv === "stakeholders") content = `${group(t("acc.coverage"), coverageHtml(coverage(d.stakeholders.map((s) => ({ ...per(s.p), role: s.r })))))}
+    ${group(t("deal.stakeholders"), d.stakeholders.map((s) => { const p = per(s.p); return row({ act: "person", data: `data-id="${p.id}"`, title: esc(p.name), sub: `${t("role." + s.r)} · ${t("stance." + p.stance)} · ${p.last ? t("deal.lastTouch", { n: ago(p.last) }) : t("deal.never")}`, value: `${engaged(p) ? `<span class="pill green">${t("deal.engaged")}</span>` : `<span class="pill orange">${t("deal.notEngaged")}</span>`}` }); }).join(""), t("deal.stakeFoot"))}`;
+  if (segv === "qual") content = group(t("deal.qual"), CRITERIA.map((c) => { const q = d.qual[c], s = { u: "unknown", p: "partial", c: "confirmed" }[q.s] || q.s; return `<div class="row" style="flex-direction:column;align-items:stretch;gap:8px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span class="main"><span class="t" title="${esc(t("critHelp." + c))}">${t("crit." + c)}</span><span class="s">${t("critHelp." + c)}</span></span></div>
+      <div class="seg sm" role="group" aria-label="${t("crit." + c)}">${["u", "p", "c"].map((v) => `<button data-act="qual" data-id="${id}" data-c="${c}" data-v="${v}" aria-pressed="${q.s === v}">${t("q." + { u: "unknown", p: "partial", c: "confirmed" }[v])}</button>`).join("")}</div>
+      <span class="s" style="font-size:14px;color:var(--label-2)">${q.ev ? `<span class="quote">${esc(q.ev)}</span>` : t("deal.noEvidence")}</span></div>`; }).join(""), t("deal.qualFoot"));
+  if (segv === "plan") content = `${group(t("deal.plan"), d.steps.map((s) => `<label class="row" style="cursor:pointer"><span class="main"><span class="t" style="${s.done ? "text-decoration:line-through;color:var(--label-2)" : ""}">${esc(s.title)}</span><span class="s">${s.owner === "buyer" ? t("deal.buyer") : t("deal.us")} · ${fmtDate(s.due)}${!s.done && s.due < TODAY_ISO ? ` · <span style="color:var(--red-ink)">${t("deal.ago", { n: ago(s.due) })}</span>` : ""}</span></span><span class="switch"><input type="checkbox" data-act="step" data-id="${id}" data-step="${s.id}" ${s.done ? "checked" : ""} aria-label="${esc(s.title)}"><i></i></span></label>`).join("") || `<p class="empty">${t("none")}</p>`)}
+    ${group(t("deal.addStep"), `<div class="row" style="flex-wrap:wrap"><input class="inline-input" id="step-title" placeholder="${t("deal.stepPh")}" style="flex:1;min-width:160px"><select class="inline-input" id="step-owner"><option value="us">${t("deal.us")}</option><option value="buyer">${t("deal.buyer")}</option></select><input class="inline-input" type="date" id="step-due" value="${addDays(7)}" style="width:auto"><button class="btn secondary" style="width:auto;padding:8px 14px;font-size:15px" data-act="add-step" data-id="${id}">${t("save")}</button></div>`)}`;
+  return {
+    title: d.name, back: ["deals", t("deal.title")],
+    body: `<div class="large"><h1>${esc(d.name)}</h1><p><a href="#account-${a.id}">${esc(a.name)}</a> · ${money(d.amount)}</p><div class="meta"><span class="pill">${L(st)}</span>${fcPill(d.forecast)}<span class="pill">${t("deal.close")} ${fmtDate(d.close)}</span></div></div>
+    ${seg(`d:${id}`, [["overview", t("deal.overview")], ["stakeholders", t("deal.stakeholders")], ["qual", t("deal.qual")], ["plan", t("deal.plan")]], segv)}${content}`,
+  };
+}
+
+function quarterRange(offset) { const q = Math.floor(TODAY.getMonth() / 3) + offset; const start = new Date(TODAY.getFullYear(), q * 3, 1, 12), end = new Date(TODAY.getFullYear(), q * 3 + 3, 0, 12); return [iso(start), iso(end), `Q${((q % 4) + 4) % 4 + 1} ${start.getFullYear()}`]; }
+function screenPipeline() {
+  const [from, to, label] = quarterRange(S.period === "q0" ? 0 : 1);
+  const inP = S.d.deals.filter((d) => isOpen(d) && d.close >= from && d.close <= to);
+  const commit = inP.filter((d) => d.forecast === "commit"), best = inP.filter((d) => ["commit", "best_case"].includes(d.forecast));
+  const open = S.d.deals.filter(isOpen), max = Math.max(1, ...STAGES.map((s) => sum(open.filter((d) => d.stage === s.id), (d) => d.amount)));
+  const ch = S.d.events.filter((e) => ago(e.at) <= 7).sort((a, b) => b.at.localeCompare(a.at));
+  const chText = (e) => e.kind === "stage" ? t("pipe.chStage", { a: L(stage(e.from)), b: L(stage(e.to)) }) : e.kind === "close" ? t("pipe.chClose", { d: fmtDate(e.to) }) : e.kind === "amount" ? t("pipe.chAmount", { a: money(e.from), b: money(e.to) }) : t("pipe.chForecast", { a: t("fc." + e.from), b: t("fc." + e.to) });
+  return {
+    title: t("pipe.title"),
+    body: `<div class="large"><h1>${t("pipe.title")}</h1><p>${label}</p></div>
+    ${seg("period", [["q0", t("pipe.quarter")], ["q1", t("pipe.next")]], S.period)}
+    <div class="fc">${[["commit", commit, t("pipe.commitLead")], ["best_case", best, t("pipe.bestLead")], ["pipeline", inP, t("pipe.pipeLead")]].map(([k, xs, lead]) => `<button tabindex="-1"><span class="k">${t("fc." + k)}</span><span class="n num">${money(sum(xs, (d) => d.amount))}</span><span class="x">${t("pipe.count", { n: xs.length })} · ${lead}</span></button>`).join("")}</div>
+    ${group(t("pipe.deals"), inP.length ? inP.sort((a, b) => a.close.localeCompare(b.close)).map((d) => { const h = assessDeal(d); return row({ href: `deal-${d.id}`, lead: ring(h), title: esc(d.name), sub: `${money(d.amount)} · ${fmtDate(d.close)} · ${h.reasons.filter((r) => r.pts === 0).map((r) => t("hr." + r.k)).slice(0, 2).join(", ") || t("band." + h.band)}`, value: fcPill(d.forecast) }); }).join("") : `<p class="empty">${t("pipe.noDeals")}</p>`)}
+    ${group(t("pipe.byStage"), `<div class="bars">${STAGES.filter((s) => !s.won && !s.lost).map((s) => { const xs = open.filter((d) => d.stage === s.id), v = sum(xs, (d) => d.amount); return `<div class="bar-row" title="${esc(L(s))}: ${money(v)} · ${xs.length}"><span>${esc(L(s))}</span><span class="tr"><i style="width:${(v / max) * 100}%"></i></span><span class="val num">${money(v)} · ${xs.length}</span></div>`; }).join("")}</div>`)}
+    ${group(t("pipe.changes"), ch.length ? ch.map((e) => row({ href: `deal-${e.deal}`, title: esc(deal(e.deal).name), sub: `${esc(chText(e))} · ${rel(e.at)}` })).join("") : `<p class="empty">${t("pipe.noChanges")}</p>`)}`,
+  };
+}
+
+function screenBrief(id) {
+  const m = S.d.upcoming.find((x) => x.id === id); if (!m) return screenNotFound();
+  if (!m.viewed) { m.viewed = true; }
+  const d = m.deal && deal(m.deal), a = acc(m.account), h = d && assessDeal(d);
+  const unknown = d ? CRITERIA.filter((c) => d.qual[c].s === "u") : [];
+  const missingRoles = d ? coverage(d.stakeholders.map((s) => ({ ...per(s.p), role: s.r }))).filter((c) => c.status === "missing") : [];
+  const last = S.d.interactions.filter((i) => i.account === a.id).sort((x, y) => y.at.localeCompare(x.at))[0];
+  const sig = S.d.signals.filter((g) => g.account === a.id && ago(g.at) <= 30);
+  return {
+    title: t("brief.title"), back: ["today", t("today.title")],
+    body: `<div class="large"><h1>${esc(m.title)}</h1><p>${rel(m.at)} · ${m.time}</p></div>
+    ${group(t("brief.attendees"), m.people.map((pid) => { const p = per(pid); return row({ act: "person", data: `data-id="${p.id}"`, title: esc(p.name), sub: `${esc(p.title)} · ${t("role." + p.role)} · ${t("stance." + p.stance)}`, value: p.last ? t("deal.ago", { n: ago(p.last) }) : t("deal.never") }); }).join(""))}
+    ${d ? group(t("brief.deal"), `${row({ href: `deal-${d.id}`, lead: ring(h), title: esc(d.name), sub: `${L(stage(d.stage))} · ${money(d.amount)} · ${t("deal.close")} ${fmtDate(d.close)}` })}${row({ title: t("deal.nextStep"), sub: esc(d.next || t("deal.noNext")), chev: false })}`) : ""}
+    ${unknown.length ? group(t("brief.unknowns"), unknown.map((c) => row({ title: t("crit." + c), sub: t("critHelp." + c), chev: false })).join("")) : ""}
+    ${group(t("brief.questions"), [...unknown.slice(0, 4).map((c) => t("qs." + c)), ...missingRoles.slice(0, 2).map((c) => t("qs.missingRole", { role: t("role." + c.role).toLowerCase() }))].map((q) => row({ title: esc(q), chev: false })).join("") || `<p class="empty">${t("today.empty")}</p>`)}
+    ${group(t("brief.signals"), sig.length ? sig.map((g) => row({ title: esc(L(g, "title")), sub: rel(g.at), chev: false })).join("") : `<p class="empty">${t("acc.noSignals")}</p>`)}
+    ${group(t("brief.commitments"), last ? row({ title: esc(last.summary), sub: `${t("brief.lastI")} · ${fmtDate(last.at)}`, chev: false }) : `<p class="empty">${t("brief.none")}</p>`)}
+    <button class="btn secondary" disabled>${t("brief.polish")}</button><p class="gf">${t("brief.polishOff")}</p>`,
+  };
+}
+
+function screenPlan(id) {
+  const a = acc(id); if (!a) return screenNotFound();
+  const plan = (S.d.plans[id] ||= { reviewed: addDays(-999), objectives: "", goals: "", ws: { [a.industry]: {} }, risks: [], value: [], moves: "" });
+  const h = assessAccount(a), n = ago(plan.reviewed), bus = Object.keys(plan.ws);
+  return {
+    title: t("plan.title"), back: [`account-${id}`, a.name],
+    body: `<div class="large"><h1>${t("plan.title")}</h1><p>${esc(a.name)} · <span style="color:${n > 60 ? "var(--red-ink)" : "inherit"}">${t("plan.reviewed", { n })}</span></p></div>
+    <button class="btn" data-act="review-plan" data-id="${id}">${t("plan.review")}</button>
+    <h2 class="gh" style="margin-bottom:-14px"><span>${t("plan.fromData")}</span></h2>
+    ${group(t("acc.coverage"), coverageHtml(h.cov))}
+    ${group(t("plan.openDeals"), dealsOf(id).filter(isOpen).map((d) => row({ href: `deal-${d.id}`, lead: ring(assessDeal(d)), title: esc(d.name), sub: `${L(stage(d.stage))} · ${money(d.amount)}` })).join("") || `<p class="empty">${t("acc.noDeals")}</p>`)}
+    ${group(t("plan.value"), plan.value.length ? plan.value.map((v) => row({ title: esc(v.text), sub: fmtDate(v.at, { month: "short", year: "numeric" }), chev: false })).join("") : `<p class="empty">${t("none")}</p>`)}
+    <h2 class="gh" style="margin-bottom:-14px"><span>${t("plan.judgement")}</span></h2>
+    ${group(t("plan.objectives"), `<textarea class="field" data-plan="${id}" data-k="objectives" style="min-height:80px" aria-label="${t("plan.objectives")}">${esc(plan.objectives)}</textarea>`, t("plan.objectivesFoot"))}
+    ${group(t("plan.goals"), `<textarea class="field" data-plan="${id}" data-k="goals" style="min-height:64px" aria-label="${t("plan.goals")}">${esc(plan.goals)}</textarea>`)}
+    ${group(t("plan.whitespace"), `<div class="ws"><table><thead><tr><th></th>${bus.map((b) => `<th>${esc(b)}</th>`).join("")}</tr></thead><tbody>${PRODUCTS.map((p) => `<tr><th>${esc(L(p))}</th>${bus.map((b) => { const v = plan.ws[b][p.id] || "open"; return `<td><button class="ws-${v}" data-act="ws" data-id="${id}" data-bu="${esc(b)}" data-p="${p.id}">${t("plan.ws." + v)}</button></td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`, t("plan.wsFoot"))}
+    ${group(t("plan.risks"), plan.risks.map((r, i) => row({ ico: "shield", icoBg: "var(--red)", title: esc(r), value: `<button class="linkbtn" data-act="rm-risk" data-id="${id}" data-i="${i}" aria-label="${t("cancel")}">✕</button>`, chev: false })).join("") + `<div class="row"><input class="inline-input" id="risk-text" placeholder="${t("plan.addRisk")}"><button class="btn secondary" style="width:auto;padding:8px 14px;font-size:15px" data-act="add-risk" data-id="${id}">${t("save")}</button></div>`)}
+    ${group(t("plan.moves"), `<textarea class="field" data-plan="${id}" data-k="moves" style="min-height:64px" aria-label="${t("plan.moves")}">${esc(plan.moves)}</textarea>`)}`,
+  };
+}
+
+function screenReview() {
+  const props = S.d.proposals.filter((p) => p.status === "pending");
+  if (!props.length) return { title: t("cap.reviewT"), back: ["today", t("today.title")], body: `<div class="large"><h1>${t("cap.reviewT")}</h1></div><p class="empty">${t("today.empty")}</p>` };
+  const aName = acc(S.cap.account)?.name || "";
+  const label = (p) => {
+    if (p.kind === "log") return [t("cap.p_log", { people: p.people.map((id) => per(id).name).join(", ") }), t("cap.p_touch")];
+    if (p.kind === "next") return [t("cap.p_next"), `<input class="inline-input" data-prop="${p.id}" data-k="text" value="${esc(p.text)}" aria-label="${t("deal.nextStep")}"> <input class="inline-input" type="date" data-prop="${p.id}" data-k="date" value="${p.date}" style="width:auto;margin-top:6px" aria-label="${t("deal.close")}">`];
+    if (p.kind === "forecast") return [t("cap.p_forecast", { v: t("fc." + p.value) }), esc(deal(p.deal).name)];
+    if (p.kind === "person") return [`${t("cap.p_person")}: ${esc(p.name)}`, `${esc(p.title)} · <select class="inline-input" data-prop="${p.id}" data-k="role" aria-label="${t("deal.stakeholders")}">${MAP_ROLES.concat("unknown").map((r) => `<option value="${r}" ${r === p.role ? "selected" : ""}>${t("role." + r)}</option>`).join("")}</select>`];
+    if (p.kind === "stake") return [t("cap.p_stake", { person: per(p.person).name, role: t("role." + p.role).toLowerCase() }), esc(deal(p.deal).name)];
+    if (p.kind === "qual") return [t("cap.p_qual", { criterion: t("crit." + p.criterion), status: t("q." + { p: "partial", c: "confirmed" }[p.status]) }), esc(deal(p.deal).name)];
+    if (p.kind === "risk") return [t("cap.p_risk"), esc(p.text)];
+    return ["", ""];
+  };
+  return {
+    title: t("cap.reviewT"), back: ["capture", t("tabs.capture")],
+    body: `<div class="large"><h1>${t("cap.reviewT")}</h1><p>${esc(aName)} · ${t("cap.reviewLead", { n: props.length })}</p></div>
+    ${note("capture")}
+    ${group("", props.map((p) => { const [ti, sub] = label(p); return `<div class="row" style="align-items:flex-start"><span class="main"><span class="t">${ti}</span><span class="s">${sub}</span><span class="quote">${t("cap.source", { n: p.src.line })}: “${esc(p.src.quote)}”</span></span><span class="switch"><input type="checkbox" data-act="prop-on" data-id="${p.id}" ${p.on ? "checked" : ""} aria-label="${esc(ti.replace(/<[^>]+>/g, ""))}"><i></i></span></div>`; }).join(""), t("cap.aiOff"))}
+    <div class="btn-row"><button class="btn danger" data-act="reject-all">${t("cap.rejectAll")}</button><button class="btn" data-act="approve">${t("cap.approve", { n: props.filter((p) => p.on).length })}</button></div>`,
+  };
+}
+
+function screenSettings() {
+  return {
+    title: t("set.title"), back: ["today", t("today.title")],
+    body: `<div class="large"><h1>${t("set.title")}</h1></div>
+    ${group("", `<div class="row"><span class="avatar" style="width:56px;height:56px;font-size:20px">CM</span><span class="main"><span class="t" style="font-size:20px;font-weight:600">${t("set.me")}</span><span class="s">${t("set.meSub")}</span></span></div>`)}
+    ${group(t("set.language"), `<div class="row">${seg("lang", [["en", "English"], ["fr", "Français"]], S.lang)}</div>`)}
+    ${group(t("set.weights"), Object.keys(DEFAULT_WEIGHTS).map((k) => `<div class="row"><span class="main"><span class="t" style="font-size:15px">${esc(t("act." + k, { deal: "…", days: "…", stage: "…", criterion: "…", person: "…", account: "…", meeting: "…", n: "n" }))}</span></span><span class="v"><button class="navbtn" data-act="w" data-k="${k}" data-d="-5" aria-label="−">−</button><span class="num" style="min-width:28px;text-align:center;color:var(--label)">${S.weights[k]}</span><button class="navbtn" data-act="w" data-k="${k}" data-d="5" aria-label="+">+</button></span></div>`).join(""), t("set.weightsFoot"))}
+    ${group(t("set.teach"), Object.keys(S.teach).length ? Object.entries(S.teach).map(([k, v]) => row({ title: esc(t("act." + k, { deal: "…", days: "…", stage: "…", criterion: "…", person: "…", account: "…", meeting: "…", n: "n" })), value: `×${v.toFixed(2)}`, chev: false })).join("") + row({ act: "reset-teach", title: `<span style="color:var(--tint)">${t("set.reset")}</span>`, chev: false }) : `<p class="empty">${t("set.teachNone")}</p>`)}
+    ${group(t("set.cadences"), Object.entries(CADENCE).map(([r, n]) => row({ title: t("role." + r), value: t("set.days", { n }), chev: false })).join(""))}
+    ${group(t("set.stages"), STAGES.filter((s) => s.typical).map((s) => row({ title: esc(L(s)), value: t("set.typical", { n: s.typical }), chev: false })).join(""))}
+    ${group(t("set.ai"), row({ ico: "bolt", icoBg: "var(--gray)", title: t("set.ai"), value: t("set.aiOff"), chev: false }), t("set.aiFoot"))}
+    ${group(t("set.team"), row({ ico: "shield", icoBg: "var(--green)", title: t("set.team"), value: t("set.teamOff"), chev: false }), t("set.teamFoot"))}
+    ${group("", `<label class="row" style="cursor:pointer"><span class="main"><span class="t">${t("notes")}</span></span><span class="switch"><input type="checkbox" data-act="notes" ${document.body.classList.contains("hide-notes") ? "" : "checked"}><i></i></span></label>${row({ act: "reset-demo", title: `<span style="color:var(--red)">${t("set.resetDemo")}</span>`, chev: false })}`)}`,
+  };
+}
+
+function screenCapture() {
+  const c = S.capture, detected = c.text ? detectAccount(c.text) : "";
+  return {
+    title: t("cap.title"),
+    body: `<div class="large"><h1>${t("cap.title")}</h1><p>${t("cap.lead")}</p></div>
+    ${seg("capMode", [["paste", t("cap.paste")], ["note", t("cap.note")], ["voice", t("cap.voice")]], c.mode)}
+    ${c.mode === "voice" ? group("", row({ ico: "mic", icoBg: "var(--gray)", title: t("cap.voice"), value: `<span class="pill">${t("set.aiOff")}</span>`, chev: false }), t("cap.voiceOff")) : ""}
+    ${group("", `<textarea class="field" id="cap-text" placeholder="${t("cap.ph")}" aria-label="${t("cap.title")}" style="min-height:${c.mode === "note" ? 110 : 200}px">${esc(c.text)}</textarea>`)}
+    ${group(t("cap.account"), `<div class="row"><select class="inline-input" id="cap-account" style="width:100%"><option value="">${t("cap.detect")}${detected ? ` · ${esc(acc(detected).name)}` : ""}</option>${S.d.accounts.map((a) => `<option value="${a.id}" ${a.id === c.account ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select></div>`)}
+    <button class="btn" data-act="find" ${c.text.trim() ? "" : "disabled"}>${t("cap.find")}</button>
+    ${group(t("cap.sample"), row({ act: "sample", data: 'data-s="a"', ico: "doc", icoBg: "var(--tint)", title: t("cap.sampleA") }) + row({ act: "sample", data: 'data-s="b"', ico: "doc", icoBg: "var(--indigo)", title: t("cap.sampleB") }))}`,
+  };
+}
+const screenNotFound = () => ({ title: "", back: ["today", t("today.title")], body: `<p class="empty">404</p>` });
+
+/* ───────── sheets ───────── */
+function openSheet(title, body, { right = "" } = {}) {
+  $("#overlay").innerHTML = `<div class="backdrop" data-act="close-sheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}" data-stop><div class="grab"></div><div class="sh"><span></span><h2>${esc(title)}</h2><span style="justify-self:end">${right || `<button class="navbtn" data-act="close-sheet" style="font-weight:600">${t("done")}</button>`}</span></div><div class="sb">${body}</div></div></div>`;
+  $("#overlay .sheet button, #overlay .sheet a")?.focus();
+}
+function openActionSheet(head, opts) {
+  $("#overlay").innerHTML = `<div class="backdrop" data-act="close-sheet"><div class="actionsheet" role="dialog" aria-modal="true" data-stop><div class="list"><div class="hd">${head}</div>${opts.map((o) => `<button class="opt ${o.danger ? "danger" : ""}" data-act="${o.act}" ${o.data || ""}>${esc(o.label)}</button>`).join("")}</div><button class="cancel" data-act="close-sheet">${t("cancel")}</button></div></div>`;
+  $("#overlay .opt")?.focus();
+}
+const closeSheet = () => { $("#overlay").innerHTML = ""; };
+function actionSheet(key) {
+  const a = candidates().find((c) => c.key === key); if (!a) return;
+  openSheet(t("act.why"), `${group("", `<div class="row" style="align-items:flex-start"><span class="main"><span class="t" style="font-weight:600">${esc(a.title)}</span><span class="s">${esc(a.reason)}</span></span></div>`)}
+    ${a.facts.length ? group(t("act.data"), a.facts.map(([k, v]) => row({ title: esc(k), value: esc(v), chev: false })).join("")) : ""}
+    ${group(t("act.total"), [[t("act.rule"), a.rule], [t("act.base"), a.base], [t("act.amountF"), `+${a.amount}`], [t("act.weightF"), `×${a.weight.toFixed(2)}`], [t("act.total"), a.score]].map(([k, v]) => row({ title: esc(k), value: `<span class="num">${esc(v)}</span>`, chev: false })).join(""))}
+    <button class="btn" data-act="do" data-key="${a.key}">${t("act.doIt")}</button>
+    <div class="btn-row"><button class="btn plain" data-act="snooze-menu" data-key="${a.key}">${t("act.snooze")}</button><button class="btn plain" data-act="dismiss" data-key="${a.key}">${t("act.dismiss")}</button></div>
+    <button class="btn danger" data-act="teach" data-key="${a.key}">${t("act.teach")}</button><p class="gf">${t("act.teachHint")}</p>`);
+}
+function personSheet(id) {
+  const p = per(id), a = acc(p.account);
+  openSheet(p.name, `${group("", [[t("acc.title"), a.name], [t("deal.stakeholders"), p.title], [t("role." + p.role), `<span title="${esc(t("roleHelp." + p.role))}">ⓘ</span>`], [t("stance.unknown").replace(/./, (c) => c) && (S.lang === "fr" ? "Position" : "Stance"), t("stance." + p.stance)], [S.lang === "fr" ? "Force" : "Strength", dots(p.strength)], [S.lang === "fr" ? "Dernier contact" : "Last contact", p.last ? `${fmtDate(p.last)} · ${t("deal.ago", { n: ago(p.last) })}` : t("deal.never")]].map(([k, v]) => row({ title: esc(k), value: v, chev: false })).join(""), esc(t("roleHelp." + p.role)))}
+    ${group("", row({ href: `account-${a.id}`, title: a.name }))}`);
+}
+function healthSheet(kind, id) {
+  const h = kind === "deal" ? assessDeal(deal(id)) : assessAccount(acc(id));
+  openSheet(kind === "deal" ? t("deal.health") : t("acc.health"), `<div style="display:flex;gap:14px;align-items:center">${ring(h, true)}${bandPill(h.band)}</div>${group("", reasonsList(h.reasons))}<p class="gf">${S.lang === "fr" ? "Calculé par des règles transparentes (§5.2–5.3). Seuils : saine ≥ 70, à surveiller 40–69, à risque < 40." : "Computed by transparent rules (§5.2–5.3). Bands: healthy ≥ 70, watch 40–69, at risk < 40."}</p>`);
+}
+
+/* ───────── shell & routing ───────── */
+const TABS = [["today", "today"], ["accounts", "accounts"], ["capture", "plus"], ["deals", "deals"], ["pipeline", "pipeline"]];
+function route() {
+  const h = (location.hash || "#today").slice(1);
+  for (const [pre, fn] of [["account-", screenAccount], ["deal-", screenDeal], ["brief-", screenBrief], ["plan-", screenPlan]]) if (h.startsWith(pre)) return { tab: { account: "accounts", deal: "deals", brief: "today", plan: "accounts" }[pre.slice(0, -1)], screen: fn(h.slice(pre.length)) };
+  const map = { today: screenToday, accounts: screenAccounts, deals: screenDeals, pipeline: screenPipeline, capture: screenCapture, review: screenReview, settings: screenSettings };
+  const key = map[h] ? h : "today";
+  return { tab: key === "review" ? "capture" : key === "settings" ? "today" : key, screen: map[key]() };
+}
+function render() {
+  document.documentElement.lang = S.lang;
+  const { tab, screen } = route();
+  const pend = S.d.proposals.filter((p) => p.status === "pending").length, todayN = rankActions().length;
+  const back = screen.back ? `<a class="navbtn back" href="#${screen.back[0]}">${IC.back}<span>${esc(screen.back[1])}</span></a>` : "";
+  $("#app").innerHTML = `<p class="ribbon">${t("ribbon")}</p>
+    <header class="nav"><span class="l">${back}</span><span class="title">${esc(screen.title)}</span><span class="r">${screen.right || ""}</span></header>
+    <main id="main"><div class="page">${screen.body}</div></main>
+    <nav class="tabbar" aria-label="CLEAN">${TABS.map(([k, ic]) => `<a class="tab ${k === "capture" ? "capture" : ""} ${tab === k ? "on" : ""}" href="#${k}" ${tab === k ? 'aria-current="page"' : ""}>${k === "capture" ? `<span class="plus">${IC.plus}</span>` : IC[ic]}<span>${t("tabs." + k)}</span>${k === "today" && todayN ? `<span class="badge num">${todayN}</span>` : ""}${k === "capture" && pend ? `<span class="badge num">${pend}</span>` : ""}</a>`).join("")}</nav>`;
+  onScroll();
+}
+function onScroll() { $(".nav")?.classList.toggle("scrolled", window.scrollY > 36); }
+window.addEventListener("scroll", onScroll, { passive: true });
+window.addEventListener("hashchange", () => { closeSheet(); render(); window.scrollTo(0, 0); });
+
+/* ───────── events ───────── */
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]");
+  if (!el) return;
+  if (el.closest("[data-stop]") && el.dataset.act === "close-sheet" && el.classList.contains("backdrop")) return;
+  if (el.classList.contains("backdrop") && e.target !== el) return;
+  const act = el.dataset.act, key = el.dataset.key, id = el.dataset.id;
+  const finish = (msg) => { closeSheet(); if (msg) toast(msg); render(); };
+  const c = key && candidates().find((x) => x.key === key);
+  switch (act) {
+    case "close-sheet": closeSheet(); break;
+    case "go": location.hash = el.dataset.href; break;
+    case "seg": {
+      const k = el.dataset.k, v = el.dataset.v;
+      if (k === "lang") { S.lang = v; store("cc.lang", v); }
+      else if (k === "accFilter") S.accFilter = v; else if (k === "dealView") S.dealView = v; else if (k === "period") S.period = v; else if (k === "capMode") { S.capture.text = $("#cap-text")?.value ?? S.capture.text; S.capture.mode = v; }
+      else S.tabSeg[k] = v;
+      render(); break;
+    }
+    case "action": actionSheet(key); break;
+    case "do": if (c) { S.act[key] = { status: "done", fp: c.fp }; closeSheet(); location.hash = c.go; if (c.seg) { S.tabSeg[`${c.go.startsWith("deal") ? "d" : "a"}:${c.go.split("-")[1]}`] = c.seg; } render(); } break;
+    case "snooze-menu": openActionSheet(`<b>${t("act.snoozeT")}</b>${esc(c.title)}`, [{ label: t("act.tomorrow"), act: "snooze", data: `data-key="${key}" data-n="1"` }, { label: t("act.in3"), act: "snooze", data: `data-key="${key}" data-n="3"` }, { label: t("act.nextWeek"), act: "snooze", data: `data-key="${key}" data-n="7"` }]); break;
+    case "snooze": S.act[key] = { status: "snoozed", fp: c.fp, until: addDays(+el.dataset.n) }; finish(t("act.snoozed")); break;
+    case "dismiss": S.act[key] = { status: "dismissed", fp: c.fp }; finish(t("act.dismissed")); break;
+    case "teach": S.teach[c.rule] = Math.max(0.4, +((S.teach[c.rule] ?? 1) * 0.8).toFixed(2)); S.act[key] = { status: "dismissed", fp: c.fp }; finish(t("act.taught")); break;
+    case "person": personSheet(id); break;
+    case "health-deal": healthSheet("deal", id); break;
+    case "health-account": healthSheet("account", id); break;
+    case "qual": { const d = deal(id); d.qual[el.dataset.c].s = el.dataset.v; render(); break; }
+    case "save-next": { const d = deal(id); d.next = $("#next-text").value.trim(); d.nextDate = $("#next-date").value || null; toast(t("save")); render(); break; }
+    case "add-step": { const ti = $("#step-title").value.trim(); if (!ti) break; deal(id).steps.push({ id: uid("cs"), title: ti, owner: $("#step-owner").value, due: $("#step-due").value || addDays(7), done: false }); render(); break; }
+    case "review-plan": S.d.plans[id].reviewed = TODAY_ISO; toast(t("plan.reviewedNow")); render(); break;
+    case "ws": { const order = ["owned", "in_progress", "open", "not_relevant"], plan = S.d.plans[id], cur = plan.ws[el.dataset.bu][el.dataset.p] || "open"; plan.ws[el.dataset.bu][el.dataset.p] = order[(order.indexOf(cur) + 1) % order.length]; render(); break; }
+    case "add-risk": { const v = $("#risk-text").value.trim(); if (v) { S.d.plans[id].risks.push(v); render(); } break; }
+    case "rm-risk": S.d.plans[id].risks.splice(+el.dataset.i, 1); render(); break;
+    case "sample": S.capture.text = SAMPLES[el.dataset.s][S.lang]; S.capture.mode = "paste"; S.capture.account = ""; render(); break;
+    case "find": {
+      S.capture.text = $("#cap-text").value; S.capture.account = $("#cap-account").value;
+      const res = extract(S.capture.text, S.capture.account);
+      if (!res.proposals.length) { toast(t("cap.nothing")); break; }
+      S.d.proposals = S.d.proposals.filter((p) => p.status !== "pending").concat(res.proposals);
+      S.cap = { account: res.account, deal: res.deal, before: res.deal ? assessDeal(deal(res.deal)).score : null };
+      location.hash = "review"; break;
+    }
+    case "approve": {
+      const pend = S.d.proposals.filter((p) => p.status === "pending"), n = applyProposals(pend);
+      const after = S.cap?.deal ? assessDeal(deal(S.cap.deal)).score : null;
+      S.capture.text = "";
+      toast(`${t("cap.applied", { n })}${after != null ? ` · ${t("cap.healthChange", { a: S.cap.before, b: after })}` : ""}`);
+      location.hash = S.cap?.deal ? `deal-${S.cap.deal}` : "today"; break;
+    }
+    case "reject-all": S.d.proposals.filter((p) => p.status === "pending").forEach((p) => (p.status = "rejected")); location.hash = "capture"; break;
+    case "w": S.weights[el.dataset.k] = Math.max(0, S.weights[el.dataset.k] + +el.dataset.d); render(); break;
+    case "reset-teach": S.teach = {}; render(); break;
+    case "reset-demo": S.d = seed(); S.act = {}; S.teach = {}; S.weights = { ...DEFAULT_WEIGHTS }; toast(t("set.resetDemo")); location.hash = "today"; render(); break;
+  }
+});
+document.addEventListener("change", (e) => {
+  const el = e.target, act = el.dataset.act;
+  if (act === "step") { const s = deal(el.dataset.id).steps.find((x) => x.id === el.dataset.step); s.done = el.checked; render(); }
+  else if (act === "prop-on") { const p = S.d.proposals.find((x) => x.id === el.dataset.id); p.on = el.checked; const btn = $('[data-act="approve"]'); if (btn) btn.textContent = t("cap.approve", { n: S.d.proposals.filter((x) => x.status === "pending" && x.on).length }); }
+  else if (act === "notes") document.body.classList.toggle("hide-notes", !el.checked);
+  else if (el.dataset.prop) { const p = S.d.proposals.find((x) => x.id === el.dataset.prop); p[el.dataset.k] = el.value; }
+  else if (el.id === "cap-account") S.capture.account = el.value;
+});
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.id === "acc-search") { S.accQuery = el.value; const pos = el.selectionStart; render(); const n = $("#acc-search"); n.focus(); n.setSelectionRange(pos, pos); }
+  else if (el.id === "cap-text") { S.capture.text = el.value; const b = $('[data-act="find"]'); if (b) b.disabled = !el.value.trim(); }
+  else if (el.dataset.plan) S.d.plans[el.dataset.plan][el.dataset.k] = el.value;
+  else if (el.dataset.prop) { const p = S.d.proposals.find((x) => x.id === el.dataset.prop); p[el.dataset.k] = el.value; }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#overlay").innerHTML) closeSheet(); });
+
+render();
+</script>
