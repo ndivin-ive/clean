@@ -1,8 +1,8 @@
 # Rules: Today ranking, health and coverage
 
-> Status: defaults recorded at P1 (taken from the brief §5 and the companion
-> prototype). The engine and its unit tests are built in **P3**; this file is
-> updated there with worked examples. All values are stored per organisation
+> Status: implemented in **P3** — `src/domain/rules/` (pure functions, no
+> framework or database imports), tested in `tests/unit/rules/` (115 unit tests
+> including every rule's threshold on both sides). All values are stored per organisation
 > (`rule_setting`, `role_cadence`, `pipeline_stage.typical_days`,
 > `qualification_criterion`) and seeded from `src/domain/settings`.
 
@@ -52,6 +52,21 @@ Bands: **Healthy ≥ 70 · Watch 40–69 · At risk < 40**. Every factor is retu
 | Signals in 30 days: 5 + 2 per positive − 5 per negative, 0–10                          | 10     |
 | Renewal under control: not a customer, renewal > 90 d, or plan reviewed ≤ 60 d         | 15     |
 | Plan freshness: reviewed ≤ 60 d = 15; ≤ 120 d = 7; non-key account without a plan = 15 | 15     |
+
+With no signals the factor is neutral (5/10), so a perfect account without news
+scores 95. That is intended: good news is information, silence is not.
+
+## Code map
+
+| Function                                                                  | File                                 |
+| ------------------------------------------------------------------------- | ------------------------------------ |
+| `candidates`, `rankActions`, `isSuppressed`, `amountFactor`, `applyTeach` | `src/domain/rules/today.ts`          |
+| `assessDeal`, `countCloseDatePushes`                                      | `src/domain/rules/deal-health.ts`    |
+| `assessAccount`                                                           | `src/domain/rules/account-health.ts` |
+| `coverage`                                                                | `src/domain/rules/coverage.ts`       |
+| Defaults, `resolveRuleSettings`, default stages and criteria              | `src/domain/settings/defaults.ts`    |
+
+Reasons are returned as codes with parameters (e.g. `{ code: "stalled", params: { days: 36, typical: 21 } }`); the UI translates them.
 
 ## Coverage map
 

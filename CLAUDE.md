@@ -70,7 +70,7 @@ Pre-pivot work (support booking, checkpoints 1–2) is summarised in `docs/PIVOT
 
 - [x] P1. Pivot refactor: docs, new schema and migrations, owner-privacy RLS, feature flags, support module parked
 - [ ] P2. Sign-in (magic link via Mailpit), organisations, invitations, roles, team visibility; iOS-style app shell, EN/FR, light/dark
-- [ ] P3. Rules engine: `rankActions`, `assessDeal`, `assessAccount`, coverage + full unit tests; `docs/RULES.md`
+- [x] P3. Rules engine: `rankActions`, `assessDeal`, `assessAccount`, coverage + full unit tests; `docs/RULES.md` (done before P2: pure logic, no external dependency)
 - [ ] P4. Demo book seed (2 key + 8 accounts, 12 deals, 40 people, 6 months of interactions, signals)
 - [ ] P5. Accounts and people: list, account page, relationship map, timeline, signals
 - [ ] P6. Deals: board/list, deal page, stakeholders, qualification with evidence, close plan, health reasons
