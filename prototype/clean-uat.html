@@ -25,30 +25,8 @@
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --r: 8px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: oklch(0.18 0.012 255); --surface: oklch(0.215 0.013 255); --sunken: oklch(0.2 0.012 255);
-    --fg: oklch(0.94 0.008 250); --muted: oklch(0.72 0.015 250); --border: oklch(0.32 0.014 255);
-    --accent: oklch(0.72 0.12 245); --accent-soft: oklch(0.3 0.05 245); --on-accent: oklch(0.18 0.02 255);
-    --good: oklch(0.74 0.13 150); --good-soft: oklch(0.28 0.04 150);
-    --warn: oklch(0.8 0.13 75); --warn-soft: oklch(0.3 0.05 75);
-    --bad: oklch(0.72 0.16 27); --bad-soft: oklch(0.3 0.05 27);
-    --note: oklch(0.76 0.11 300); --note-soft: oklch(0.29 0.04 300);
-    --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px oklch(0 0 0 / 0.25);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: oklch(0.18 0.012 255); --surface: oklch(0.215 0.013 255); --sunken: oklch(0.2 0.012 255);
-  --fg: oklch(0.94 0.008 250); --muted: oklch(0.72 0.015 250); --border: oklch(0.32 0.014 255);
-  --accent: oklch(0.72 0.12 245); --accent-soft: oklch(0.3 0.05 245); --on-accent: oklch(0.18 0.02 255);
-  --good: oklch(0.74 0.13 150); --good-soft: oklch(0.28 0.04 150);
-  --warn: oklch(0.8 0.13 75); --warn-soft: oklch(0.3 0.05 75);
-  --bad: oklch(0.72 0.16 27); --bad-soft: oklch(0.3 0.05 27);
-  --note: oklch(0.76 0.11 300); --note-soft: oklch(0.29 0.04 300);
-  --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 16px oklch(0 0 0 / 0.25);
-  color-scheme: dark;
-}
+/* Light mode only, by request: no dark palette, whatever the viewer's theme. */
+:root { color-scheme: light; }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; }
 h1, h2, h3 { margin: 0; text-wrap: balance; line-height: 1.25; }
