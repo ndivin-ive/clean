@@ -1,0 +1,46 @@
+{
+  "Metadata": {
+    "title": "CLEAN — pipeline, specialist support and analytics",
+    "description": "A lightweight CRM for B2B teams where account executives sell with specialist support."
+  },
+  "Common": {
+    "appName": "CLEAN",
+    "skipToContent": "Skip to main content",
+    "language": "Language",
+    "localeName": "{locale, select, en {English} fr {Français} other {Unknown}}"
+  },
+  "Landing": {
+    "eyebrow": "Lightweight CRM for B2B teams",
+    "headline": "Sell together, with the right specialist on every deal.",
+    "lead": "CLEAN brings your pipeline, specialist support requests and process analytics into one calm place.",
+    "stepsTitle": "The CLEAN process",
+    "steps": {
+      "capture": {
+        "letter": "C",
+        "name": "Capture",
+        "description": "Record accounts, contacts and opportunities as they appear."
+      },
+      "link": {
+        "letter": "L",
+        "name": "Link",
+        "description": "Connect each opportunity to the specialists who can move it forward."
+      },
+      "engage": {
+        "letter": "E",
+        "name": "Engage",
+        "description": "Request, triage and deliver support with clear expectations."
+      },
+      "analyse": {
+        "letter": "A",
+        "name": "Analyse",
+        "description": "See demand, capacity and what support does to win rates."
+      },
+      "negotiate": {
+        "letter": "N",
+        "name": "Negotiate",
+        "description": "Close with a record of who helped and what changed."
+      }
+    },
+    "status": "Phase 1 in development"
+  }
+}

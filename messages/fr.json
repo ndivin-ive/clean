@@ -1,0 +1,46 @@
+{
+  "Metadata": {
+    "title": "CLEAN — pipeline, appui des experts et analyses",
+    "description": "Un CRM léger pour les équipes B2B où les commerciaux vendent avec l’appui d’équipes expertes."
+  },
+  "Common": {
+    "appName": "CLEAN",
+    "skipToContent": "Aller au contenu principal",
+    "language": "Langue",
+    "localeName": "{locale, select, en {English} fr {Français} other {Inconnue}}"
+  },
+  "Landing": {
+    "eyebrow": "CRM léger pour les équipes B2B",
+    "headline": "Vendez ensemble, avec le bon expert sur chaque affaire.",
+    "lead": "CLEAN réunit votre pipeline, vos demandes d’appui aux experts et l’analyse de votre processus dans un seul espace serein.",
+    "stepsTitle": "La démarche CLEAN",
+    "steps": {
+      "capture": {
+        "letter": "C",
+        "name": "Capter",
+        "description": "Enregistrez comptes, contacts et opportunités dès qu’ils apparaissent."
+      },
+      "link": {
+        "letter": "L",
+        "name": "Lier",
+        "description": "Reliez chaque opportunité aux experts capables de la faire avancer."
+      },
+      "engage": {
+        "letter": "E",
+        "name": "Engager",
+        "description": "Demandez, triez et réalisez l’appui avec des attentes claires."
+      },
+      "analyse": {
+        "letter": "A",
+        "name": "Analyser",
+        "description": "Visualisez la demande, la capacité et l’effet de l’appui sur le taux de gain."
+      },
+      "negotiate": {
+        "letter": "N",
+        "name": "Négocier",
+        "description": "Concluez en sachant qui a aidé et ce qui a changé."
+      }
+    },
+    "status": "Phase 1 en cours de développement"
+  }
+}

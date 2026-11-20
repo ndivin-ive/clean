@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: clean
+          POSTGRES_USER: clean_owner
+          POSTGRES_PASSWORD: clean_owner
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U clean_owner -d clean"
+          --health-interval 2s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://clean_app:clean_app@localhost:5432/clean
+      DATABASE_URL_OWNER: postgres://clean_owner:clean_owner@localhost:5432/clean
+      TEST_DATABASE_URL: postgres://clean_app:clean_app@localhost:5432/clean_test
+      TEST_DATABASE_URL_OWNER: postgres://clean_owner:clean_owner@localhost:5432/clean_test
+      SMTP_URL: smtp://localhost:1025
+      MAILPIT_API_URL: http://localhost:8025
+      APP_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Create app role and test database
+        env:
+          PGPASSWORD: clean_owner
+        run: psql -h localhost -U clean_owner -d clean -v ON_ERROR_STOP=1 -f docker/postgres/init.sql
+
+      - name: Start Mailpit
+        run: docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit:latest
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm test
+      - run: pnpm db:migrate --test
+      - run: pnpm test:integration --passWithNoTests
+
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+        env:
+          CI: "true"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
