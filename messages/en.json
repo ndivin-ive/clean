@@ -7,7 +7,15 @@
     "appName": "CLEAN",
     "skipToContent": "Skip to main content",
     "language": "Language",
-    "localeName": "{locale, select, en {English} fr {Français} other {Unknown}}"
+    "localeName": "{locale, select, en {English} fr {Français} other {Unknown}}",
+    "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Saved",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "continue": "Continue",
+    "you": "you"
   },
   "Landing": {
     "eyebrow": "The seller's own workspace",
@@ -42,5 +50,112 @@
       }
     },
     "status": "Phase 1 in development"
+  },
+  "Email": {
+    "magicSubject": "Your CLEAN sign-in link",
+    "magicTitle": "Sign in to CLEAN",
+    "magicIntro": "Use this link to sign in. It works once and expires in 15 minutes.",
+    "magicCta": "Sign in",
+    "magicFooter": "If you did not ask for this email, you can ignore it.",
+    "inviteSubject": "Join {organization} on CLEAN",
+    "inviteTitle": "You are invited to {organization}",
+    "inviteIntro": "{inviter} invited you to join {organization} on CLEAN, the sales companion.",
+    "inviteCta": "Accept the invitation",
+    "inviteFooter": "The invitation expires in 7 days. Sign in with the email address it was sent to."
+  },
+  "Auth": {
+    "title": "Sign in",
+    "lead": "No password needed. We email you a link that signs you in.",
+    "email": "Work email",
+    "submit": "Email me a sign-in link",
+    "sending": "Sending…",
+    "checkTitle": "Check your email",
+    "checkBody": "We sent a sign-in link to {email}. It expires in 15 minutes.",
+    "useOther": "Use another email",
+    "error": "We could not send the link. Check the address and try again.",
+    "later": "Google and Microsoft sign-in will be added later."
+  },
+  "Start": {
+    "title": "Choose an organisation",
+    "lead": "You belong to more than one organisation."
+  },
+  "Onboarding": {
+    "title": "Create your organisation",
+    "lead": "You will be its admin. You can invite your team afterwards.",
+    "name": "Organisation name",
+    "namePlaceholder": "e.g. Lumen Data",
+    "language": "Default language",
+    "submit": "Create organisation",
+    "error": "Enter a name for your organisation."
+  },
+  "Invite": {
+    "title": "Invitation",
+    "lead": "Accept to join this organisation on CLEAN.",
+    "accept": "Accept the invitation",
+    "signInFirst": "Sign in with the email address the invitation was sent to, then come back to this page.",
+    "invalid": "This invitation link is not valid.",
+    "expired": "This invitation has expired. Ask your admin for a new one.",
+    "used": "This invitation has already been used.",
+    "wrong_email": "This invitation was sent to another email address. Sign in with that address."
+  },
+  "Tabs": {
+    "today": "Today",
+    "accounts": "Accounts",
+    "capture": "Capture",
+    "deals": "Deals",
+    "pipeline": "Pipeline",
+    "settings": "Settings"
+  },
+  "Today": {
+    "title": "Today",
+    "emptyTitle": "Nothing ranked yet",
+    "emptyBody": "Your ranked actions will appear here as soon as your accounts and deals are in CLEAN."
+  },
+  "Placeholder": {
+    "accounts": "Accounts",
+    "deals": "Deals",
+    "pipeline": "My pipeline",
+    "capture": "Capture",
+    "body": "This screen is being built. It arrives in a coming checkpoint."
+  },
+  "Settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "language": "Language",
+    "theme": "Appearance",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "organization": "Organisation",
+    "roles": "Your roles",
+    "team": "Team and access",
+    "switchOrg": "Switch organisation"
+  },
+  "Roles": {
+    "seller": "Seller",
+    "manager": "Manager",
+    "admin": "Admin",
+    "specialist": "Specialist"
+  },
+  "Team": {
+    "title": "Team and access",
+    "members": "Members",
+    "invite": "Invite someone",
+    "inviteEmail": "Email",
+    "inviteRoles": "Roles",
+    "inviteSend": "Send invitation",
+    "invited": "Invitation sent to {email}.",
+    "pending": "Pending invitations",
+    "expires": "Expires {date}",
+    "visibility": "Team visibility",
+    "visibilityOn": "Teammates and managers can read sellers' records",
+    "visibilityFoot": "Off by default: each seller's accounts, deals and notes are visible only to them. When on, teammates who share a manager, and their managers, can read them. Nobody but the owner can change them. Admins get no extra access.",
+    "manager": "Manager",
+    "noManager": "No manager",
+    "edit": "Save changes",
+    "forbidden": "You do not have permission to do that.",
+    "invalidEmail": "Enter a valid email address.",
+    "ownAdmin": "You cannot remove your own admin role.",
+    "error": "Something went wrong. Try again."
   }
 }

@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { Link } from "@/i18n/navigation";
 import { cleanSteps } from "@/domain/clean-steps";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -18,7 +19,12 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
           <span className="text-lg font-semibold tracking-wide">
             {common("appName")}
           </span>
-          <LocaleSwitcher />
+          <div className="flex items-center gap-4">
+            <LocaleSwitcher />
+            <Link href="/sign-in" className="ios-btn ios-btn-sm">
+              {common("signIn")}
+            </Link>
+          </div>
         </div>
       </header>
 

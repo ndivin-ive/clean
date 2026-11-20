@@ -5,3 +5,5 @@ CREATE ROLE clean_app LOGIN PASSWORD 'clean_app' NOSUPERUSER NOBYPASSRLS NOCREAT
 GRANT CONNECT ON DATABASE clean TO clean_app;
 CREATE DATABASE clean_test OWNER clean_owner;
 GRANT CONNECT ON DATABASE clean_test TO clean_app;
+CREATE DATABASE clean_e2e OWNER clean_owner;
+GRANT CONNECT ON DATABASE clean_e2e TO clean_app;

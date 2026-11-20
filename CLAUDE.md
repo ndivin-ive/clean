@@ -16,22 +16,22 @@ prototype in `prototype/companion-ios.html`.
 
 TypeScript (strict) · Next.js 16 App Router (`src/proxy.ts`, cacheComponents
 off) · React 19 · Tailwind 4 · next-intl 4 · PostgreSQL 16 + RLS · Drizzle ORM
-· Better Auth (checkpoint 3) · Vitest · Playwright · Mailpit.
+· Better Auth (magic link) · Vitest · Playwright · Mailpit.
 
 ## Commands
 
-| Task                           | Command                                                     |
-| ------------------------------ | ----------------------------------------------------------- |
-| Start Postgres + Mailpit       | `docker compose up -d` (no Docker: `pnpm db:local`)         |
-| Dev server                     | `pnpm dev` → http://localhost:3000/en                       |
-| All static checks + unit tests | `pnpm check`                                                |
-| Type check                     | `pnpm typecheck` (runs `next typegen` first)                |
-| Lint / format                  | `pnpm lint` · `pnpm format`                                 |
-| Unit tests                     | `pnpm test`                                                 |
-| Integration tests (real DB)    | `pnpm db:migrate --test && pnpm test:integration`           |
-| End-to-end                     | `pnpm test:e2e` (`CI=1` to run against `pnpm build` output) |
-| Migrations                     | `pnpm db:generate` · `pnpm db:migrate`                      |
-| Seed demo org                  | `pnpm db:seed`                                              |
+| Task                           | Command                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Start Postgres + Mailpit       | `docker compose up -d` (no Docker: `pnpm db:local`)                                                                 |
+| Dev server                     | `pnpm dev` → http://localhost:3000/en                                                                               |
+| All static checks + unit tests | `pnpm check`                                                                                                        |
+| Type check                     | `pnpm typecheck` (runs `next typegen` first)                                                                        |
+| Lint / format                  | `pnpm lint` · `pnpm format`                                                                                         |
+| Unit tests                     | `pnpm test`                                                                                                         |
+| Integration tests (real DB)    | `pnpm db:migrate --test && pnpm test:integration`                                                                   |
+| End-to-end                     | `pnpm test:e2e` (`CI=1` to run against `pnpm build` output; resets the `clean_e2e` DB and starts a local SMTP sink) |
+| Migrations                     | `pnpm db:generate` · `pnpm db:migrate`                                                                              |
+| Seed demo org                  | `pnpm db:seed`                                                                                                      |
 
 In cloud sandboxes: `pnpm db:local`, then set `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium` for Playwright.
 
@@ -69,7 +69,7 @@ starting a new phase.
 Pre-pivot work (support booking, checkpoints 1–2) is summarised in `docs/PIVOT.md`.
 
 - [x] P1. Pivot refactor: docs, new schema and migrations, owner-privacy RLS, feature flags, support module parked
-- [ ] P2. Sign-in (magic link via Mailpit), organisations, invitations, roles, team visibility; iOS-style app shell, EN/FR, light/dark
+- [x] P2. Sign-in (magic link; Mailpit locally, SMTP sink in e2e), organisations, invitations, roles, team visibility; iOS-style app shell, EN/FR, light/dark
 - [x] P3. Rules engine: `rankActions`, `assessDeal`, `assessAccount`, coverage + full unit tests; `docs/RULES.md` (done before P2: pure logic, no external dependency)
 - [ ] P4. Demo book seed (2 key + 8 accounts, 12 deals, 40 people, 6 months of interactions, signals)
 - [ ] P5. Accounts and people: list, account page, relationship map, timeline, signals

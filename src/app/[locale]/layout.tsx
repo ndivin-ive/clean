@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { getCurrentUser } from "@/server/session";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -28,9 +29,15 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const t = await getTranslations("Common");
+  // Light by default (D-040); "system" follows the OS.
+  const theme = (await getCurrentUser().catch(() => null))?.theme ?? "light";
 
   return (
-    <html lang={locale} className="h-full antialiased">
+    <html
+      lang={locale}
+      className="h-full antialiased"
+      data-theme={theme === "system" ? undefined : theme}
+    >
       <body className="flex min-h-full flex-col">
         <a
           href="#main"

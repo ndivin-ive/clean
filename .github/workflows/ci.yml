@@ -31,6 +31,8 @@ jobs:
       SMTP_URL: smtp://localhost:1025
       MAILPIT_API_URL: http://localhost:8025
       APP_URL: http://localhost:3100
+      E2E_DATABASE_URL: postgres://clean_app:clean_app@localhost:5432/clean_e2e
+      E2E_DATABASE_URL_OWNER: postgres://clean_owner:clean_owner@localhost:5432/clean_e2e
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

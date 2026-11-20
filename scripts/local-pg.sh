@@ -33,4 +33,8 @@ PSQL=(psql -h localhost -p "$PORT" -U clean_owner -v ON_ERROR_STOP=1 -q)
   || "${PSQL[@]}" -d postgres -c "CREATE DATABASE clean"
 "${PSQL[@]}" -d postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='clean_app'" | grep -q 1 \
   || "${PSQL[@]}" -d clean -f docker/postgres/init.sql
+for db in clean_test clean_e2e; do
+  "${PSQL[@]}" -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='$db'" | grep -q 1 \
+    || { "${PSQL[@]}" -d postgres -c "CREATE DATABASE $db" && "${PSQL[@]}" -d postgres -c "GRANT CONNECT ON DATABASE $db TO clean_app"; }
+done
 echo "PostgreSQL ready on localhost:$PORT (data: $DATA)"

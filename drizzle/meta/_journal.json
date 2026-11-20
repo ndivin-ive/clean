@@ -22,6 +22,13 @@
       "when": 1795199606492,
       "tag": "0002_rls_privacy_audit_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795201267586,
+      "tag": "0003_accept_invitation",
+      "breakpoints": true
     }
   ]
 }

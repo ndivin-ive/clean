@@ -7,7 +7,15 @@
     "appName": "CLEAN",
     "skipToContent": "Aller au contenu principal",
     "language": "Langue",
-    "localeName": "{locale, select, en {English} fr {Français} other {Inconnue}}"
+    "localeName": "{locale, select, en {English} fr {Français} other {Inconnue}}",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "continue": "Continuer",
+    "you": "vous"
   },
   "Landing": {
     "eyebrow": "L’espace de travail du commercial",
@@ -42,5 +50,112 @@
       }
     },
     "status": "Phase 1 en cours de développement"
+  },
+  "Email": {
+    "magicSubject": "Votre lien de connexion CLEAN",
+    "magicTitle": "Connexion à CLEAN",
+    "magicIntro": "Utilisez ce lien pour vous connecter. Il fonctionne une seule fois et expire dans 15 minutes.",
+    "magicCta": "Se connecter",
+    "magicFooter": "Si vous n’avez pas demandé cet e-mail, ignorez-le.",
+    "inviteSubject": "Rejoignez {organization} sur CLEAN",
+    "inviteTitle": "Vous êtes invité(e) à rejoindre {organization}",
+    "inviteIntro": "{inviter} vous invite à rejoindre {organization} sur CLEAN, le compagnon de vente.",
+    "inviteCta": "Accepter l’invitation",
+    "inviteFooter": "L’invitation expire dans 7 jours. Connectez-vous avec l’adresse à laquelle elle a été envoyée."
+  },
+  "Auth": {
+    "title": "Connexion",
+    "lead": "Pas de mot de passe. Nous vous envoyons par e-mail un lien qui vous connecte.",
+    "email": "E-mail professionnel",
+    "submit": "Recevoir un lien de connexion",
+    "sending": "Envoi…",
+    "checkTitle": "Consultez votre messagerie",
+    "checkBody": "Nous avons envoyé un lien de connexion à {email}. Il expire dans 15 minutes.",
+    "useOther": "Utiliser un autre e-mail",
+    "error": "Impossible d’envoyer le lien. Vérifiez l’adresse et réessayez.",
+    "later": "La connexion avec Google et Microsoft sera ajoutée plus tard."
+  },
+  "Start": {
+    "title": "Choisissez une organisation",
+    "lead": "Vous appartenez à plusieurs organisations."
+  },
+  "Onboarding": {
+    "title": "Créez votre organisation",
+    "lead": "Vous en serez l’administrateur. Vous pourrez inviter votre équipe ensuite.",
+    "name": "Nom de l’organisation",
+    "namePlaceholder": "ex. Lumen Data",
+    "language": "Langue par défaut",
+    "submit": "Créer l’organisation",
+    "error": "Saisissez un nom pour votre organisation."
+  },
+  "Invite": {
+    "title": "Invitation",
+    "lead": "Acceptez pour rejoindre cette organisation sur CLEAN.",
+    "accept": "Accepter l’invitation",
+    "signInFirst": "Connectez-vous avec l’adresse à laquelle l’invitation a été envoyée, puis revenez sur cette page.",
+    "invalid": "Ce lien d’invitation n’est pas valide.",
+    "expired": "Cette invitation a expiré. Demandez-en une nouvelle à votre administrateur.",
+    "used": "Cette invitation a déjà été utilisée.",
+    "wrong_email": "Cette invitation a été envoyée à une autre adresse. Connectez-vous avec cette adresse."
+  },
+  "Tabs": {
+    "today": "Aujourd’hui",
+    "accounts": "Comptes",
+    "capture": "Capter",
+    "deals": "Affaires",
+    "pipeline": "Pipeline",
+    "settings": "Réglages"
+  },
+  "Today": {
+    "title": "Aujourd’hui",
+    "emptyTitle": "Rien à classer pour l’instant",
+    "emptyBody": "Vos actions prioritaires apparaîtront ici dès que vos comptes et affaires seront dans CLEAN."
+  },
+  "Placeholder": {
+    "accounts": "Comptes",
+    "deals": "Affaires",
+    "pipeline": "Mon pipeline",
+    "capture": "Capter",
+    "body": "Cet écran est en cours de construction. Il arrive dans une prochaine étape."
+  },
+  "Settings": {
+    "title": "Réglages",
+    "profile": "Profil",
+    "language": "Langue",
+    "theme": "Apparence",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "organization": "Organisation",
+    "roles": "Vos rôles",
+    "team": "Équipe et accès",
+    "switchOrg": "Changer d’organisation"
+  },
+  "Roles": {
+    "seller": "Commercial",
+    "manager": "Manager",
+    "admin": "Administrateur",
+    "specialist": "Expert"
+  },
+  "Team": {
+    "title": "Équipe et accès",
+    "members": "Membres",
+    "invite": "Inviter quelqu’un",
+    "inviteEmail": "E-mail",
+    "inviteRoles": "Rôles",
+    "inviteSend": "Envoyer l’invitation",
+    "invited": "Invitation envoyée à {email}.",
+    "pending": "Invitations en attente",
+    "expires": "Expire le {date}",
+    "visibility": "Visibilité équipe",
+    "visibilityOn": "Les coéquipiers et managers peuvent consulter les données des commerciaux",
+    "visibilityFoot": "Désactivée par défaut : les comptes, affaires et notes de chaque commercial ne sont visibles que par lui. Activée, les coéquipiers qui partagent un manager, et leurs managers, peuvent les consulter. Seul le propriétaire peut les modifier. Les administrateurs n’obtiennent aucun accès supplémentaire.",
+    "manager": "Manager",
+    "noManager": "Aucun manager",
+    "edit": "Enregistrer",
+    "forbidden": "Vous n’avez pas l’autorisation de faire cela.",
+    "invalidEmail": "Saisissez une adresse e-mail valide.",
+    "ownAdmin": "Vous ne pouvez pas retirer votre propre rôle d’administrateur.",
+    "error": "Une erreur s’est produite. Réessayez."
   }
 }

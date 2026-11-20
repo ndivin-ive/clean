@@ -9,7 +9,8 @@ owner privacy, audit, grants). The previous model is in git history at `523bdad`
 - **Tenant tables** carry `id`, `organization_id`, `created_at`, `updated_at`, `created_by`; RLS forced; `tenant_isolation` policy; audit and `updated_at` triggers.
 - **Seller-owned tables** also carry `owner_id` (defaults to the signed-in user) and four RESTRICTIVE policies: read via `app_can_see_owner(owner_id)`, insert/update/delete only by the owner (D-033).
 - **References**: child → parent foreign keys are composite. Tenant tables use `(organization_id, parent_id)`; seller-owned tables use `(organization_id, owner_id, parent_id)` with ON UPDATE CASCADE (D-043). User columns reference `membership (organization_id, user_id)`.
-- **Global identity tables** (Better Auth): `auth_user` (with `language`, `theme`), `auth_session`, `auth_account`, `auth_verification` — no business data, no RLS.
+- **Global identity tables** (Better Auth): `auth_user` (with `language`, `theme`), `auth_session` (with `active_organization_id`, D-045), `auth_account`, `auth_verification` (magic-link tokens stored hashed) — no business data, no RLS.
+- `accept_invitation(token_hash, user_id)` (migration `0003`) is the only way to join an organisation from an invitation (D-048).
 - All access goes through `withTenant()` / `withUser()` (`src/server/db/tenant.ts`).
 
 ## Tenant-scoped (organisation settings)
