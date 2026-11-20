@@ -22,6 +22,7 @@
     "db:local": "./scripts/local-pg.sh"
   },
   "dependencies": {
+    "better-auth": "1.7.27",
     "drizzle-orm": "0.45.4",
     "next": "16.4.6",
     "next-intl": "4.15.3",

@@ -12,7 +12,7 @@ process analytics. Full brief: `docs/SPEC.md`. Decisions: `docs/DECISIONS.md`.
 
 TypeScript (strict) · Next.js 16 App Router (`src/proxy.ts`, cacheComponents
 off) · React 19 · Tailwind 4 · next-intl 4 · PostgreSQL 16 + RLS · Drizzle ORM
-· Auth.js-equivalent auth (checkpoint 3) · Vitest · Playwright · Mailpit.
+· Better Auth (checkpoint 3) · Vitest · Playwright · Mailpit.
 
 ## Commands
 
@@ -45,6 +45,12 @@ In cloud sandboxes: `pnpm db:local`, then set `PW_CHROMIUM_PATH=/opt/pw-browsers
 **Stop and ask before:** paid services/accounts, stack changes, deploying,
 sending real email, deleting data/migrations, starting a new phase.
 
+## Database rules
+
+- All tenant data access goes through `withTenant()` / `withUser()` (`src/server/db/tenant.ts`).
+- New tenant table ⇒ in its migration call `SELECT clean_enable_tenant_table('name');`, use `tenantColumns()`, composite FKs (`tenantFk`, `memberFk`), and add it to `TENANT_TABLES` in `tests/integration/support/fixtures.ts`. The catalogue test fails otherwise.
+- Hand-written SQL goes in a `drizzle-kit generate --custom` migration.
+
 ## Code layout
 
 - `src/domain/` — pure logic (scoring, status machine, permissions, templates). No framework/DB imports.
@@ -55,7 +61,7 @@ sending real email, deleting data/migrations, starting a new phase.
 ## Phase 1 checklist
 
 - [x] 1. Scaffold: strict TS, lint, format, i18n EN/FR, Docker Compose, Drizzle, Vitest, Playwright, CI, docs
-- [ ] 2. Schema, RLS policies, audit trigger, tenant-isolation tests
+- [x] 2. Schema, RLS policies, audit trigger, tenant-isolation tests
 - [ ] 3. Auth (magic link), organizations, invitations, roles, `can()` matrix
 - [ ] 4. Setup wizard (language, stages, first support function, invites)
 - [ ] 5. Accounts, contacts, opportunities; stages; Kanban + list; CSV import

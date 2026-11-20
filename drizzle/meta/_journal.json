@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795190901459,
+      "tag": "0000_session_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795190902187,
+      "tag": "0001_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795190913838,
+      "tag": "0002_rls_audit_grants",
+      "breakpoints": true
+    }
+  ]
+}

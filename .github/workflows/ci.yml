@@ -53,7 +53,7 @@ jobs:
       - run: pnpm format:check
       - run: pnpm test
       - run: pnpm db:migrate --test
-      - run: pnpm test:integration --passWithNoTests
+      - run: pnpm test:integration
 
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium

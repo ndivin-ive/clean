@@ -20,6 +20,7 @@ export default defineConfig({
         test: {
           name: "integration",
           include: ["tests/integration/**/*.test.ts"],
+          globalSetup: ["tests/integration/support/global-setup.ts"],
           environment: "node",
           // Integration tests share one database; run files serially.
           fileParallelism: false,
