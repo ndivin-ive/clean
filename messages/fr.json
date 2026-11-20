@@ -1,7 +1,7 @@
 {
   "Metadata": {
-    "title": "CLEAN — pipeline, appui des experts et analyses",
-    "description": "Un CRM léger pour les équipes B2B où les commerciaux vendent avec l’appui d’équipes expertes."
+    "title": "CLEAN — le compagnon de vente",
+    "description": "CLEAN est un compagnon de vente pour les commerciaux et responsables de comptes : un seul endroit pour démarrer la journée, des relations rendues visibles et des mises à jour captées sans ressaisie."
   },
   "Common": {
     "appName": "CLEAN",
@@ -10,35 +10,35 @@
     "localeName": "{locale, select, en {English} fr {Français} other {Inconnue}}"
   },
   "Landing": {
-    "eyebrow": "CRM léger pour les équipes B2B",
-    "headline": "Vendez ensemble, avec le bon expert sur chaque affaire.",
-    "lead": "CLEAN réunit votre pipeline, vos demandes d’appui aux experts et l’analyse de votre processus dans un seul espace serein.",
-    "stepsTitle": "La démarche CLEAN",
+    "eyebrow": "L’espace de travail du commercial",
+    "headline": "Savoir ce qui compte aujourd’hui. Arriver préparé à chaque rendez-vous.",
+    "lead": "CLEAN est un compagnon de vente pour les commerciaux et responsables de comptes : un seul endroit pour démarrer la journée, des relations rendues visibles et des mises à jour captées sans ressaisie.",
+    "stepsTitle": "Ce que CLEAN fait pour vous",
     "steps": {
       "capture": {
         "letter": "C",
         "name": "Capter",
-        "description": "Enregistrez comptes, contacts et opportunités dès qu’ils apparaissent."
+        "description": "Transforme réunions, e-mails et notes en mises à jour approuvées en un clic."
       },
       "link": {
         "letter": "L",
         "name": "Lier",
-        "description": "Reliez chaque opportunité aux experts capables de la faire avancer."
+        "description": "Relie personnes, comptes, affaires et signaux, et révèle les rôles non couverts."
       },
       "engage": {
         "letter": "E",
         "name": "Engager",
-        "description": "Demandez, triez et réalisez l’appui avec des attentes claires."
+        "description": "Prépare chaque interaction : fiche, questions et compte rendu."
       },
       "analyse": {
         "letter": "A",
         "name": "Analyser",
-        "description": "Visualisez la demande, la capacité et l’effet de l’appui sur le taux de gain."
+        "description": "Une vue honnête de votre pipeline : santé des affaires, blocages et prévision argumentée."
       },
       "negotiate": {
         "letter": "N",
         "name": "Négocier",
-        "description": "Concluez en sachant qui a aidé et ce qui a changé."
+        "description": "Conclure et développer : plans de closing, renouvellements et potentiel inexploité."
       }
     },
     "status": "Phase 1 en cours de développement"

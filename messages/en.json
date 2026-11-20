@@ -1,7 +1,7 @@
 {
   "Metadata": {
-    "title": "CLEAN — pipeline, specialist support and analytics",
-    "description": "A lightweight CRM for B2B teams where account executives sell with specialist support."
+    "title": "CLEAN — the sales companion",
+    "description": "CLEAN is a sales companion for account executives and account managers: one place to start the day, relationships made visible, and updates captured without retyping."
   },
   "Common": {
     "appName": "CLEAN",
@@ -10,35 +10,35 @@
     "localeName": "{locale, select, en {English} fr {Français} other {Unknown}}"
   },
   "Landing": {
-    "eyebrow": "Lightweight CRM for B2B teams",
-    "headline": "Sell together, with the right specialist on every deal.",
-    "lead": "CLEAN brings your pipeline, specialist support requests and process analytics into one calm place.",
-    "stepsTitle": "The CLEAN process",
+    "eyebrow": "The seller's own workspace",
+    "headline": "Know what matters today. Walk into every meeting prepared.",
+    "lead": "CLEAN is a sales companion for account executives and account managers: one place to start the day, relationships made visible, and updates captured without retyping.",
+    "stepsTitle": "What CLEAN does for you",
     "steps": {
       "capture": {
         "letter": "C",
         "name": "Capture",
-        "description": "Record accounts, contacts and opportunities as they appear."
+        "description": "Turns meetings, emails and notes into updates you approve in one click."
       },
       "link": {
         "letter": "L",
         "name": "Link",
-        "description": "Connect each opportunity to the specialists who can move it forward."
+        "description": "Connects people, accounts, deals and signals, and shows coverage gaps."
       },
       "engage": {
         "letter": "E",
         "name": "Engage",
-        "description": "Request, triage and deliver support with clear expectations."
+        "description": "Prepares every interaction with a brief, questions and a debrief."
       },
       "analyse": {
         "letter": "A",
         "name": "Analyse",
-        "description": "See demand, capacity and what support does to win rates."
+        "description": "An honest view of your pipeline: deal health, stalls and forecast with reasons."
       },
       "negotiate": {
         "letter": "N",
         "name": "Negotiate",
-        "description": "Close with a record of who helped and what changed."
+        "description": "Close and grow: close plans, renewals and expansion whitespace."
       }
     },
     "status": "Phase 1 in development"

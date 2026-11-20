@@ -6,6 +6,7 @@ import * as s from "@/server/db/schema";
 import { withTenant, withUser } from "@/server/db/tenant";
 import { appDb, closePools } from "./support/db";
 import {
+  as,
   createTenantFixture,
   TENANT_TABLES,
   type TenantFixture,
@@ -15,10 +16,7 @@ import { PG, pgErrorCode } from "./support/pg-error";
 let A: TenantFixture;
 let B: TenantFixture;
 
-const ctx = (f: TenantFixture) => ({
-  organizationId: f.organizationId,
-  userId: f.aeUserId,
-});
+const ctx = (f: TenantFixture) => as(f);
 
 beforeAll(async () => {
   A = await createTenantFixture("alpha");
@@ -97,11 +95,9 @@ describe("tenant isolation — inserts and foreign keys", () => {
   it("cannot INSERT a row labelled with another tenant's organization_id", async () => {
     const code = await pgErrorCode(
       withTenant(appDb, ctx(B), (tx) =>
-        tx.insert(s.account).values({
-          organizationId: A.organizationId,
-          name: "Smuggled",
-          ownerId: A.aeUserId,
-        }),
+        tx
+          .insert(s.account)
+          .values({ organizationId: A.organizationId, name: "Smuggled" }),
       ),
     );
     expect(code).toBe(PG.insufficientPrivilege);
@@ -122,9 +118,8 @@ describe("tenant isolation — inserts and foreign keys", () => {
   it("cannot reference another tenant's account (composite FK)", async () => {
     const code = await pgErrorCode(
       withTenant(appDb, ctx(B), (tx) =>
-        tx.insert(s.opportunity).values({
+        tx.insert(s.deal).values({
           accountId: A.ids.account, // belongs to tenant A
-          ownerId: B.aeUserId,
           name: "Cross-tenant",
           stageId: B.ids.pipeline_stage,
         }),
@@ -133,12 +128,12 @@ describe("tenant isolation — inserts and foreign keys", () => {
     expect(code).toBe(PG.foreignKeyViolation);
   });
 
-  it("cannot assign a user who is not a member of the organization", async () => {
+  it("cannot add a participant who is not a member of the organization", async () => {
     const code = await pgErrorCode(
       withTenant(appDb, ctx(B), (tx) =>
-        tx.insert(s.engagementAssignment).values({
-          requestId: B.ids.engagement_request,
-          userId: A.specialistUserId, // member of A only
+        tx.insert(s.interactionParticipant).values({
+          interactionId: B.ids.interaction,
+          userId: A.peerId, // member of A only
         }),
       ),
     );
@@ -149,23 +144,24 @@ describe("tenant isolation — inserts and foreign keys", () => {
     const row = await withTenant(appDb, ctx(A), async (tx) => {
       const [created] = await tx
         .insert(s.account)
-        .values({ name: "Defaults Co", ownerId: A.aeUserId })
+        .values({ name: "Defaults Co" })
         .returning();
       return created!;
     });
     expect(row.organizationId).toBe(A.organizationId);
-    expect(row.createdBy).toBe(A.aeUserId);
+    expect(row.createdBy).toBe(A.sellerId);
+    expect(row.ownerId).toBe(A.sellerId);
   });
 });
 
 describe("signed in without a tenant (organization picker)", () => {
   it("lists only the user's own memberships and organizations", async () => {
-    const result = await withUser(appDb, A.aeUserId, async (tx) => ({
+    const result = await withUser(appDb, A.sellerId, async (tx) => ({
       memberships: await tx.select().from(s.membership),
       organizations: await tx.select().from(s.organization),
       accounts: await tx.select({ n: count() }).from(s.account),
     }));
-    expect(result.memberships.map((m) => m.userId)).toEqual([A.aeUserId]);
+    expect(result.memberships.map((m) => m.userId)).toEqual([A.sellerId]);
     expect(result.organizations.map((o) => o.id)).toEqual([A.organizationId]);
     expect(result.accounts[0]!.n).toBe(0);
   });
@@ -174,27 +170,27 @@ describe("signed in without a tenant (organization picker)", () => {
     await withTenant(appDb, ctx(B), (tx) =>
       tx
         .insert(s.membership)
-        .values({ userId: A.aeUserId, roles: ["specialist"] }),
+        .values({ userId: A.sellerId, roles: ["specialist"] }),
     );
-    const orgs = await withUser(appDb, A.aeUserId, (tx) =>
+    const orgs = await withUser(appDb, A.sellerId, (tx) =>
       tx.select({ id: s.organization.id }).from(s.organization),
     );
     expect(orgs.map((o) => o.id).sort()).toEqual(
       [A.organizationId, B.organizationId].sort(),
     );
 
-    const opportunities = await withUser(appDb, A.aeUserId, (tx) =>
-      tx.select({ n: count() }).from(s.opportunity),
+    const opportunities = await withUser(appDb, A.sellerId, (tx) =>
+      tx.select({ n: count() }).from(s.deal),
     );
     expect(opportunities[0]!.n).toBe(0);
   });
 
   it("cannot modify memberships without a tenant context", async () => {
-    const updated = await withUser(appDb, A.aeUserId, (tx) =>
+    const updated = await withUser(appDb, A.sellerId, (tx) =>
       tx
         .update(s.membership)
         .set({ roles: ["admin"] })
-        .where(eq(s.membership.userId, A.aeUserId))
+        .where(eq(s.membership.userId, A.sellerId))
         .returning(),
     );
     expect(updated).toHaveLength(0);
@@ -225,7 +221,7 @@ describe("connection pooling", () => {
     await expect(
       withTenant(
         appDb,
-        { organizationId: "' OR 1=1 --", userId: A.aeUserId },
+        { organizationId: "' OR 1=1 --", userId: A.sellerId },
         async () => 1,
       ),
     ).rejects.toThrow(/Invalid organizationId/);

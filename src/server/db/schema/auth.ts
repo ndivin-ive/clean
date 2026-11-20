@@ -6,7 +6,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { localeEnum } from "./enums";
+import { localeEnum, themeEnum } from "./enums";
 
 /*
  * GLOBAL identity tables used by Better Auth (decision Q1). They hold no
@@ -24,6 +24,7 @@ export const authUser = pgTable("auth_user", {
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   language: localeEnum("language").notNull().default("en"),
+  theme: themeEnum("theme").notNull().default("light"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

@@ -5,8 +5,8 @@ import {
   foreignKey,
   index,
   jsonb,
-  numeric,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -15,14 +15,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 import { tenantColumns, tenantKey } from "./columns";
-import { aiSettingEnum, localeEnum, roleEnum } from "./enums";
+import { localeEnum, roleEnum } from "./enums";
 
 export const organization = pgTable(
   "organization",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    // Always equal to id, so every table (this one included) can share the
-    // same RLS policy and audit trigger on organization_id.
+    // Always equal to id, so every table shares one RLS policy and audit trigger.
     organizationId: uuid("organization_id")
       .notNull()
       .generatedAlwaysAs(sql`id`),
@@ -30,7 +29,12 @@ export const organization = pgTable(
     defaultLanguage: localeEnum("default_language").notNull().default("en"),
     plan: text("plan").notNull().default("free"),
     dataRegion: text("data_region").notNull().default("eu"),
-    aiSetting: aiSettingEnum("ai_setting").notNull().default("off"),
+    // Rule 2: sellers' records are private unless the admin turns this on (D-033).
+    teamVisibility: boolean("team_visibility").notNull().default(false),
+    // Forecast periods are calendar quarters offset by this month (D-038).
+    fiscalYearStartMonth: smallint("fiscal_year_start_month")
+      .notNull()
+      .default(1),
     setupCompletedAt: timestamp("setup_completed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -40,7 +44,13 @@ export const organization = pgTable(
       .defaultNow(),
     createdBy: uuid("created_by").default(sql`app_current_user()`),
   },
-  (t) => [check("organization_name_not_blank", sql`btrim(${t.name}) <> ''`)],
+  (t) => [
+    check("organization_name_not_blank", sql`btrim(${t.name}) <> ''`),
+    check(
+      "organization_fiscal_month_range",
+      sql`${t.fiscalYearStartMonth} BETWEEN 1 AND 12`,
+    ),
+  ],
 );
 
 export const membership = pgTable(
@@ -53,27 +63,8 @@ export const membership = pgTable(
     roles: roleEnum("roles")
       .array()
       .notNull()
-      .default(sql`'{}'`),
-    skills: text("skills")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
-    languages: text("languages")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
-    regions: text("regions")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
-    weeklyBookableHours: numeric("weekly_bookable_hours", {
-      precision: 4,
-      scale: 1,
-      mode: "number",
-    })
-      .notNull()
-      .default(0),
-    // Q2: sales teams. A manager sees deals of direct and indirect reports.
+      .default(sql`'{seller}'`),
+    // Teams: a manager and their direct/indirect reports (used by team visibility).
     managerUserId: uuid("manager_user_id"),
     isActive: boolean("is_active").notNull().default(true),
   },
@@ -90,19 +81,13 @@ export const membership = pgTable(
       columns: [t.organizationId, t.managerUserId],
       foreignColumns: [t.organizationId, t.userId],
     }),
-    check(
-      "membership_hours_range",
-      sql`${t.weeklyBookableHours} >= 0 AND ${t.weeklyBookableHours} <= 80`,
-    ),
     check("membership_not_own_manager", sql`${t.managerUserId} <> ${t.userId}`),
     index("membership_user_idx").on(t.userId),
+    index("membership_manager_idx").on(t.organizationId, t.managerUserId),
   ],
 );
 
-/**
- * FK from a tenant table's user column to membership (organization_id, user_id):
- * the referenced user must be a member of the SAME organization.
- */
+/** FK from a user column to membership (organization_id, user_id): same-organisation members only. */
 export const memberFk = (
   name: string,
   child: { organizationId: AnyPgColumn },
@@ -130,7 +115,7 @@ export const invitation = pgTable(
     roles: roleEnum("roles")
       .array()
       .notNull()
-      .default(sql`'{}'`),
+      .default(sql`'{seller}'`),
     // SHA-256 of the token sent by email. The token itself is never stored.
     tokenHash: text("token_hash").notNull().unique(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -144,6 +129,7 @@ export const invitation = pgTable(
   ],
 );
 
+/** In-app notifications. Only the recipient can read them (personal policy in drizzle/0002). */
 export const notification = pgTable(
   "notification",
   {

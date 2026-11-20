@@ -4,9 +4,13 @@
 
 ## Project
 
-CLEAN is a lightweight, bilingual (EN/FR), multi-tenant B2B CRM: pipeline
-(accounts, opportunities), booking of specialist support against deals, and
-process analytics. Full brief: `docs/SPEC.md`. Decisions: `docs/DECISIONS.md`.
+CLEAN is the **seller's own workspace**: a bilingual (EN/FR), multi-tenant
+sales companion for account executives and account managers. It ranks what
+matters today, prepares every interaction, keeps accounts and relationships
+current, and turns notes into updates the seller approves. Brief: `docs/SPEC.md`.
+Pivot history: `docs/PIVOT.md`. Decisions: `docs/DECISIONS.md`. Rules:
+`docs/RULES.md`. Privacy: `docs/PRIVACY.md`. UI direction: iOS-style (D-040),
+prototype in `prototype/companion-ios.html`.
 
 ## Stack
 
@@ -33,22 +37,24 @@ In cloud sandboxes: `pnpm db:local`, then set `PW_CHROMIUM_PATH=/opt/pw-browsers
 
 ## Non-negotiable rules (from the brief)
 
-1. Clean-room: write everything here; copy nothing from other repos/employers.
-2. Multi-tenant: `organization_id` everywhere; RLS + API checks; isolation tests.
-3. Bilingual: every UI string via next-intl (`messages/en.json`, `messages/fr.json`). Lint blocks JSX literals.
-4. Rules first, AI second: every smart feature works without AI; AI only suggests; scores show why.
-5. All AI calls through `src/server/ai/` only (lint-enforced).
-6. Secrets encrypted at rest, never logged/returned; every write audited.
-7. EU-first hosting; no customer data for training.
+1. Clean-room: write everything here; copy nothing from other repos/employers; invented data only.
+2. Multi-tenant and private by default: `organization_id` everywhere; seller records carry `owner_id`; RLS (tenant + owner) + API checks; isolation and privacy tests.
+3. Seller owns the record: AI and connectors only propose; nothing is written until the seller approves; every proposal shows its source.
+4. Rules first, AI second: every smart feature works without AI; every score and ranking shows its reasons.
+5. All AI calls through `src/server/ai/` only (lint-enforced); prompts never include data the user cannot see; no training on customer data.
+6. GDPR: opt-in connectors, narrow scopes, no full email storage; see `docs/PRIVACY.md`. Secrets never logged or returned; every write audited.
+7. Bilingual EN/FR; no hard-coded UI text (lint blocks JSX literals).
 8. Small steps: tests + typecheck + lint green before a checkpoint is done.
 
-**Stop and ask before:** paid services/accounts, stack changes, deploying,
-sending real email, deleting data/migrations, starting a new phase.
+**Stop and ask before:** paid services/accounts, stack changes, connecting any
+real email/calendar/CRM account, deploying, deleting data or migrations,
+starting a new phase.
 
 ## Database rules
 
 - All tenant data access goes through `withTenant()` / `withUser()` (`src/server/db/tenant.ts`).
-- New tenant table ⇒ in its migration call `SELECT clean_enable_tenant_table('name');`, use `tenantColumns()`, composite FKs (`tenantFk`, `memberFk`), and add it to `TENANT_TABLES` in `tests/integration/support/fixtures.ts`. The catalogue test fails otherwise.
+- New tenant table ⇒ in its migration call `SELECT clean_enable_tenant_table('name');`, use `tenantColumns()`, composite FKs (`tenantFk`, `memberFk`), and add it to `TENANT_ONLY_TABLES` in `tests/integration/support/fixtures.ts`.
+- New seller-owned table ⇒ `ownedColumns()`, `ownerKey()`, `ownedFk()` to parents, `SELECT clean_enable_owned_table('name');`, and add it to `OWNED_TABLES`. The catalogue test fails otherwise.
 - Hand-written SQL goes in a `drizzle-kit generate --custom` migration.
 
 ## Code layout
@@ -58,17 +64,21 @@ sending real email, deleting data/migrations, starting a new phase.
 - `src/app/[locale]/` — routes. `src/components/` — UI.
 - `tests/unit`, `tests/integration` (real Postgres), `tests/e2e` (Playwright).
 
-## Phase 1 checklist
+## Phase 1 checklist (companion)
 
-- [x] 1. Scaffold: strict TS, lint, format, i18n EN/FR, Docker Compose, Drizzle, Vitest, Playwright, CI, docs
-- [x] 2. Schema, RLS policies, audit trigger, tenant-isolation tests
-- [ ] 3. Auth (magic link), organizations, invitations, roles, `can()` matrix
-- [ ] 4. Setup wizard (language, stages, first support function, invites)
-- [ ] 5. Accounts, contacts, opportunities; stages; Kanban + list; CSV import
-- [ ] 6. Support functions admin (members, skills, hours, engagement types, service rules)
-- [ ] 7. Template engine + 4 starter templates + versioned editor
-- [ ] 8. `assess()` rules engine + tests + SCORING.md
-- [ ] 9. "Get help on this deal", live score panel, autosaved drafts, My requests
-- [ ] 10. Triage queue, status machine, history, notifications, email (Mailpit)
-- [ ] 11. Effort and outcome logging
-- [ ] 12. E2E full loop in EN + FR; realistic demo seed
+Pre-pivot work (support booking, checkpoints 1–2) is summarised in `docs/PIVOT.md`.
+
+- [x] P1. Pivot refactor: docs, new schema and migrations, owner-privacy RLS, feature flags, support module parked
+- [ ] P2. Sign-in (magic link via Mailpit), organisations, invitations, roles, team visibility; iOS-style app shell, EN/FR, light/dark
+- [ ] P3. Rules engine: `rankActions`, `assessDeal`, `assessAccount`, coverage + full unit tests; `docs/RULES.md`
+- [ ] P4. Demo book seed (2 key + 8 accounts, 12 deals, 40 people, 6 months of interactions, signals)
+- [ ] P5. Accounts and people: list, account page, relationship map, timeline, signals
+- [ ] P6. Deals: board/list, deal page, stakeholders, qualification with evidence, close plan, health reasons
+- [ ] P7. Today: ranked actions (do / snooze / dismiss / teach), week-ahead strip
+- [ ] P8. Capture: note / paste (voice off by default), rule-based proposals, review and approve
+- [ ] P9. Living account plan + review prompt
+- [ ] P10. Meeting brief
+- [ ] P11. My pipeline and forecast, changes since last week
+- [ ] P12. Settings: stages, criteria, cadences, weights, AI provider (off), language, theme
+- [ ] P13. "Get help on this deal" behind the `support_requests` flag
+- [ ] P14. End-to-end test EN + FR; Phase 1 exit criteria

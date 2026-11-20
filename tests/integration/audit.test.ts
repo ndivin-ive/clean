@@ -3,15 +3,16 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as s from "@/server/db/schema";
 import { withTenant, type Tx } from "@/server/db/tenant";
 import { appDb, closePools } from "./support/db";
-import { createTenantFixture, type TenantFixture } from "./support/fixtures";
+import {
+  as,
+  createTenantFixture,
+  type TenantFixture,
+} from "./support/fixtures";
 import { PG, pgErrorCode } from "./support/pg-error";
 
 let A: TenantFixture;
 let B: TenantFixture;
-const ctx = (f: TenantFixture) => ({
-  organizationId: f.organizationId,
-  userId: f.aeUserId,
-});
+const ctx = (f: TenantFixture) => as(f);
 
 beforeAll(async () => {
   A = await createTenantFixture("audit-a");
@@ -34,7 +35,7 @@ describe("audit trail (rule 6: every write is recorded)", () => {
     const events = await withTenant(appDb, ctx(A), async (tx) => {
       const [row] = await tx
         .insert(s.account)
-        .values({ name: "Audited SA", ownerId: A.aeUserId })
+        .values({ name: "Audited SA" })
         .returning();
       await tx
         .update(s.account)
@@ -51,7 +52,7 @@ describe("audit trail (rule 6: every write is recorded)", () => {
       "update",
     ]);
     for (const e of events) {
-      expect(e.actorId).toBe(A.aeUserId);
+      expect(e.actorId).toBe(A.sellerId);
       expect(e.organizationId).toBe(A.organizationId);
     }
     expect(byAction.insert!.before).toBeNull();
@@ -74,13 +75,17 @@ describe("audit trail (rule 6: every write is recorded)", () => {
     expect(n).toBe(0);
   });
 
-  it("never stores secrets such as invitation token hashes", async () => {
-    const events = await withTenant(appDb, ctx(A), (tx) =>
-      eventsFor(tx, "invitation", A.ids.invitation),
-    );
-    expect(events).toHaveLength(1);
-    expect(events[0]!.after).not.toHaveProperty("token_hash");
-    expect(JSON.stringify(events[0])).not.toContain("hash-");
+  it("never stores secrets such as invitation token hashes or AI keys", async () => {
+    const [inv, ai] = await withTenant(appDb, ctx(A), async (tx) => [
+      await eventsFor(tx, "invitation", A.ids.invitation),
+      await eventsFor(tx, "ai_provider_setting", A.ids.ai_provider_setting),
+    ]);
+    expect(inv).toHaveLength(1);
+    expect(inv[0]!.after).not.toHaveProperty("token_hash");
+    expect(JSON.stringify(inv[0])).not.toContain("hash-");
+    expect(ai).toHaveLength(1);
+    expect(ai[0]!.after).not.toHaveProperty("encrypted_key");
+    expect(JSON.stringify(ai[0])).not.toContain("secret");
   });
 
   it("tenant B cannot read tenant A's audit events", async () => {

@@ -1,155 +1,109 @@
-# CLEAN — Claude Code build prompt
+# CLEAN — Product brief: the sales companion
 
-> How to use: create an empty private GitHub repository (for example `clean-app`), open it in Claude Code, and paste everything below the line as your first message. Claude Code will plan Phase 1, wait for your approval, then build.
->
-> Source: "CLEAN — Product concept & PRD" (draft v0.1, 20 Nov 2026).
+> Source: "CLEAN — Claude Code prompt: pivot to the sales companion", based on
+> "CLEAN — The sales companion: research on seller needs and tool gaps"
+> (20 Nov 2026) and the first "CLEAN — Product concept & PRD".
+> The earlier brief (support booking) is archived in `archive/SPEC-v1-support-booking.md`.
+> Decisions taken on this brief's open questions: `DECISIONS.md` (D-031 onwards).
 
----
+Assumptions: CLEAN starts **standalone** for small teams, with the data model
+and sync layer designed so it can later sit on top of HubSpot, Salesforce or
+Dynamics. First persona: an account executive or account manager with 5 to 50
+active accounts.
 
-You are the lead engineer for **CLEAN**, a new SaaS product. Read this whole brief before doing anything. Then reply with (1) a short restatement of what you will build in Phase 1, (2) the proposed repository structure, (3) a numbered implementation plan with checkpoints, and (4) any questions. **Do not write code until I approve the plan.**
+## 1. The product
 
-## 1. Product in one paragraph
+CLEAN is the **seller's own workspace**: a sales companion for account
+executives and account managers in B2B companies. It helps them decide what
+matters today, prepare for every important interaction, keep accounts and
+relationships current, and capture everything without retyping. Manager and
+team views are a by-product of the seller's work, never the reason for it.
 
-CLEAN is a lightweight, bilingual (English / French) CRM for small B2B companies (20–200 people) where account executives sell with the help of specialist teams: presales, solution architects, value advisors, customer success, partner desks. It brings three jobs into one place: the **pipeline** (accounts and opportunities), the **booking** of specialist support against those opportunities, and **analytics** on how the process performs. The name is the process: **C**apture / Capter · **L**ink / Lier · **E**ngage / Engager · **A**nalyse / Analyser · **N**egotiate / Négocier.
+| Letter | English · Français   | What CLEAN does                                                                                   |
+| ------ | -------------------- | ------------------------------------------------------------------------------------------------- |
+| C      | Capture · Capter     | Turns meetings, emails and notes into proposed updates the seller approves in one click           |
+| L      | Link · Lier          | Links people, accounts, deals and signals: relationship map, coverage gaps, changes               |
+| E      | Engage · Engager     | Prepares and runs interactions: meeting brief, questions, debrief, specialist booking             |
+| A      | Analyse · Analyser   | Honest view of the seller's own pipeline and accounts: deal health, stalls, forecast with reasons |
+| N      | Negotiate · Négocier | Close and grow: close plan, negotiation prep, renewals, expansion whitespace, value delivered     |
+
+Why (research summary): sellers spend only about 40% of their time selling;
+sellers overwhelmed by tools are much less likely to hit quota; top performers
+prioritise on live signals and research before every contact; won deals involve
+about twice as many buyer contacts as lost ones; account plans are seen as
+burdensome and are rarely updated. So: **less typing, one place to start the
+day, relationship depth made visible, plans that update themselves.**
 
 ## 2. Non-negotiable rules
 
-1. **Clean-room build.** Write everything from scratch in this repository. Do not copy code, text, templates, names or data from any other repository or employer system (in particular nothing from `gva-engagement-request` or Equinix). The behaviour described in this brief is the only spec.
-2. **Multi-tenant from day one.** Every table has `organization_id`; isolation enforced with PostgreSQL row-level security, plus checks in the API layer. Write tests that prove one tenant cannot read another's data.
-3. **Bilingual.** All UI strings go through i18n (English and French) from the first screen. No hard-coded user-facing text.
-4. **Rules first, AI second.** Every smart feature must work with transparent rules and no AI. AI only drafts or suggests; a user always confirms before anything is saved. Scores always show why.
-5. **Model-agnostic AI.** All AI calls go through one internal AI gateway module. No provider SDK is imported anywhere else.
-6. **Security basics.** Secrets and customer API keys encrypted at rest, never logged, never returned after entry. Every write is recorded in an audit table.
-7. **EU-first.** Assume hosting and database in an EU region; no customer data used for model training.
-8. **Small, reviewable steps.** One checkpoint at a time; run tests and type checks before saying a step is done; commit with clear messages.
+1. **Clean-room build.** Everything is written in this repository. Copy nothing from any other repository or employer system. No real customer data: seed and tests use invented companies and people only.
+2. **Multi-tenant and private by default.** Every table has `organization_id`; PostgreSQL row-level security plus API checks; tests prove tenant isolation. Inside a tenant, a seller's accounts are visible to their team only if the admin enables it.
+3. **Seller owns the record.** AI and connectors only _propose_ changes. Nothing is written to an account, deal, person or plan until the seller approves. Every proposal shows its source.
+4. **Rules first, AI second.** Every smart feature works without AI using transparent rules; AI improves it when a model is connected. Every score and ranking shows its reasons.
+5. **Model-agnostic AI.** All AI calls go through one AI gateway module (providers: CLEAN default, Anthropic, OpenAI, Mistral, Azure OpenAI; AI can be switched off). No provider SDK imported elsewhere. Prompts never include data the user cannot see. Customer data is never used for training.
+6. **Personal data care (GDPR).** Email and calendar access are opt-in per user, with the narrowest scopes possible; email content is processed to create proposals and not stored in full unless the user keeps it; users can delete their connector data. Lawful basis and retention in `PRIVACY.md`.
+7. **Bilingual** English / French from the first screen; no hard-coded user-facing text.
+8. **Small, reviewable steps;** tests, type check and lint pass before a checkpoint is called done.
 
-**Stop and ask me before:** adding a paid service or account, changing the stack below, deploying anywhere, sending real emails, deleting data or migrations, or starting a new phase.
+**Stop and ask before:** adding a paid service or account, changing the stack, connecting any real email, calendar or CRM account, deploying anywhere, deleting data or migrations, or starting a new phase.
 
-## 3. Stack (proposed — challenge it in your plan if you see a better option)
+## 3. Stack
 
-| Layer     | Choice                                                                                                |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| Language  | TypeScript everywhere, strict mode                                                                    |
-| Web app   | Next.js (App Router), React, Tailwind CSS, a headless component library (shadcn/ui or similar)        |
-| Database  | PostgreSQL with row-level security; migrations in the repo (Drizzle or Prisma — pick one and justify) |
-| Auth      | Email magic link + Google + Microsoft sign-in (Auth.js or equivalent); SSO later                      |
-| i18n      | `next-intl` or equivalent, `en` and `fr`                                                              |
-| Tests     | Vitest for units, Playwright for end-to-end                                                           |
-| Local dev | Docker Compose for Postgres and a local mail catcher; seed script with a demo organisation            |
-| MCP       | Official MCP TypeScript SDK, remote server (Streamable HTTP), OAuth per user — Phase 3                |
+TypeScript (strict), Next.js App Router, Tailwind + headless components, PostgreSQL with RLS and migrations in the repo, Auth (email magic link, Google, Microsoft), i18n `en`/`fr`, Vitest + Playwright, Docker Compose for local dev, seed script. MCP server (official TypeScript SDK) in Phase 3.
 
-## 4. Users, roles and permissions
+## 4. Data model (account-centred)
 
-Five fixed roles plus admin-defined **support functions**. A user can hold several roles.
+See `DATA_MODEL.md` for the implemented model. Entities: account, person,
+relationship, deal, deal_stakeholder, deal_qualification (default criteria:
+metrics, economic buyer, decision criteria, decision process, paper process,
+identified pain, champion, competition — each unknown / partial / confirmed with
+evidence), interaction, capture_proposal, account_plan, signal, action,
+meeting_brief, support_request (parked), ai_provider_setting, connector (Phase 2),
+audit_event. Stage changes and qualification changes are stored as events.
 
-| Capability                                      | Account executive | Sales manager | Specialist           | Support team lead             | Admin |
-| ----------------------------------------------- | ----------------- | ------------- | -------------------- | ----------------------------- | ----- |
-| Create / edit own accounts and opportunities    | Yes               | Yes           | No                   | No                            | Yes   |
-| See pipeline                                    | Own deals         | Their team    | Deals they support   | Deals their function supports | All   |
-| Request support on a deal                       | Yes               | Yes           | Yes                  | Yes                           | Yes   |
-| Triage, accept, decline, reassign               | No                | No            | Own queue if allowed | Their function                | All   |
-| Log effort and outcome                          | Outcome only      | Outcome only  | Yes                  | Yes                           | Yes   |
-| Set own availability and skills                 | Yes               | Yes           | Yes                  | Yes (their team)              | Yes   |
-| Analytics                                       | Own               | Team          | Own                  | Function                      | All   |
-| Configure stages, functions, templates, scoring | No                | No            | No                   | Their function's template     | Yes   |
-| Users, billing, integrations                    | No                | No            | No                   | No                            | Yes   |
+## 5. Smart rules (transparent, unit-tested, admin-tunable)
 
-A **support function** has: name, description, lead, members (skills, languages, regions, weekly bookable hours), engagement types offered (discovery call, demo, workshop, business case, executive briefing, proof of concept, onboarding review), a request template, scoring rules and service rules (who may request, approval required or not, target response time, max open requests per specialist).
+Full logic and defaults: `RULES.md`.
 
-## 5. Data model (starting point)
+- **5.1 Today ranking** — `rankActions(seller, now)`: candidate actions from rules (next step missing or passed; stalled beyond the stage's typical time; single-threaded above an amount threshold; key criterion unknown late; close within 30 days without forecast category; key person past their cadence; new signal in 7 days; renewal within 90 days without a plan review in 60; meeting tomorrow without a viewed brief; pending capture proposals), scored, top 7 with reasons; done / snooze / dismiss / not relevant (teach). Amount factor = log-scaled share of the seller's open pipeline. Snoozed and dismissed actions return only when their condition changes.
+- **5.2 Deal health** — `assessDeal(deal)`: qualification coverage, engaged stakeholders and roles, dated next step, recent buyer interaction, stage age vs typical, close date pushes, compelling event. Healthy ≥ 70, Watch 40–69, At risk < 40.
+- **5.3 Account health** — `assessAccount(account)`: coverage of key roles, last executive interaction, open risks, signals, renewal proximity, plan freshness.
+- **5.4 Coverage map** — required roles (default: economic buyer, decision maker, champion, technical evaluator, procurement) as filled, weak (strength ≤ 2 or stale) or missing.
 
-All tables: `id` (UUID), `organization_id`, `created_at`, `updated_at`, `created_by`.
+## 6. Phases
 
-- **organization**: name, default language, plan, data region, AI setting
-- **user** / **membership**: name, email, language, roles[], skills[], languages[], regions[], weekly_bookable_hours
-- **support_function**, **support_function_member** (user, is_lead)
-- **request_template**: support_function_id, version, schema (JSON: sections → fields with key, label_en, label_fr, type, required, options, hint)
-- **scoring_rule_set**: support_function_id, weights (JSON), effort_bands (JSON), lead_times (JSON), flag_rules (JSON)
-- **account**: name, country, industry, relationship (new_logo | expand | retain)
-- **contact**: account_id, name, title, decision_role (decision_maker | sponsor | influencer | technical_evaluator | procurement | unknown)
-- **pipeline_stage**: name_en, name_fr, order, probability, is_won, is_lost
-- **opportunity**: account_id, owner_id, name, amount, currency, stage_id, close_date, why_now, next_step, won_lost_reason
-- **opportunity_stage_event**: opportunity_id, from_stage, to_stage, at (for cycle times)
-- **engagement_request**: opportunity_id, requester_id, support_function_id, template_version, answers (JSON), status, readiness_score, readiness_breakdown (JSON), effort_points, effort_band, flags (JSON), target_date
-- **engagement_status_event**: request_id, from, to, by, at, note
-- **engagement_assignment**: request_id, user_id
-- **booking**: request_id, starts_at, ends_at, location_or_link, external_calendar_ids (JSON)
-- **effort_entry**: request_id, user_id, hours, activity (prep | delivery | follow_up), date
-- **engagement_outcome**: request_id, result (decision | next_step | qualified_out | no_progress), notes, deal_impact (1–5)
-- **connector**: scope (org | user), type, encrypted_credentials, status, last_sync_at — Phase 2
-- **ai_provider_setting**: provider, endpoint, encrypted_key, enabled_features[] — Phase 3
-- **audit_event**: actor_id, entity, entity_id, action, before (JSON), after (JSON), at
+### Phase 1 — Companion core (current)
 
-Engagement status flow: `new → needs_information → accepted → scheduled → delivered → outcome_recorded`, with side exits `declined` and `withdrawn`. Enforce allowed transitions in one place and test them.
+1. Pivot refactor; migrations for the new model; realistic demo book (2 key accounts, 8 others, 12 deals, 40 people, 6 months of interactions, signals).
+2. Accounts & people: list with tier, health, next action; account page with people, relationship map, deals, timeline, signals.
+3. Deals: board and list; deal page with stakeholders, qualification checklist with evidence, close plan steps, health with reasons.
+4. Today: ranked actions; done / snooze / dismiss / teach; week-ahead strip.
+5. Capture (manual and paste, voice where supported): proposed updates; rules-based extraction first, AI through the gateway when configured; review screen to approve, edit or reject each change.
+6. Living account plan with review prompt in Today.
+7. Meeting brief from data; AI polishes when available.
+8. My pipeline & forecast: commit / best case / pipeline, health and reasons, changes since last week.
+9. Settings: stages and typical durations, qualification criteria, role cadences, Today weights, AI provider (off in Phase 1), language.
+10. Earlier support-request module reachable from a deal behind a feature flag; not extended.
+11. End-to-end test: sign in → Today with reasons → paste notes → approve → deal health and Today change → account plan and next meeting brief. EN and FR.
 
-## 6. Smart request form and scoring (rules engine)
+**Done when** that test passes, the rules have full unit tests, tenant-isolation tests pass, and the demo seed tells a believable story.
 
-The request form is rendered entirely from the template JSON (sections, fields, validation, summary and detail views all derive from it). Ship **four starter templates**: Presales demo / discovery, Strategic workshop or executive briefing, Business case review, Customer success review. Write their wording yourself; keep them generic.
+### Phase 2 — Connected companion (later)
 
-Implement a pure, unit-tested function `assess(request, ruleSet, today) → { score, breakdown[], effortPoints, effortBand, workingDaysToTarget, flags[] }`:
+Google and Microsoft calendar; Gmail and Outlook (opt-in, proposals only); transcript import; signals via RSS / webhooks / CSV; HubSpot two-way sync; Slack / Teams daily digest.
 
-- **Readiness score (0–100)** as a weighted sum of configurable criteria, defaults:
-  - clear objective (text length / presence of an outcome statement): up to 15
-  - concrete success criteria (who commits to what): up to 15
-  - at least one expected outcome selected: 5
-  - named customer attendees with titles: 15; at least one decision maker or sponsor: +5
-  - most senior attendee level given: 5
-  - account plan status (documented or formal > informal > none): up to 10
-  - linked opportunity or stage beyond "no opportunity": 5
-  - customer's own topics described: up to 10
-  - follow-up owner described: 5
-  - lead time vs the effort band's required lead time: up to 10
-- **Effort points** from engagement type, duration, role requested (lead / co-present / content only / coach), deliverables and extras (for example a site visit or a C-level audience); mapped to configurable **bands** (Light, Standard, Significant, Major), each with a typical effort and a minimum lead time in working days.
-- **Flags** (coaching hints shown to the requester as they type), for example: date closer than the band's lead time; strategic session with no senior attendee; no decision maker named; no account plan for a customer-facing session; high effort with no opportunity; date not confirmed with the customer; mostly technical session (suggest the technical function).
-- Labels: ≥ 75 "Ready for triage", 50–74 "Workable, some gaps", < 50 "Needs more detail" (translated).
-- All weights, bands, lead times and flag rules are read from `scoring_rule_set`, editable by admins, with defaults seeded.
+### Phase 3 — Everywhere the seller works (later)
 
-The form shows the live score, the breakdown (which criteria passed / failed) and the flags in a side panel while the user types. Drafts autosave.
+Remote MCP server (read: Today, account summary, deal health, brief; write with confirmation); bring-your-own model; Salesforce and Dynamics sync; optional team view for managers (aggregates only, seller-visible); mobile-first capture.
 
-## 7. Phases (build only Phase 1 now)
+## 7. UX principles
 
-### Phase 1 — Core loop (this session's scope)
+- The first screen answers "what should I do now, and why?" in under 10 seconds.
+- Capture in under 30 seconds after a meeting; approval in one click per change.
+- Every number and score can be clicked to see its reasons and data.
+- Calm, professional look; one accent colour; light and dark themes; WCAG 2.1 AA; responsive to phone width. Visual direction: iOS-style (D-040).
+- No jargon in the UI; methodology terms explained on hover.
 
-1. Repo scaffold, lint, format, strict TS, CI (type check + tests), Docker Compose, seed data, README.
-2. Auth, organisation creation, invitations, roles; setup wizard (language, pipeline stages, first support function, invite users).
-3. RLS policies and tenant-isolation tests.
-4. Accounts, contacts, opportunities; configurable stages; Kanban and list views; CSV import for accounts and opportunities.
-5. Support functions admin: members, skills, bookable hours, engagement types, service rules.
-6. Template engine + four starter templates; template editor (admin) with versioning.
-7. Rules engine `assess()` with full unit tests; live score panel in the form.
-8. "Get help on this deal" from any opportunity → request; My requests view.
-9. Triage queue per function: filter, accept, decline (reason), ask for information, reassign; status history; in-app notifications and email via the local mail catcher.
-10. Effort and outcome logging after delivery.
-11. End-to-end test of the full loop: AE creates deal → requests help → lead accepts and assigns → specialist logs effort and outcome → request shows `outcome_recorded`.
+## 8. Working agreement
 
-**Phase 1 is done when** that end-to-end test passes in both languages, tenant-isolation tests pass, and the demo seed shows a realistic organisation.
-
-### Phase 2 — Booking and analytics (later)
-
-Google and Microsoft 365 calendar connectors (availability, holds, invites); Slack and Teams notifications with accept/decline actions; webhooks and REST API (OpenAPI spec); analytics v1: demand vs capacity per function and week, utilisation (team-level by default, individual visibility admin-controlled), request quality trend, request-to-accepted time, win rate / cycle time / deal size with vs without support, stalled deals.
-
-### Phase 3 — Pilot features (later)
-
-- **Remote MCP server**: read tools (my requests, request status, function availability, opportunity summary) and two write tools (create request, log outcome); runs as the signed-in user with their permissions; writes require confirmation. Must work as a Microsoft Copilot Studio MCP tool and as a Claude custom connector (publicly reachable HTTPS, OAuth).
-- **AI gateway and bring-your-own model**: providers = CLEAN default, Anthropic, OpenAI, Mistral, Azure OpenAI (later AWS Bedrock, Google Vertex AI), or AI off. Per-call log (feature, model, user, tokens). Prompts never include data the user cannot see.
-- Two AI features: prep brief for the specialist; outcome and next-steps draft from notes or a transcript, for the specialist to confirm.
-
-### Phase 4 — Launch v1 (later)
-
-Public sign-up, billing (Free / Team / Business plans), CRM sync (HubSpot first), marketing site in EN/FR.
-
-## 8. UX principles
-
-- Small-team simple: a new organisation is usable within 15 minutes of sign-up.
-- Every screen answers "what do I do next?" for its role.
-- Accessible (WCAG 2.1 AA), keyboard-friendly, responsive down to phone width, light and dark themes.
-- Calm, professional visual style; one accent colour; no clutter.
-
-## 9. Working agreement
-
-- Keep a `CLAUDE.md` at the repo root with: project summary, stack, commands, these rules, and the current phase checklist. Update the checklist as you go.
-- Keep `docs/` with `SPEC.md` (this brief), `DATA_MODEL.md`, `SCORING.md` and `DECISIONS.md` (one line per technical decision with the reason).
-- Before each checkpoint is marked done: tests, type check and lint pass; summarise what changed and what to try.
-- If something in this brief is ambiguous or contradictory, ask instead of guessing.
-
-Start now with the plan for Phase 1 only.
+`CLAUDE.md` at the root; `docs/SPEC.md`, `DATA_MODEL.md`, `RULES.md`, `PRIVACY.md`, `DECISIONS.md`, `PIVOT.md`; after each checkpoint a summary of what changed, how to try it and what's next; ask when ambiguous.

@@ -10,7 +10,7 @@ test.describe("landing page in both languages", () => {
     await page.goto("/en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Sell together",
+      "Know what matters today",
     );
     await expect(page.getByRole("heading", { name: "Capture" })).toBeVisible();
   });
@@ -19,7 +19,7 @@ test.describe("landing page in both languages", () => {
     await page.goto("/fr");
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Vendez ensemble",
+      "Savoir ce qui compte",
     );
     await expect(page.getByRole("heading", { name: "Capter" })).toBeVisible();
   });
