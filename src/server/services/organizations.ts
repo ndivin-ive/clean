@@ -50,10 +50,12 @@ export async function createOrganization(
   db: Database,
   userId: string,
   input: { name: string; defaultLanguage: "en" | "fr" },
+  /** Fixed id for the demo seed; random otherwise. */
+  id?: string,
 ): Promise<string> {
   const name = input.name.trim();
   if (!name) throw new Error("Organisation name is required");
-  const organizationId = randomUUID();
+  const organizationId = id ?? randomUUID();
   await withTenant(db, { organizationId, userId }, async (tx) => {
     await tx.insert(s.organization).values({
       id: organizationId,

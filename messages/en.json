@@ -109,7 +109,10 @@
   "Today": {
     "title": "Today",
     "emptyTitle": "Nothing ranked yet",
-    "emptyBody": "Your ranked actions will appear here as soon as your accounts and deals are in CLEAN."
+    "emptyBody": "Your ranked actions will appear here as soon as your accounts and deals are in CLEAN.",
+    "focus": "Focus",
+    "footer": "Ranked by transparent rules from your own data. Each line says why.",
+    "score": "Score {n}"
   },
   "Placeholder": {
     "accounts": "Accounts",
@@ -157,5 +160,70 @@
     "invalidEmail": "Enter a valid email address.",
     "ownAdmin": "You cannot remove your own admin role.",
     "error": "Something went wrong. Try again."
+  },
+  "Actions": {
+    "next_step_missing": {
+      "title": "Set the next step on {deal}",
+      "reason": "Open deal with no next step."
+    },
+    "next_step_passed": {
+      "title": "Do the next step on {deal}",
+      "reason": "The next step was due {date}."
+    },
+    "stalled": {
+      "title": "Unblock {deal}: {days} days in {stage}",
+      "reason": "Typical time in {stage}: {typical} days."
+    },
+    "single_threaded": {
+      "title": "Add a second contact on {deal}",
+      "reason": "{engaged, plural, =0 {No engaged contact} one {One engaged contact} other {# engaged contacts}} on a {amount} deal."
+    },
+    "criterion_unknown": {
+      "title": "Confirm the {criterion} on {deal}",
+      "reason": "Still unknown at the {stage} stage."
+    },
+    "forecast_unset": {
+      "title": "Call the forecast on {deal}",
+      "reason": "Closes in {days} days with no forecast category."
+    },
+    "reconnect": {
+      "title": "Reconnect with {person}",
+      "reason": "{role}: last contact {days} days ago (cadence {cadence} days)."
+    },
+    "reconnect_never": {
+      "title": "Reconnect with {person}",
+      "reason": "{role}: never contacted."
+    },
+    "signal": {
+      "title": "Act on the news at {account}",
+      "reason": "{title}"
+    },
+    "renewal_plan_stale": {
+      "title": "Review the plan for {account} before renewal",
+      "reason": "Renewal in {days} days; plan last reviewed {planAge} days ago."
+    },
+    "renewal_plan_never": {
+      "title": "Review the plan for {account} before renewal",
+      "reason": "Renewal in {days} days; no plan reviewed yet."
+    },
+    "prepare_meeting": {
+      "title": "Prepare for {meeting}",
+      "reason": "Starts {when}; brief not opened yet."
+    },
+    "proposals_pending": {
+      "title": "Approve {n} updates from your notes",
+      "reason": "From your latest capture."
+    }
+  },
+  "DecisionRole": {
+    "economic_buyer": "Economic buyer",
+    "decision_maker": "Decision maker",
+    "champion": "Champion",
+    "influencer": "Influencer",
+    "technical_evaluator": "Technical evaluator",
+    "user": "User",
+    "procurement": "Procurement",
+    "blocker": "Blocker",
+    "unknown": "Unknown"
   }
 }

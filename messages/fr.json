@@ -109,7 +109,10 @@
   "Today": {
     "title": "Aujourd’hui",
     "emptyTitle": "Rien à classer pour l’instant",
-    "emptyBody": "Vos actions prioritaires apparaîtront ici dès que vos comptes et affaires seront dans CLEAN."
+    "emptyBody": "Vos actions prioritaires apparaîtront ici dès que vos comptes et affaires seront dans CLEAN.",
+    "focus": "Priorités",
+    "footer": "Classées par des règles transparentes à partir de vos propres données. Chaque ligne dit pourquoi.",
+    "score": "Score {n}"
   },
   "Placeholder": {
     "accounts": "Comptes",
@@ -157,5 +160,70 @@
     "invalidEmail": "Saisissez une adresse e-mail valide.",
     "ownAdmin": "Vous ne pouvez pas retirer votre propre rôle d’administrateur.",
     "error": "Une erreur s’est produite. Réessayez."
+  },
+  "Actions": {
+    "next_step_missing": {
+      "title": "Définir la prochaine étape de {deal}",
+      "reason": "Affaire ouverte sans prochaine étape."
+    },
+    "next_step_passed": {
+      "title": "Faire la prochaine étape de {deal}",
+      "reason": "La prochaine étape était prévue le {date}."
+    },
+    "stalled": {
+      "title": "Débloquer {deal} : {days} jours en {stage}",
+      "reason": "Durée habituelle en {stage} : {typical} jours."
+    },
+    "single_threaded": {
+      "title": "Ajouter un second contact sur {deal}",
+      "reason": "{engaged, plural, =0 {Aucun contact engagé} one {Un seul contact engagé} other {# contacts engagés}} sur une affaire de {amount}."
+    },
+    "criterion_unknown": {
+      "title": "Confirmer : {criterion} sur {deal}",
+      "reason": "Toujours inconnu à l’étape {stage}."
+    },
+    "forecast_unset": {
+      "title": "Qualifier la prévision de {deal}",
+      "reason": "Clôture dans {days} jours sans catégorie de prévision."
+    },
+    "reconnect": {
+      "title": "Reprendre contact avec {person}",
+      "reason": "{role} : dernier contact il y a {days} jours (cadence {cadence} jours)."
+    },
+    "reconnect_never": {
+      "title": "Reprendre contact avec {person}",
+      "reason": "{role} : jamais contacté."
+    },
+    "signal": {
+      "title": "Réagir à l’actualité de {account}",
+      "reason": "{title}"
+    },
+    "renewal_plan_stale": {
+      "title": "Revoir le plan de {account} avant le renouvellement",
+      "reason": "Renouvellement dans {days} jours ; plan revu il y a {planAge} jours."
+    },
+    "renewal_plan_never": {
+      "title": "Revoir le plan de {account} avant le renouvellement",
+      "reason": "Renouvellement dans {days} jours ; aucun plan revu."
+    },
+    "prepare_meeting": {
+      "title": "Préparer {meeting}",
+      "reason": "Commence {when} ; fiche de préparation pas encore ouverte."
+    },
+    "proposals_pending": {
+      "title": "Approuver {n} mises à jour de vos notes",
+      "reason": "Issues de votre dernière saisie."
+    }
+  },
+  "DecisionRole": {
+    "economic_buyer": "Décideur budgétaire",
+    "decision_maker": "Décideur",
+    "champion": "Champion",
+    "influencer": "Influenceur",
+    "technical_evaluator": "Évaluateur technique",
+    "user": "Utilisateur",
+    "procurement": "Achats",
+    "blocker": "Opposant",
+    "unknown": "Inconnu"
   }
 }
