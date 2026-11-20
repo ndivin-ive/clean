@@ -16,8 +16,13 @@ pnpm install
 cp .env.example .env
 docker compose up -d        # PostgreSQL 16 + Mailpit (http://localhost:8025)
 pnpm db:migrate
+pnpm db:seed                # invented demo organisation "Lumen Data (demo)"
 pnpm dev                    # http://localhost:3000/en  ·  /fr
 ```
+
+Sign in with `camille.martin@lumendata.example` (seller with the demo book),
+`sarah.okafor@lumendata.example` (manager) or `hugo.bernard@lumendata.example`
+(admin); the magic link arrives in Mailpit at http://localhost:8025.
 
 No Docker? `pnpm db:local` starts a throwaway PostgreSQL 16 with the same
 roles and databases.

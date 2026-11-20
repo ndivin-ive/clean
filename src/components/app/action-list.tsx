@@ -59,7 +59,7 @@ export async function ActionList({
       date: p.date
         ? format.dateTime(new Date(`${p.date}T12:00:00Z`), {
             day: "numeric",
-            month: "short",
+            month: "long",
           })
         : "",
       when: p.startsAt
