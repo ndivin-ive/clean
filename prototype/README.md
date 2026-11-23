@@ -21,3 +21,14 @@ It implements the Today ranking (brief §5.1), deal and account health
 plan, the meeting brief and the pipeline/forecast view on invented demo data.
 No Apple trademarks, logos or SF Symbols are used; icons are drawn for it.
 `clean-uat.html` is the earlier support-booking prototype, kept for reference.
+
+### Workspaces (Meca-Inox use case)
+
+Settings → Workspace switches between two invented demo organisations:
+**Lumen Data (demo)** (generic B2B profile, blue) and **Meca-Inox (démo)**
+(industrial equipment profile, French, red `#EC001B` accent and navy
+`#233044` brand mark from the public site meca-inox-valves.com; colours only,
+no logo). The Meca-Inox data (`MECA_RAW`) is generated from
+`src/server/seed/meca-inox-data.ts` and the industrial profile, so the
+prototype ranks the same seven Today actions as the app. See
+`docs/USE_CASE_MECA_INOX.md`.
