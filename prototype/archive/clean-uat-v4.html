@@ -1,4 +1,6 @@
 <title>CLEAN UAT prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout: app shell — top bar, left navigation, main work area; navigation collapses behind a menu button on phones. */
@@ -293,6 +295,146 @@ pre.json { background: var(--sunken); border: 1px solid var(--border); border-ra
 @media (prefers-reduced-motion: no-preference) {
   .ring { transition: background 0.3s; }
 }
+
+/* ── Dashboard redesign (approved design canvas, Nov 2026) ─────────────────
+   Left icon rail, utility bar with search, soft white cards on a cool grey
+   ground, ring KPI cards, vertical stage bars, gauge, people list. */
+:root {
+  --bg: #F3F5F9; --surface: #FFFFFF; --sunken: #EEF1F6; --fg: #141A26; --muted: #4B5466;
+  --border: #E3E8EF; --accent: #2563EB; --accent-soft: rgba(37, 99, 235, 0.10); --on-accent: #FFFFFF;
+  --good: #11744A; --good-soft: #E2F5EA; --warn: #7A4B00; --warn-soft: #FFF1D6; --bad: #B3001A; --bad-soft: #FDE7EA;
+  --r: 18px; --shadow: 0 1px 2px rgba(20, 26, 38, 0.05), 0 6px 20px rgba(20, 26, 38, 0.04);
+  --font: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+body { font-size: 14px; }
+h1 { font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-weight: 650; }
+.panel { border: 0; border-radius: var(--r); box-shadow: var(--shadow); }
+.panel > header { border-bottom: 1px solid var(--sunken); padding: 14px 20px; }
+.panel > .body { padding: 18px 20px; }
+.btn { border-radius: 12px; padding: 8px 14px; min-height: 40px; border-color: var(--border); }
+.btn.primary { box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 25%, transparent); }
+.btn.sm { min-height: 34px; border-radius: 10px; }
+.chip { border: 0; border-radius: 8px; padding: 3px 10px; font-size: 0.76rem; }
+.chip.accent { background: var(--accent-soft); color: color-mix(in srgb, var(--accent) 80%, #000); }
+.chip.good { color: var(--good); } .chip.warn { color: var(--warn); } .chip.bad { color: var(--bad); }
+th { background: transparent; border-bottom: 1px solid var(--sunken); color: var(--muted); }
+td { border-bottom: 1px solid var(--sunken); }
+.note { border-left: 0; border-radius: 14px; }
+select, input[type="text"], input[type="email"], input[type="date"], input[type="number"], input[type="search"], textarea { border-radius: 10px; border-color: var(--border); }
+
+/* shell */
+.shell { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.rail { flex: 0 0 72px; position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); min-height: calc(100vh - 80px); background: var(--surface); border-radius: 22px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 0; box-sizing: border-box; z-index: 15; }
+.rail-mark { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; font-size: 13px; color: #fff; background: var(--brand-ink, #141A26);
+  border-bottom: 3px solid var(--accent); box-sizing: border-box; text-decoration: none; margin-bottom: 10px; }
+.rail-section { font-size: 10px; font-weight: 600; color: var(--muted); margin: 8px 0 2px; text-align: center; }
+.rail-item { position: relative; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #3A4354; text-decoration: none; }
+.rail-item:hover { background: var(--sunken); }
+.rail-item.active { background: var(--accent-soft); color: var(--accent); }
+.rail-item svg { width: 22px; height: 22px; }
+.rail-item .rail-count { position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; box-sizing: border-box; }
+.rail-item .rail-label { position: absolute; left: 56px; top: 50%; transform: translateY(-50%); background: var(--fg); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 9px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.12s; }
+.rail-item:hover .rail-label, .rail-item:focus-visible .rail-label { opacity: 1; }
+.rail .grow { flex: 1; }
+.workspace { flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.utility { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.utility .grow { flex: 1; }
+.utility .org { border: 0; padding: 0; font-weight: 600; color: var(--fg); }
+.utility .ctl select { background: var(--surface); }
+.search { position: relative; }
+.search label { display: flex; align-items: center; gap: 8px; height: 44px; width: 260px; max-width: 100%; box-sizing: border-box; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0 12px; color: var(--muted); }
+.search input { border: 0; outline: none; background: transparent; padding: 0; flex: 1; min-width: 0; font-size: 14px; }
+.search-results { position: absolute; right: 0; top: calc(100% + 6px); width: min(360px, calc(100vw - 32px)); z-index: 40; background: var(--surface); border-radius: 14px; box-shadow: 0 10px 30px rgba(20,26,38,.14); padding: 6px; }
+.search-results a { display: flex; justify-content: space-between; gap: 10px; padding: 9px 10px; border-radius: 10px; color: var(--fg); text-decoration: none; }
+.search-results a:hover, .search-results a:focus-visible { background: var(--sunken); }
+.search-results .muted { font-size: 12px; }
+.bell-btn { position: relative; width: 44px; height: 44px; border-radius: 14px; border: 0; background: var(--accent); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.bell-btn .dot { position: absolute; top: -5px; right: -5px; background: var(--brand-ink, #141A26); color: #fff; border: 2px solid var(--bg); border-radius: 10px; min-width: 18px; height: 18px; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; line-height: 1; padding: 0 4px; }
+main { padding: 0 0 48px; }
+.page { max-width: none; margin: 0; }
+
+/* dashboard */
+.dash { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+.dash-main { flex: 999 1 600px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+.dash-side { flex: 1 1 300px; max-width: 380px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+.dash-head { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end; }
+.dash-head h1 { font-size: clamp(28px, 3.2vw, 40px); line-height: 1.12; margin: 0; }
+.dash-head .lead { margin-top: 10px; font-size: 15px; color: var(--muted); }
+.watch { background: #E9EEF6; border-radius: var(--r); padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 0; }
+.watch-title { padding-right: 26px; }
+.watch-title p:first-child { font-size: 21px; font-weight: 700; letter-spacing: 0.02em; }
+.watch-title p:last-child, .watch-item p:last-child { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.watch-item { flex: 1 1 170px; border-left: 2px solid var(--brand-ink, #141A26); padding: 2px 20px; }
+.watch-item p:first-child { font-size: 15px; font-weight: 700; }
+.watch-item a { color: inherit; text-decoration: none; }
+.watch-item .hot { color: color-mix(in srgb, var(--accent) 80%, #000); }
+.overview { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
+.overview h2 { font-size: 22px; margin: 0; }
+.period { display: flex; gap: 4px; background: #E6EAF1; border-radius: 12px; padding: 4px; }
+.period button { border: 0; border-radius: 9px; padding: 7px 14px; min-height: 34px; font-size: 13px; font-weight: 600; background: transparent; color: #3A4354; cursor: pointer; }
+.period button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(20,26,38,.12); }
+.rings { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.ring-card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.ring-card .rc-head { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 600; }
+.ring-card .rc-ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--sunken); color: var(--fg); flex: none; }
+.ring-card .rc-ico svg { width: 16px; height: 16px; }
+.ring-card .rc-body { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ring-card .rc-v { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.ring-card .rc-d { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.ring-card .rc-d.bad { color: var(--bad); font-weight: 600; }
+.ring-card svg.ring-svg { flex: none; }
+.bars-card { padding: 20px 22px; }
+.bars-head { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: flex-start; }
+.bars-head .big { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-top: 8px; }
+.bars-legend { display: flex; gap: 14px; font-size: 12px; color: #3A4354; }
+.bars-legend span { display: inline-flex; gap: 6px; align-items: center; }
+.bars-legend b { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.vbars { margin-top: 20px; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+.vbars-axis { display: flex; flex-direction: column; justify-content: space-between; height: 210px; font-size: 11px; color: var(--muted); text-align: right; }
+.vbars-plot { height: 210px; display: grid; align-items: end; border-bottom: 1px solid var(--border); background-image: linear-gradient(#EEF1F6 1px, transparent 1px); background-size: 100% 52.5px; }
+.vbars-col { display: flex; justify-content: center; align-items: flex-end; gap: 6px; height: 100%; }
+.vbars-col i { width: 34%; max-width: 32px; border-radius: 6px 6px 0 0; display: block; }
+.vbars-x { display: grid; font-size: 11.5px; color: #3A4354; text-align: center; gap: 4px; }
+.gauge { position: relative; width: 240px; max-width: 100%; margin: 6px auto 0; }
+.gauge-center { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; }
+.gauge-center p:first-child { font-size: 28px; font-weight: 800; }
+.gauge-center p:last-child { font-size: 12px; color: var(--muted); }
+.legend-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 9px; font-size: 13px; }
+.legend-list li { display: flex; align-items: center; gap: 10px; }
+.legend-list i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.legend-list span { flex: 1; }
+.people { list-style: none; margin: 0; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.people li { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; }
+.people .av { width: 40px; height: 40px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+.people .who { flex: 1; min-width: 0; }
+.people .who b { display: block; font-size: 14px; }
+.people .who span { display: block; font-size: 12px; color: var(--muted); }
+.people .hrs { font-weight: 700; font-size: 13px; white-space: nowrap; }
+.req-table td:first-child { font-weight: 600; }
+.req-table .sub { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+.icon-btn { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: #3A4354; display: inline-grid; place-items: center; text-decoration: none; }
+.section-title { font-size: 18px; margin: 6px 0 0; }
+@media (max-width: 760px) {
+  .rail { flex: 1 1 100%; position: static; min-height: 0; flex-direction: row; overflow-x: auto; padding: 8px 10px; border-radius: 18px; justify-content: flex-start; }
+  .rail-mark { margin: 0 6px 0 0; flex: none; }
+  .rail-section, .rail .grow { display: none; }
+  .rail-item { flex: none; }
+  .rail-item .rail-label { display: none; }
+  .search label { width: 100%; }
+  .search { flex: 1 1 100%; }
+}
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* compact utility bar: field labels stay for screen readers only */
+.utility .ctl > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.utility .search label { width: 240px; }
+@media (max-width: 760px) { .utility .search label { width: 100%; } .watch-title { padding-right: 0; flex: 1 1 100%; } }
+/* status pills keep their meaning whatever the brand accent */
+.chip.accent { background: #E3EEFF; color: #1D4FA0; }
+.chip.bad { background: var(--bad-soft); }
+@media print { .rail, .utility, .proto-bar { display: none; } }
 </style>
 
 <div id="app"></div>
@@ -1008,28 +1150,6 @@ function homeHead(extra = "") {
 
 function viewHome() { return { ae: homeAE, manager: homeManager, specialist: homeSpecialist, lead: homeLead, admin: homeAdmin }[S.role](); }
 
-function homeAE() {
-  const m = me(), opps = visibleOpps(), open = opps.filter(isOpenOpp);
-  const closing = open.filter((o) => daysAgo(o.close) >= -30 && daysAgo(o.close) <= 0).length;
-  const myReq = S.d.requests.filter((r) => r.requester === m.id);
-  const acts = sortActions(S.d.actions.filter((x) => x.to === m.id && (x.status === "open" || daysAgo(x.doneAt || x.due) < 7)));
-  const todo = [];
-  for (const r of myReq.filter((r) => r.status === "needs_information")) todo.push(["bad", t("home.todoInfo", { r: reqTitle(r) }), `request-${r.id}`]);
-  for (const o of open.filter((o) => !o.nextStep)) todo.push(["warn", t("home.todoNoStep", { d: o.name }), `deal-${o.id}`]);
-  for (const o of open.filter((o) => ["s3", "s4"].includes(o.stage) && !isSupported(o))) todo.push(["", t("home.todoAskHelp", { d: o.name, s: L(stage(o.stage)) }), `request-new-${o.id}`]);
-  return `<div class="page">${homeHead()}
-    <section class="panel hero-cta"><div><h2>${t("dash.needExpert")}</h2><p>${t("dash.needExpertLead")}</p></div>
-      <div class="btn-row">${allowedFns().slice(0, 4).map((f) => `<a class="btn" href="#ask-${f.id}">${esc(L(f))}</a>`).join("")}<a class="btn primary" href="#support">${t("dash.allSupport")} ›</a></div></section>
-    <div class="kpis">${kpi(t("dash.kPipe"), money(sum(open, (o) => o.amount)), t("dash.deals", { n: open.length }))}${kpi(t("dash.kForecast"), money(sum(open, (o) => (o.amount * stage(o.stage).prob) / 100)))}${kpi(t("dash.kClosing"), closing)}${kpi(t("dash.kMyReq"), myReq.filter((r) => OPEN.includes(r.status)).length, myReq.some((r) => r.status === "needs_information") ? t("st.needs_information") : "", myReq.some((r) => r.status === "needs_information"))}</div>
-    <div class="grid cols-2">
-      ${panelChart(t("dash.myActions"), actionList(acts, "received"), `<a class="btn sm ghost" href="#actions">${t("dash.seeAll")} ›</a>`)}
-      ${panelChart(t("dash.next"), todoList(todo), `<span class="count">${todo.length}</span>`)}
-    </div>
-    <div class="grid cols-2">
-      ${panelChart(t("dash.myRequests"), myReq.length ? `<div class="next">${myReq.filter((r) => r.status !== "withdrawn").slice(-6).reverse().map((r) => `<a class="item" href="#request-${r.id}"><span class="sev ${r.status === "needs_information" ? "bad" : ["delivered", "outcome_recorded"].includes(r.status) ? "good" : ""}"></span><span>${esc(reqTitle(r))}<br><span class="muted small">${esc(L(fn(r.fn)))}</span></span>${statusChip(r.status)}</a>`).join("")}</div>` : `<p class="empty">${t("deal.noSupport")}</p>`, `<a class="btn sm ghost" href="#support">${t("dash.seeAll")} ›</a>`)}
-      ${panelChart(t("dash.myPipeStage"), stageChart(opps, true))}
-    </div></div>`;
-}
 
 /* ── stage-by-stage pipeline analytics ── */
 // Reference palette categorical slots 1–6 (validated: adjacent CVD ΔE ≥ 9.1, normal-vision ≥ 19.6). Colour follows the entity, never its rank.
@@ -1102,89 +1222,10 @@ function forecastView(opps) {
       return `<div class="sc-row" style="grid-template-columns:minmax(110px,26%) minmax(0,1fr) 130px"><div class="sc-l"><b>${esc(r.label)}</b></div><div class="sc-t">${parts.map((x) => `<i style="width:${(sum(x.xs, (o) => o.amount) / max) * 96}%;background:${x.b.color}" title="${esc(r.label)} · ${esc(t("pv." + x.b.key))}: ${esc(metricText(x.xs))}"></i>`).join("")}</div><div class="sc-v num">${r.xs.length ? metricText(r.xs) : t("misc.none")}</div></div>`; }).join("")}</div>`;
 }
 
-function homeManager() {
-  const m = me(), team = teamIds(m.id), opps = visibleOpps(), open = opps.filter(isOpenOpp), closed = opps.filter((o) => !isOpenOpp(o));
-  const won = closed.filter((o) => stage(o.stage).won).length;
-  const sup = closed.filter(isSupported), unsup = closed.filter((o) => !isSupported(o));
-  const winOf = (xs) => pct(xs.filter((o) => stage(o.stage).won).length, xs.length);
-  const sent = S.d.actions.filter((x) => x.from === m.id), overdue = sent.filter(actionOverdue).length;
-  const teamReq = S.d.requests.filter((r) => team.has(r.requester) && OPEN.includes(r.status) && r.status !== "draft").length;
-  const reps = S.d.users.filter((u) => team.has(u.id) && u.roles.includes("ae"));
-  const wonDeals = closed.filter((o) => stage(o.stage).won);
-  const cycle = wonDeals.length ? Math.round(sum(wonDeals, (o) => (new Date(o.history.at(-1).at) - new Date(o.history[0].at)) / 86400000) / wonDeals.length) : 0;
-  const watch = open.map((o) => {
-    const reasons = [];
-    const age = daysAgo(o.moved), tgt = stage(o.stage).target;
-    if (age > tgt) reasons.push(["warn", t("pv.rStalledT", { n: age, t: tgt })]);
-    if (!o.nextStep) reasons.push(["warn", t("dash.rNoStep")]);
-    else if (o.nextDue && o.nextDue < iso(TODAY)) reasons.push(["bad", t("pv.rNextOverdue", { n: daysAgo(o.nextDue) })]);
-    if (["s3", "s4", "s5"].includes(o.stage) && !isSupported(o)) reasons.push(["", t("dash.rNoSupport")]);
-    const d = -daysAgo(o.close); if (d >= 0 && d <= 14) reasons.push(["bad", t("dash.rClosing", { n: d })]);
-    return { o, reasons };
-  }).filter((x) => x.reasons.length).sort((a, b) => b.reasons.length - a.reasons.length);
-  return `<div class="page">${homeHead(`<button class="btn primary" data-act="push-action">＋ ${t("dash.push")}</button>`)}
-    ${note("dashMgr")}
-    <div class="kpis">${kpi(t("dash.kTeamPipe"), money(sum(open, (o) => o.amount)), t("dash.deals", { n: open.length }))}${kpi(t("dash.kForecast"), money(sum(open, (o) => (o.amount * stage(o.stage).prob) / 100)))}${kpi(t("dash.kWinRate"), `${pct(won, closed.length)} %`, t("dash.closed", { n: closed.length }))}${kpi(t("pv.kAvgDeal"), money(wonDeals.length ? sum(wonDeals, (o) => o.amount) / wonDeals.length : 0), t("pv.wonDeals", { n: wonDeals.length }))}${kpi(t("pv.kCycle"), t("pv.days", { n: cycle }), t("pv.wonDeals", { n: wonDeals.length }))}</div>
-    <section class="panel"><header><div><h2>${t("pv.main")}</h2><p class="muted small">${t("pv.mainLead")}</p></div><a class="btn sm ghost" href="#team">${t("nav.team")} ›</a></header>${stageChart(opps)}</section>
-    ${note("pipelineViz")}
-    <div class="grid cols-2">${panelChart(t("pv.convTitle"), `<p class="muted small" style="padding:10px 16px 0">${t("pv.convLead")}</p>${conversionView(opps)}`)}${panelChart(t("dash.winSupport"), hbars([{ label: t("dash.withSupport"), value: winOf(sup), display: `${winOf(sup)} % · ${t("dash.closed", { n: sup.length })}` }, { label: t("dash.withoutSupport"), value: winOf(unsup), display: `${winOf(unsup)} % · ${t("dash.closed", { n: unsup.length })}` }], 100))}</div>
-    ${panelChart(t("dash.watch"), watch.length ? `<div class="table-wrap"><table><thead><tr><th>${t("cols.name")}</th><th>${t("cols.owner")}</th><th>${t("cols.stage")}</th><th class="r">${t("cols.amount")}</th><th></th><th></th></tr></thead><tbody>${watch.map(({ o, reasons }) => `<tr><td><a href="#deal-${o.id}">${esc(o.name)}</a><div class="muted small">${esc(account(o.account).name)}</div></td><td>${esc(user(o.owner).name)}</td><td>${stageChip(stage(o.stage))}</td><td class="r num">${money(o.amount)}</td><td><div class="chips">${reasons.map(([c, txt]) => `<span class="chip ${c}">${esc(txt)}</span>`).join("")}</div></td><td>${o.owner !== m.id ? `<button class="btn sm" data-act="push-action" data-to="${o.owner}" data-opp="${o.id}">${t("dash.push")}</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="empty">${t("home.nothing")}</p>`, `<span class="count">${watch.length}</span>`)}
-    <div class="grid cols-2">
-      ${panelChart(t("pv.forecast"), `<p class="muted small" style="padding:10px 16px 0">${t("pv.forecastLead")}</p>${forecastView(opps)}`)}
-      ${panelChart(t("dash.sentActions"), actionList(sortActions(sent).slice(0, 5), "sent"), `<a class="btn sm ghost" href="#actions">${t("dash.seeAll")} ›</a>`)}
-    </div>
-    ${note("actions")}</div>`;
-}
 
 function weekStart() { const d = new Date(TODAY); const w = (d.getDay() + 6) % 7; d.setDate(d.getDate() - w); return iso(d); }
-function homeSpecialist() {
-  const m = me(), mine = S.d.requests.filter((r) => r.assignee === m.id), ws = weekStart();
-  const myEffort = S.d.requests.flatMap((r) => r.effort.filter((e) => e.user === m.id));
-  const hoursWeek = sum(myEffort.filter((e) => e.date >= ws), (e) => e.hours);
-  const active = mine.filter((r) => ["accepted", "scheduled"].includes(r.status));
-  const booked = active.length * 6;
-  const todo = [];
-  for (const r of mine.filter((r) => r.status === "delivered")) todo.push(["bad", t("home.todoLog", { r: reqTitle(r) }), `request-${r.id}`]);
-  for (const r of mine.filter((r) => r.status === "accepted")) todo.push(["warn", t("home.todoSchedule", { r: reqTitle(r) }), `request-${r.id}`]);
-  const upcoming = mine.filter((r) => r.status === "scheduled").sort((a, b) => (a.booking || a.target).localeCompare(b.booking || b.target));
-  return `<div class="page">${homeHead()}
-    <div class="kpis">${kpi(t("dash.kActive"), active.length)}${kpi(t("dash.kHoursWeek"), `${hoursWeek} h`, t("dash.ofCapacity", { n: m.hours }))}${kpi(t("dash.kToLog"), mine.filter((r) => r.status === "delivered").length, "", mine.some((r) => r.status === "delivered"))}${kpi(t("dash.kUtil"), `${pct(booked, m.hours)} %`, `${booked} h / ${m.hours} h`, booked > m.hours)}</div>
-    <div class="grid cols-2">
-      ${panelChart(t("dash.next"), todoList(todo), `<span class="count">${todo.length}</span>`)}
-      ${panelChart(t("dash.upcoming"), upcoming.length ? `<div class="next">${upcoming.map((r) => `<a class="item" href="#request-${r.id}"><span class="sev"></span><span>${esc(reqTitle(r))}<br><span class="muted small">${esc(L(fn(r.fn)))} · ${esc(user(r.requester).name)}</span></span><span class="chip num">${fmtDate(r.booking || r.target)}</span></a>`).join("")}</div>` : `<p class="empty">${t("home.nothing")}</p>`)}
-    </div>
-    ${panelChart(t("dash.hoursByActivity"), hbars(Object.keys(I18N.en.act).map((k) => { const h = sum(myEffort.filter((e) => e.activity === k), (e) => e.hours); return { label: t("act." + k), value: h, display: `${h} h` }; })))}</div>`;
-}
 
-function homeLead() {
-  const fs = myFns(), ids = new Set(fs.map((f) => f.id)), q = S.d.requests.filter((r) => ids.has(r.fn) && r.status !== "draft");
-  const fresh = q.filter((r) => r.status === "new");
-  const ageOf = (r) => daysAgo((r.events.filter((e) => e.to === "new").at(-1)?.at || iso(TODAY)).slice(0, 10));
-  const avgAge = fresh.length ? Math.round(sum(fresh, ageOf) / fresh.length) : 0;
-  const decided = q.filter((r) => r.status !== "new" && r.status !== "needs_information" && r.status !== "withdrawn");
-  const accepted = decided.filter((r) => r.status !== "declined").length;
-  const members = [...new Set(fs.flatMap((f) => f.members))];
-  const typeRows = Object.keys(ENG_TYPES).map((k) => { const n = q.filter((r) => r.answers.type === k).length; return { label: ENG_TYPES[k][S.lang === "fr" ? 1 : 0], value: n, display: String(n) }; }).filter((r) => r.value);
-  return `<div class="page">${homeHead(`<a class="btn primary" href="#triage">${t("nav.triage")} ›</a>`)}
-    <div class="kpis">${kpi(t("dash.kNew"), fresh.length, "", fresh.length > 0)}${kpi(t("dash.kWaiting"), q.filter((r) => r.status === "needs_information").length)}${kpi(t("dash.kAge"), t("dash.daysUnit", { n: avgAge }))}${kpi(t("dash.kAccept"), `${pct(accepted, decided.length)} %`, `${accepted} / ${decided.length}`)}</div>
-    <div class="grid cols-2">
-      ${panelChart(t("dash.queueTop"), todoList(q.filter((r) => ["new", "needs_information"].includes(r.status)).map((r) => [r.status === "new" ? "bad" : "warn", `${reqTitle(r)} · ${user(r.requester).name}`, `request-${r.id}`])), `<a class="btn sm ghost" href="#triage">${t("dash.seeAll")} ›</a>`)}
-      ${panelChart(`${t("dash.capacity")} · ${fs.map((f) => L(f)).join(", ")}`, hbars(members.map((u) => { const b = S.d.requests.filter((r) => r.assignee === u && ["accepted", "scheduled"].includes(r.status)).length * 6, h = user(u).hours; return { label: user(u).name, value: pct(b, h), display: `${b} h / ${h} h` }; }), 100))}
-    </div>
-    ${panelChart(t("dash.demandByType"), hbars(typeRows))}</div>`;
-}
 
-function homeAdmin() {
-  const done = [true, true, S.d.fns.length > 0, S.d.users.length > 3];
-  const roleRows = Object.keys(I18N.en.roles).map((k) => { const n = S.d.users.filter((u) => u.active && u.roles.includes(k)).length; return { label: t("roles." + k), value: n, display: String(n), href: "admin-users" }; });
-  const typeRows = S.d.fns.map((f) => { const n = S.d.requests.filter((r) => r.fn === f.id && r.status !== "draft").length; return { label: L(f), value: n, display: String(n), href: "admin-functions" }; });
-  const month = S.d.requests.filter((r) => r.events.some((e) => e.to === "new" && daysAgo(e.at.slice(0, 10)) <= 30)).length;
-  return `<div class="page">${homeHead()}
-    <div class="kpis">${kpi(t("dash.kUsers"), S.d.users.filter((u) => u.active).length)}${kpi(t("dash.kTypes"), S.d.fns.filter((f) => f.active).length)}${kpi(t("dash.kReqMonth"), month)}${kpi(t("dash.kInv"), S.d.invitations.length)}</div>
-    <section class="panel"><header><h2>${t("dash.quick")}</h2></header><div class="body btn-row"><button class="btn primary" data-act="create-user">＋ ${t("dash.createUser")}</button><button class="btn" data-act="new-type">＋ ${t("dash.newType")}</button><button class="btn" data-act="invite">${t("adm.invite")}</button><a class="btn" href="#admin-templates">${t("nav.templates")}</a><a class="btn" href="#setup">${t("nav.setup")}</a></div></section>
-    <div class="grid cols-2">${panelChart(t("dash.usersByRole"), hbars(roleRows))}${panelChart(t("dash.reqByType"), hbars(typeRows))}</div>
-    <section class="panel"><header><h2>${t("dash.setupList")}</h2></header><div class="next">${[1, 2, 3, 4].map((n, i) => `<a class="item" href="#${["setup", "admin-stages", "admin-functions", "admin-users"][i]}"><span class="sev ${done[i] ? "good" : "warn"}"></span><span>${t("home.setup" + n)}</span><span class="chip ${done[i] ? "good" : "warn"}">${done[i] ? t("home.setupDone") : t("home.setupTodo")}</span></a>`).join("")}</div></section></div>`;
-}
 
 /* ── manager: team overview ── */
 function viewTeam() {
@@ -1537,16 +1578,17 @@ function render() {
   if (route.name === "signin") { $("#app").innerHTML = bar + viewAuth(); return; }
   const mine = S.d.notifications.filter((n) => n.user === me().id), unread = mine.filter((n) => n.unread).length;
   const act = activeNav(route);
-  const top = `<div class="appbar"><header class="topbar">
-    <a class="brand" href="#home" style="color:inherit;text-decoration:none"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CLEAN</a><span class="org">${esc(WS().org)}</span><span class="grow"></span>
+  const top = `<header class="utility">
+    <span class="org">${esc(WS().org)}</span>
     <label class="ctl"><label for="ws-pick">${t("orgPick")}</label><select id="ws-pick" data-act="ws"><option value="lumen" ${S.ws === "lumen" ? "selected" : ""}>Lumen Data</option><option value="meca" ${S.ws === "meca" ? "selected" : ""}>Meca-Inox</option></select></label>
     <label class="ctl"><label for="role-pick">${t("viewAs")}</label><select id="role-pick" data-act="role">${Object.keys(ROLE_USER).map((k) => `<option value="${k}" ${k === S.role ? "selected" : ""}>${esc(t("roles." + k))} · ${esc(user(ROLE_USER[k]).name.split(" ")[0])}</option>`).join("")}</select></label>
     <label class="ctl"><label for="lang-pick">${t("language")}</label><select id="lang-pick" data-act="lang-select"><option value="en" ${S.lang === "en" ? "selected" : ""}>EN</option><option value="fr" ${S.lang === "fr" ? "selected" : ""}>FR</option></select></label>
-    <div style="position:relative"><button class="btn sm bell" data-act="bell" aria-label="${t("notifications")}" aria-expanded="${S.bell}">🔔${unread ? `<span class="dot num">${unread}</span>` : ""}</button>
+    <span class="grow"></span>
+    ${searchBox()}
+    <div style="position:relative"><button class="bell-btn" data-act="bell" aria-label="${t("notifications")}${unread ? ` (${unread})` : ""}" aria-expanded="${S.bell}">${icon("bell")}${unread ? `<span class="dot num" aria-hidden="true">${unread}</span>` : ""}</button>
       ${S.bell ? `<div class="panel dropdown"><header style="padding:10px 14px"><h3>${t("notifications")}</h3></header>${mine.length ? mine.map((n) => `<a class="n ${n.unread ? "unread" : ""}" href="#${n.link}" data-act="read-n" data-id="${n.id}">${esc(n[`text_${S.lang}`])}</a>`).join("") : `<p class="empty">${t("noNotifications")}</p>`}</div>` : ""}</div>
-    <a class="btn sm ghost" href="#signin" data-act="signout">${t("signOut")}</a></header>
-    <nav class="navbar" aria-label="${t("menu")}">${navItems().map(([k, label, count]) => `<a href="#${k}" class="${act === k ? "active" : ""}" ${act === k ? 'aria-current="page"' : ""}>${esc(label)}${count ? `<span class="count num">${count}</span>` : ""}</a>`).join("")}</nav></div>`;
-  $("#app").innerHTML = `${bar}${top}<main id="main">${route.view()}</main>`;
+    <a class="btn sm ghost" href="#signin" data-act="signout">${t("signOut")}</a></header>`;
+  $("#app").innerHTML = `${bar}<div class="shell">${rail(act)}<div class="workspace">${top}<main id="main">${route.view()}</main></div></div>`;
 }
 
 /* ───────────────────────── dialogs/* ───────────────────────── dialogs ───────────────────────── */
@@ -1699,6 +1741,7 @@ document.addEventListener("click", (e) => {
     case "view": S.view = b.dataset.v; render(); break;
     case "bell": S.bell = !S.bell; render(); break;
     case "read-n": { const n = S.d.notifications.find((x) => x.id === id); if (n) n.unread = false; S.bell = false; break; }
+    case "period": S.period = b.dataset.v; render(); break;
     case "reset": S.d = WS().seed(); S.draft = null; S.setupStep = 1; toast(t("reset")); render(); break;
     case "signout": S.authStep = "email"; break;
     case "sso": toast(t("notes.signin").replace(/<[^>]+>/g, "").split(".")[0]); break;
@@ -1764,6 +1807,255 @@ function openImport() {
   d.querySelector("#dl-csv").addEventListener("input", prev);
   d.querySelector("#dl-file").addEventListener("change", (e) => { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { d.querySelector("#dl-csv").value = fr.result; prev(); }; fr.readAsText(f); });
   prev();
+}
+
+/* ───────────────────────── dashboard redesign (approved design canvas) ───────────────────────── */
+const I18N_DESIGN = {
+  en: { ui: {
+    menu: "Menu", settings: "Settings",
+    head: { ae: "Keep your deals moving", manager: "Keep a pulse on your pipeline", specialist: "Your week as an expert", lead: "Run your support team", admin: "Keep the workspace in shape" },
+    sub: { ae: "Your deals, your support requests and what to do next.", manager: "Deals, support requests and expert capacity, in one place.", specialist: "Assignments, bookings and the effort left to log.", lead: "Triage, capacity and demand for your teams.", admin: "Users, support types, templates and setup." },
+    watch: "WATCH LIST", watchSub: "Computed by rules, no AI",
+    overview: "Overview", period: { week: "Week", month: "Month", quarter: "Quarter" }, periodName: { week: "this week", month: "this month", quarter: "this quarter" },
+    search: "Search", searchPh: "Search a deal or an account…", noResults: "No match.",
+    value: "Value", weighted: "Weighted", byStage: "Pipeline by stage", weightedLead: "weighted forecast (value × stage probability)",
+    gauge: "Requests by team", gaugeCenter: "requests {period}", experts: "Available experts", expertsFoot: "Bookable hours left this week.", hoursLeft: "{n} h",
+    teamReq: "Team support requests", myReq: "My support requests", queue: "Queue", myAssign: "My assignments", view: "Open", none: "Nothing here for this period.",
+    taken: "{n} taken by an expert", wPct: "{p} % weighted",
+    bStalled: "Stalled deals: {n}", bStalledSub: "Past the stage's target time", bWeighted: "Weighted forecast: {p} %", bWeightedSub: "of the open pipeline",
+    bTriage: "To triage: {n} new", bTriageSub: "support requests · {m} awaiting information",
+    bInfo: "Questions to answer: {n}", bInfoSub: "from the support teams", bNoStep: "No next step: {n}", bNoStepSub: "open deals to plan", bClosing: "Closing within 30 days: {n}", bClosingSub: "check the forecast",
+    bToLog: "Effort to log: {n}", bToLogSub: "delivered sessions", bSchedule: "To schedule: {n}", bScheduleSub: "accepted requests", bHours: "Logged this week: {n} h", bHoursSub: "of {m} h bookable",
+    bNew: "New requests: {n}", bNewSub: "waiting for triage", bWaiting: "Awaiting information: {n}", bWaitingSub: "back with the requester", bAge: "Average age: {n} d", bAgeSub: "of new requests",
+    bUsers: "Active users: {n}", bUsersSub: "across all roles", bInv: "Pending invitations: {n}", bInvSub: "not accepted yet", bSetup: "Setup: {n} of 4", bSetupSub: "checklist steps done",
+    details: "Detailed analysis", capacityBooked: "{p} % booked", ofCap: "{a} h of {b} h", setupPct: "{p} % done",
+  } },
+  fr: { ui: {
+    menu: "Menu", settings: "Réglages",
+    head: { ae: "Faites avancer vos affaires", manager: "Gardez le pouls de votre pipeline", specialist: "Votre semaine d’expert", lead: "Pilotez votre équipe d’appui", admin: "Gardez l’espace de travail en ordre" },
+    sub: { ae: "Vos affaires, vos demandes d’appui et la suite à donner.", manager: "Affaires, demandes d’appui et capacité des experts, au même endroit.", specialist: "Affectations, réservations et effort à saisir.", lead: "Tri, capacité et demande pour vos équipes.", admin: "Utilisateurs, types d’appui, modèles et configuration." },
+    watch: "À SURVEILLER", watchSub: "Calculé par des règles, sans IA",
+    overview: "Vue d’ensemble", period: { week: "Semaine", month: "Mois", quarter: "Trimestre" }, periodName: { week: "cette semaine", month: "ce mois-ci", quarter: "ce trimestre" },
+    search: "Rechercher", searchPh: "Rechercher une affaire, un compte…", noResults: "Aucun résultat.",
+    value: "Valeur", weighted: "Pondéré", byStage: "Pipeline par étape", weightedLead: "prévision pondérée (valeur × probabilité de l’étape)",
+    gauge: "Demandes par équipe", gaugeCenter: "demandes {period}", experts: "Experts disponibles", expertsFoot: "Heures réservables restantes cette semaine.", hoursLeft: "{n} h",
+    teamReq: "Demandes d’appui de l’équipe", myReq: "Mes demandes d’appui", queue: "File de tri", myAssign: "Mes affectations", view: "Ouvrir", none: "Rien sur cette période.",
+    taken: "{n} prises en charge par un expert", wPct: "{p} % pondéré",
+    bStalled: "Affaires bloquées : {n}", bStalledSub: "Au-delà de la durée cible de l’étape", bWeighted: "Prévision pondérée : {p} %", bWeightedSub: "du pipeline ouvert",
+    bTriage: "À trier : {n} nouvelles", bTriageSub: "demandes d’appui · {m} en attente de précisions",
+    bInfo: "Questions à traiter : {n}", bInfoSub: "posées par les équipes d’appui", bNoStep: "Sans prochaine étape : {n}", bNoStepSub: "affaires ouvertes à planifier", bClosing: "Clôture sous 30 jours : {n}", bClosingSub: "vérifiez la prévision",
+    bToLog: "Effort à saisir : {n}", bToLogSub: "sessions réalisées", bSchedule: "À planifier : {n}", bScheduleSub: "demandes acceptées", bHours: "Saisi cette semaine : {n} h", bHoursSub: "sur {m} h réservables",
+    bNew: "Nouvelles demandes : {n}", bNewSub: "en attente de tri", bWaiting: "En attente de précisions : {n}", bWaitingSub: "chez le demandeur", bAge: "Âge moyen : {n} j", bAgeSub: "des nouvelles demandes",
+    bUsers: "Utilisateurs actifs : {n}", bUsersSub: "tous rôles confondus", bInv: "Invitations en attente : {n}", bInvSub: "pas encore acceptées", bSetup: "Configuration : {n} sur 4", bSetupSub: "étapes de la liste faites",
+    details: "Analyses détaillées", capacityBooked: "{p} % réservé", ofCap: "{a} h sur {b} h", setupPct: "{p} % fait",
+  } },
+};
+(function merge(target, extra) { for (const [k, v] of Object.entries(extra)) { if (v && typeof v === "object" && !Array.isArray(v)) merge((target[k] ??= {}), v); else target[k] = v; } })(I18N, I18N_DESIGN);
+
+S.period = "quarter";
+const PERIOD_DAYS = { week: 7, month: 30, quarter: 91 };
+const createdOn = (r) => (r.events.find((e) => e.to === "new")?.at || r.events[0]?.at || iso(TODAY)).slice(0, 10);
+const inPeriod = (r) => daysAgo(createdOn(r)) <= PERIOD_DAYS[S.period];
+const TEAM_COLORS = ["var(--accent)", "#233044", "#F2A900", "#3B82F6", "#0F9F8F", "#B8C0CC", "#8B5CF6", "#8f8e88"];
+const AVATAR_BG = ["#233044", "#8A5A00", "#1D5FBF", "#0B7A6E", "#A3001A", "#5B3FA8", "#3A4354"];
+const initials = (name) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+const bookedHours = (uid) => S.d.requests.filter((r) => r.assignee === uid && ["accepted", "scheduled"].includes(r.status)).length * 6;
+
+const ICO = {
+  home: '<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/>',
+  pipeline: '<path d="M4 6h16M4 10.5h12M4 15h8M4 19.5h4" stroke-linecap="round"/>',
+  support: '<path d="M5 4h14v12H9l-4 4z" stroke-linejoin="round"/><path d="M9 9h6M9 12.5h4" stroke-linecap="round"/>',
+  actions: '<path d="m5 12.5 4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  accounts: '<path d="M4 21V6l8-3v18M12 9h8v12M2.5 21h19" stroke-linejoin="round"/>',
+  team: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5" stroke-linecap="round"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.3.2 3.8 1.9 4.5 4.8" stroke-linecap="round"/>',
+  assignments: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16" stroke-linecap="round"/>',
+  triage: '<path d="M4 5h16l-6 7.5V19l-4 1.5v-8z" stroke-linejoin="round"/>',
+  "admin-users": '<circle cx="10" cy="8" r="3.4"/><path d="M4 20c.8-3.6 3.2-5.5 6-5.5 1.4 0 2.6.4 3.6 1.1M18 14v6M15 17h6" stroke-linecap="round"/>',
+  "admin-functions": '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  "admin-templates": '<path d="M7 3h7l4 4v14H7z" stroke-linejoin="round"/><path d="M10 12h5M10 16h5" stroke-linecap="round"/>',
+  "admin-stages": '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3" stroke-linecap="round"/>',
+  setup: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" stroke-linecap="round"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4" stroke-linecap="round"/>',
+  bell: '<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z" stroke-linejoin="round"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0" stroke-linecap="round"/>',
+  chev: '<path d="m9 6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>',
+  money: '<path d="M4 6h16M4 12h11M4 18h6" stroke-linecap="round"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2" stroke-linecap="round"/>',
+};
+const icon = (k, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">${ICO[k] || ICO.home}</svg>`;
+
+function rail(act) {
+  const items = navItems(), main = items.filter(([k]) => !k.startsWith("admin-") && k !== "setup"), admin = items.filter(([k]) => k.startsWith("admin-") || k === "setup");
+  const item = ([k, label, count]) => `<a class="rail-item ${act === k ? "active" : ""}" href="#${k}" aria-label="${esc(label)}${count ? ` (${count})` : ""}" ${act === k ? 'aria-current="page"' : ""}>${icon(k)}${count ? `<span class="rail-count num" aria-hidden="true">${count}</span>` : ""}<span class="rail-label" aria-hidden="true">${esc(label)}</span></a>`;
+  return `<nav class="rail" aria-label="${t("menu")}"><a class="rail-mark" href="#home" aria-label="CLEAN · ${esc(WS().org)}">${esc(S.ws === "meca" ? "MI" : "LD")}</a>
+    <span class="rail-section">${t("ui.menu")}</span>${main.map(item).join("")}
+    <span class="grow"></span>${admin.length ? `<span class="rail-section">${t("ui.settings")}</span>${admin.map(item).join("")}` : ""}</nav>`;
+}
+function searchBox() {
+  return `<div class="search"><label><span>${icon("search", 18)}</span><span class="sr">${t("ui.search")}</span><input type="search" id="global-search" placeholder="${esc(t("ui.searchPh"))}" autocomplete="off" aria-controls="search-results"></label><div id="search-results" class="search-results" hidden></div></div>`;
+}
+function searchResults(q) {
+  q = q.trim().toLowerCase(); if (q.length < 2) return "";
+  const deals = visibleOpps().filter((o) => (o.name + " " + account(o.account).name).toLowerCase().includes(q)).slice(0, 6).map((o) => `<a href="#deal-${o.id}"><span>${esc(o.name)}<br><span class="muted">${esc(account(o.account).name)}</span></span><span class="muted num">${money(o.amount)}</span></a>`);
+  const accs = S.d.accounts.filter((a) => a.name.toLowerCase().includes(q)).slice(0, 4).map((a) => `<a href="#account-${a.id}"><span>${esc(a.name)}<br><span class="muted">${esc(a.industry)} · ${esc(a.country)}</span></span><span class="muted">›</span></a>`);
+  return [...deals, ...accs].join("") || `<p class="empty" style="padding:12px">${t("ui.noResults")}</p>`;
+}
+document.addEventListener("input", (e) => {
+  if (e.target.id !== "global-search") return;
+  const box = $("#search-results"), html = searchResults(e.target.value);
+  box.innerHTML = html; box.hidden = !html;
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && e.target.id === "global-search") { e.target.value = ""; $("#search-results").hidden = true; } });
+
+/* dashboard building blocks */
+function dashHead(extra = "") {
+  return `<div class="dash-head"><div><p class="eyebrow">${esc(t("roles." + S.role))} · ${esc(me().name)}</p><h1>${esc(t("ui.head." + S.role))}</h1><p class="lead">${esc(t("ui.sub." + S.role))}</p></div>${extra ? `<div class="btn-row">${extra}</div>` : ""}</div>`;
+}
+function watchBanner(items) {
+  return `<section class="watch" aria-label="${esc(t("ui.watch"))}"><div class="watch-title"><p>${t("ui.watch")}</p><p>${t("ui.watchSub")}</p></div>${items.map(([title, sub, href, hot]) => `<div class="watch-item"><p>${href ? `<a href="#${href}">` : ""}${hot ? `<span class="hot">${esc(title)}</span>` : esc(title)}${href ? "</a>" : ""}</p><p>${esc(sub)}</p></div>`).join("")}</section>`;
+}
+function periodSeg() {
+  return `<div class="overview"><h2>${t("ui.overview")}</h2><div class="period" role="group" aria-label="${esc(t("ui.overview"))}">${["week", "month", "quarter"].map((p) => `<button data-act="period" data-v="${p}" aria-pressed="${S.period === p}">${t("ui.period." + p)}</button>`).join("")}</div></div>`;
+}
+function ringSvg(p, color, label) {
+  const C = 2 * Math.PI * 28, v = Math.max(0, Math.min(100, p));
+  return `<svg class="ring-svg" width="72" height="72" viewBox="0 0 72 72" role="img" aria-label="${esc(label)}"><circle cx="36" cy="36" r="28" fill="none" stroke="#E6EAF1" stroke-width="8"/>${v ? `<circle cx="36" cy="36" r="28" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${((v / 100) * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 36 36)"/>` : ""}<text x="36" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#141A26">${v} %</text></svg>`;
+}
+function ringCard({ label, value, detail, bad, pct: p, color = "var(--accent)", ico = "money", ringLabel }) {
+  return `<article class="ring-card"><div class="rc-head"><span class="rc-ico">${icon(ico, 16)}</span><h3 style="margin:0;font-size:inherit">${esc(label)}</h3></div><div class="rc-body"><div><p class="rc-v num">${esc(String(value))}</p>${detail ? `<p class="rc-d ${bad ? "bad" : ""}">${esc(detail)}</p>` : ""}</div>${p == null ? "" : ringSvg(p, color, ringLabel || `${p} %`)}</div></article>`;
+}
+function stageBars(opps) {
+  const open = opps.filter(isOpenOpp), os = openStages();
+  const rows = os.map((s) => { const xs = open.filter((o) => o.stage === s.id); const v = sum(xs, (o) => o.amount); return { s, v, w: Math.round(v * s.prob / 100) }; });
+  const maxV = Math.max(1, ...rows.map((r) => r.v)), step = 10 ** Math.floor(Math.log10(maxV)) / 2, top = Math.ceil(maxV / step / 4) * step * 4 || 1;
+  const k = (n) => (n >= 1e6 ? `${+(n / 1e6).toFixed(1)} M` : n >= 1e3 ? `${Math.round(n / 1e3)} k` : String(n));
+  const weighted = sum(rows, (r) => r.w), n = os.length;
+  const desc = rows.map((r) => `${L(r.s)} ${money(r.v)} / ${money(r.w)}`).join(" · ");
+  return `<section class="panel bars-card"><div class="bars-head"><div><h2 style="margin:0;font-size:15px">${t("ui.byStage")}</h2><p class="big num">${money(weighted)}</p><p class="muted small">${t("ui.weightedLead")}</p></div><div class="bars-legend"><span><b style="background:#D7DCE5"></b>${t("ui.value")}</span><span><b style="background:var(--accent)"></b>${t("ui.weighted")}</span></div></div>
+    <div class="vbars" role="img" aria-label="${esc(desc)}"><div class="vbars-axis" aria-hidden="true">${[4, 3, 2, 1, 0].map((i) => `<span>${k((top / 4) * i)}</span>`).join("")}</div>
+      <div class="vbars-plot" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${rows.map((r) => `<div class="vbars-col" title="${esc(L(r.s))}: ${money(r.v)} · ${money(r.w)}"><i style="background:#D7DCE5;height:${(r.v / top) * 100}%"></i><i style="background:var(--accent);height:${(r.w / top) * 100}%"></i></div>`).join("")}</div>
+      <span></span><div class="vbars-x" style="grid-template-columns:repeat(${n},minmax(0,1fr))">${rows.map((r) => `<span>${esc(L(r.s))}</span>`).join("")}</div></div></section>`;
+}
+function gauge(title, items, centerLabel) {
+  const total = sum(items, (x) => x.count), Lg = Math.PI * 82; let start = 0;
+  const arcs = total ? items.filter((x) => x.count).map((x) => { const len = (x.count / total) * Lg; const a = `<path d="M 18 100 A 82 82 0 0 1 182 100" fill="none" stroke="${x.color}" stroke-width="22" stroke-dasharray="${Math.max(0, len - 2.5).toFixed(2)} ${Lg.toFixed(2)}" stroke-dashoffset="${(-start).toFixed(2)}"/>`; start += len; return a; }).join("") : "";
+  return `<section class="panel"><header><h2>${esc(title)}</h2></header><div class="body"><div class="gauge"><svg viewBox="0 0 200 110" width="100%" role="img" aria-label="${esc(items.map((x) => `${x.label} ${x.count}`).join(", "))}"><path d="M 18 100 A 82 82 0 0 1 182 100" fill="none" stroke="#EEF1F6" stroke-width="22"/>${arcs}</svg><div class="gauge-center"><p class="num">${total}</p><p>${esc(centerLabel)}</p></div></div>
+    <ul class="legend-list">${items.map((x) => `<li><i style="background:${x.color}"></i><span>${esc(x.label)}</span><strong class="num">${x.count}</strong></li>`).join("")}</ul></div></section>`;
+}
+function peopleList(title, users, foot) {
+  return `<section class="panel"><header><h2>${esc(title)}</h2><a class="btn sm ghost" href="#${S.role === "admin" ? "admin-users" : S.role === "lead" ? "admin-functions" : "support"}">${t("dash.seeAll")} ›</a></header><ul class="people" style="padding-top:14px">${users.map((u, i) => { const f = S.d.fns.find((x) => x.members.includes(u.id)); const left = Math.max(0, u.hours - bookedHours(u.id));
+    return `<li><span class="av" style="background:${AVATAR_BG[i % AVATAR_BG.length]}" aria-hidden="true">${esc(initials(u.name))}</span><span class="who"><b>${esc(u.name)}</b><span>${esc(f ? L(f) : t("roles.specialist"))}</span></span><span class="hrs num">${t("ui.hoursLeft", { n: left })}</span></li>`; }).join("")}</ul>${foot ? `<p class="gf muted small" style="padding:0 18px 16px;margin:0">${esc(foot)}</p>` : ""}</section>`;
+}
+function requestTable(title, reqs, more = "support") {
+  return `<section class="panel"><header><h2>${esc(title)}</h2><a class="btn sm ghost" href="#${more}">${t("dash.seeAll")} ›</a></header>${reqs.length ? `<div class="table-wrap"><table class="req-table"><thead><tr><th>${t("cols.name")}</th><th>${t("cols.fn")}</th><th>${t("cols.target")}</th><th class="r">${t("cols.amount")}</th><th>${t("cols.status")}</th><th><span class="sr">${t("ui.view")}</span></th></tr></thead><tbody>
+    ${reqs.map((r) => { const o = r.opp && opp(r.opp); return `<tr><td>${esc(reqTitle(r))}<span class="sub">${o ? esc(account(o.account).name) + " · " : ""}${esc(user(r.requester).name)}</span></td><td>${esc(L(fn(r.fn)))}</td><td class="num" style="white-space:nowrap">${fmtDate(r.booking || r.target)}</td><td class="r num">${o ? money(o.amount) : t("misc.none")}</td><td>${statusChip(r.status)}</td><td class="r"><a class="icon-btn" href="#request-${r.id}" aria-label="${esc(t("ui.view"))} · ${esc(reqTitle(r))}">${icon("chev", 16)}</a></td></tr>`; }).join("")}</tbody></table></div>` : `<p class="empty">${t("ui.none")}</p>`}</section>`;
+}
+const teamGauge = (reqs) => gauge(t("ui.gauge"), S.d.fns.map((f, i) => ({ label: L(f), count: reqs.filter((r) => r.fn === f.id).length, color: TEAM_COLORS[i % TEAM_COLORS.length] })), t("ui.gaugeCenter", { period: t("ui.periodName." + S.period) }));
+const specialists = (ids) => S.d.users.filter((u) => u.active && u.roles.includes("specialist") && (!ids || ids.has(u.id)));
+const stalledCount = (open) => open.filter((o) => daysAgo(o.moved) > stage(o.stage).target).length;
+const reqOrder = (r) => ["needs_information", "new", "accepted", "scheduled", "delivered", "outcome_recorded"].indexOf(r.status);
+
+/* home screens, one per role */
+function homeManager() {
+  const m = me(), team = teamIds(m.id), opps = visibleOpps(), open = opps.filter(isOpenOpp), closed = opps.filter((o) => !isOpenOpp(o));
+  const won = closed.filter((o) => stage(o.stage).won).length, pipe = sum(open, (o) => o.amount), wsum = sum(open, (o) => (o.amount * stage(o.stage).prob) / 100);
+  const teamReq = S.d.requests.filter((r) => team.has(r.requester) && r.status !== "draft" && r.status !== "withdrawn");
+  const openReq = teamReq.filter((r) => OPEN.includes(r.status)), taken = openReq.filter((r) => ["accepted", "scheduled", "delivered"].includes(r.status)).length;
+  const sup = closed.filter(isSupported), unsup = closed.filter((o) => !isSupported(o)), winOf = (xs) => pct(xs.filter((o) => stage(o.stage).won).length, xs.length);
+  const sent = S.d.actions.filter((x) => x.from === m.id);
+  const fresh = teamReq.filter((r) => r.status === "new").length, info = teamReq.filter((r) => r.status === "needs_information").length;
+  return `<div class="page">${dashHead(`<button class="btn primary" data-act="push-action">＋ ${t("dash.push")}</button>`)}<div class="dash"><div class="dash-main">
+    ${watchBanner([[t("ui.bStalled", { n: stalledCount(open) }), t("ui.bStalledSub"), "pipeline"], [t("ui.bWeighted", { p: pct(wsum, pipe) }), t("ui.bWeightedSub")], [t("ui.bTriage", { n: fresh }), t("ui.bTriageSub", { m: info }), "support", fresh > 0]])}
+    ${periodSeg()}
+    <div class="rings">${ringCard({ label: t("dash.kTeamPipe"), value: money(pipe), detail: t("dash.deals", { n: open.length }), pct: pct(wsum, pipe), color: "var(--brand-ink, #233044)", ringLabel: t("ui.wPct", { p: pct(wsum, pipe) }) })}
+      ${ringCard({ label: t("dash.kWinRate"), value: `${pct(won, closed.length)} %`, detail: t("dash.closed", { n: closed.length }), pct: pct(won, closed.length), color: "#11744A", ico: "actions" })}
+      ${ringCard({ label: t("dash.kTeamReq"), value: openReq.length, detail: t("ui.taken", { n: taken }), pct: pct(taken, openReq.length), ico: "support" })}</div>
+    ${stageBars(opps)}
+    ${requestTable(t("ui.teamReq"), teamReq.filter(inPeriod).filter((r) => OPEN.includes(r.status)).sort((a, b) => reqOrder(a) - reqOrder(b)))}
+    <h2 class="section-title">${t("ui.details")}</h2>
+    <section class="panel"><header><div><h2>${t("pv.main")}</h2><p class="muted small">${t("pv.mainLead")}</p></div><a class="btn sm ghost" href="#team">${t("nav.team")} ›</a></header>${stageChart(opps)}</section>
+    <div class="grid cols-2">${panelChart(t("pv.convTitle"), `<p class="muted small" style="padding:10px 16px 0">${t("pv.convLead")}</p>${conversionView(opps)}`)}${panelChart(t("dash.winSupport"), hbars([{ label: t("dash.withSupport"), value: winOf(sup), display: `${winOf(sup)} % · ${t("dash.closed", { n: sup.length })}` }, { label: t("dash.withoutSupport"), value: winOf(unsup), display: `${winOf(unsup)} % · ${t("dash.closed", { n: unsup.length })}` }], 100))}</div>
+    ${panelChart(t("pv.forecast"), `<p class="muted small" style="padding:10px 16px 0">${t("pv.forecastLead")}</p>${forecastView(opps)}`)}
+    ${note("dashMgr")}</div>
+    <aside class="dash-side">${teamGauge(teamReq.filter(inPeriod))}${peopleList(t("ui.experts"), specialists(), t("ui.expertsFoot"))}
+      ${panelChart(t("dash.sentActions"), actionList(sortActions(sent).slice(0, 4), "sent"), `<a class="btn sm ghost" href="#actions">${t("dash.seeAll")} ›</a>`)}</aside></div></div>`;
+}
+
+function homeAE() {
+  const m = me(), opps = visibleOpps(), open = opps.filter(isOpenOpp), pipe = sum(open, (o) => o.amount), wsum = sum(open, (o) => (o.amount * stage(o.stage).prob) / 100);
+  const closing = open.filter((o) => daysAgo(o.close) >= -30 && daysAgo(o.close) <= 0).length;
+  const myReq = S.d.requests.filter((r) => r.requester === m.id && r.status !== "withdrawn"), openReq = myReq.filter((r) => OPEN.includes(r.status) && r.status !== "draft");
+  const taken = openReq.filter((r) => ["accepted", "scheduled", "delivered"].includes(r.status)).length, info = myReq.filter((r) => r.status === "needs_information").length;
+  const acts = sortActions(S.d.actions.filter((x) => x.to === m.id && (x.status === "open" || daysAgo(x.doneAt || x.due) < 7)));
+  const todo = [];
+  for (const r of myReq.filter((r) => r.status === "needs_information")) todo.push(["bad", t("home.todoInfo", { r: reqTitle(r) }), `request-${r.id}`]);
+  for (const o of open.filter((o) => !o.nextStep)) todo.push(["warn", t("home.todoNoStep", { d: o.name }), `deal-${o.id}`]);
+  for (const o of open.filter((o) => ["s3", "s4"].includes(o.stage) && !isSupported(o))) todo.push(["", t("home.todoAskHelp", { d: o.name, s: L(stage(o.stage)) }), `request-new-${o.id}`]);
+  return `<div class="page">${dashHead()}<div class="dash"><div class="dash-main">
+    ${watchBanner([[t("ui.bInfo", { n: info }), t("ui.bInfoSub"), "support", info > 0], [t("ui.bNoStep", { n: open.filter((o) => !o.nextStep).length }), t("ui.bNoStepSub"), "pipeline"], [t("ui.bClosing", { n: closing }), t("ui.bClosingSub"), "pipeline"]])}
+    <section class="panel hero-cta"><div><h2>${t("dash.needExpert")}</h2><p>${t("dash.needExpertLead")}</p></div>
+      <div class="btn-row">${allowedFns().slice(0, 4).map((f) => `<a class="btn" href="#ask-${f.id}">${esc(L(f))}</a>`).join("")}<a class="btn primary" href="#support">${t("dash.allSupport")} ›</a></div></section>
+    ${periodSeg()}
+    <div class="rings">${ringCard({ label: t("dash.kPipe"), value: money(pipe), detail: t("dash.deals", { n: open.length }), pct: pct(wsum, pipe), color: "var(--brand-ink, #233044)", ringLabel: t("ui.wPct", { p: pct(wsum, pipe) }) })}
+      ${ringCard({ label: t("dash.kClosing"), value: closing, detail: t("dash.deals", { n: open.length }), pct: pct(closing, open.length), color: "#F2A900", ico: "clock" })}
+      ${ringCard({ label: t("dash.kMyReq"), value: openReq.length, detail: info ? t("st.needs_information") : t("ui.taken", { n: taken }), bad: info > 0, pct: pct(taken, openReq.length), ico: "support" })}</div>
+    ${stageBars(opps)}
+    ${requestTable(t("ui.myReq"), myReq.filter((r) => r.status !== "draft").filter(inPeriod).sort((a, b) => reqOrder(a) - reqOrder(b)))}</div>
+    <aside class="dash-side">${panelChart(t("dash.myActions"), actionList(acts, "received"), `<a class="btn sm ghost" href="#actions">${t("dash.seeAll")} ›</a>`)}
+      ${panelChart(t("dash.next"), todoList(todo), `<span class="count">${todo.length}</span>`)}
+      ${teamGauge(myReq.filter((r) => r.status !== "draft").filter(inPeriod))}</aside></div></div>`;
+}
+
+function homeSpecialist() {
+  const m = me(), mine = S.d.requests.filter((r) => r.assignee === m.id), ws = weekStart();
+  const myEffort = S.d.requests.flatMap((r) => r.effort.filter((e) => e.user === m.id));
+  const hoursWeek = sum(myEffort.filter((e) => e.date >= ws), (e) => e.hours), booked = bookedHours(m.id);
+  const active = mine.filter((r) => ["accepted", "scheduled"].includes(r.status)), toLog = mine.filter((r) => r.status === "delivered");
+  const todo = [];
+  for (const r of toLog) todo.push(["bad", t("home.todoLog", { r: reqTitle(r) }), `request-${r.id}`]);
+  for (const r of mine.filter((r) => r.status === "accepted")) todo.push(["warn", t("home.todoSchedule", { r: reqTitle(r) }), `request-${r.id}`]);
+  return `<div class="page">${dashHead()}<div class="dash"><div class="dash-main">
+    ${watchBanner([[t("ui.bToLog", { n: toLog.length }), t("ui.bToLogSub"), "assignments", toLog.length > 0], [t("ui.bSchedule", { n: mine.filter((r) => r.status === "accepted").length }), t("ui.bScheduleSub"), "assignments"], [t("ui.bHours", { n: hoursWeek }), t("ui.bHoursSub", { m: m.hours })]])}
+    ${periodSeg()}
+    <div class="rings">${ringCard({ label: t("dash.kActive"), value: active.length, detail: t("dash.kToLog") + " · " + toLog.length, bad: toLog.length > 0, ico: "assignments" })}
+      ${ringCard({ label: t("dash.kHoursWeek"), value: `${hoursWeek} h`, detail: t("dash.ofCapacity", { n: m.hours }), pct: pct(hoursWeek, m.hours), color: "var(--brand-ink, #233044)", ico: "clock" })}
+      ${ringCard({ label: t("dash.kUtil"), value: `${pct(booked, m.hours)} %`, detail: t("ui.ofCap", { a: booked, b: m.hours }), bad: booked > m.hours, pct: pct(booked, m.hours), ico: "admin-stages" })}</div>
+    ${requestTable(t("ui.myAssign"), mine.filter(inPeriod).filter((r) => OPEN.includes(r.status)).sort((a, b) => reqOrder(a) - reqOrder(b)), "assignments")}</div>
+    <aside class="dash-side">${panelChart(t("dash.next"), todoList(todo), `<span class="count">${todo.length}</span>`)}
+      ${panelChart(t("dash.hoursByActivity"), hbars(Object.keys(I18N.en.act).map((k) => { const h = sum(myEffort.filter((e) => e.activity === k), (e) => e.hours); return { label: t("act." + k), value: h, display: `${h} h` }; })))}</aside></div></div>`;
+}
+
+function homeLead() {
+  const fs = myFns(), ids = new Set(fs.map((f) => f.id)), q = S.d.requests.filter((r) => ids.has(r.fn) && r.status !== "draft");
+  const fresh = q.filter((r) => r.status === "new"), waiting = q.filter((r) => r.status === "needs_information").length;
+  const ageOf = (r) => daysAgo(createdOn(r)), avgAge = fresh.length ? Math.round(sum(fresh, ageOf) / fresh.length) : 0;
+  const decided = q.filter((r) => !["new", "needs_information", "withdrawn"].includes(r.status)), accepted = decided.filter((r) => r.status !== "declined").length;
+  const members = new Set(fs.flatMap((f) => f.members)), team = specialists(members);
+  const cap = sum(team, (u) => u.hours), booked = sum(team, (u) => bookedHours(u.id));
+  const typeItems = [...new Set(fs.flatMap((f) => f.types))].map((k, i) => ({ label: ENG_TYPES[k][S.lang === "fr" ? 1 : 0], count: q.filter(inPeriod).filter((r) => r.answers.type === k).length, color: TEAM_COLORS[i % TEAM_COLORS.length] }));
+  return `<div class="page">${dashHead(`<a class="btn primary" href="#triage">${t("nav.triage")} ›</a>`)}<div class="dash"><div class="dash-main">
+    ${watchBanner([[t("ui.bNew", { n: fresh.length }), t("ui.bNewSub"), "triage", fresh.length > 0], [t("ui.bWaiting", { n: waiting }), t("ui.bWaitingSub"), "triage"], [t("ui.bAge", { n: avgAge }), t("ui.bAgeSub")]])}
+    ${periodSeg()}
+    <div class="rings">${ringCard({ label: t("dash.kNew"), value: fresh.length, detail: fs.map((f) => L(f)).join(", "), bad: fresh.length > 0, ico: "triage" })}
+      ${ringCard({ label: t("dash.kAccept"), value: `${pct(accepted, decided.length)} %`, detail: `${accepted} / ${decided.length}`, pct: pct(accepted, decided.length), color: "#11744A", ico: "actions" })}
+      ${ringCard({ label: t("dash.capacity"), value: `${booked} h`, detail: t("ui.ofCap", { a: booked, b: cap }), pct: pct(booked, cap), color: "var(--brand-ink, #233044)", ico: "clock", ringLabel: t("ui.capacityBooked", { p: pct(booked, cap) }) })}</div>
+    ${requestTable(t("ui.queue"), q.filter(inPeriod).filter((r) => OPEN.includes(r.status)).sort((a, b) => reqOrder(a) - reqOrder(b)), "triage")}</div>
+    <aside class="dash-side">${peopleList(t("ui.experts"), team, t("ui.expertsFoot"))}${gauge(t("dash.demandByType"), typeItems, t("ui.gaugeCenter", { period: t("ui.periodName." + S.period) }))}</aside></div></div>`;
+}
+
+function homeAdmin() {
+  const done = [true, true, S.d.fns.length > 0, S.d.users.length > 3], nDone = done.filter(Boolean).length;
+  const roleRows = Object.keys(I18N.en.roles).map((k) => { const n = S.d.users.filter((u) => u.active && u.roles.includes(k)).length; return { label: t("roles." + k), value: n, display: String(n), href: "admin-users" }; });
+  const month = S.d.requests.filter((r) => r.events.some((e) => e.to === "new" && daysAgo(e.at.slice(0, 10)) <= 30)).length;
+  const active = S.d.users.filter((u) => u.active).length;
+  return `<div class="page">${dashHead(`<button class="btn primary" data-act="create-user">＋ ${t("dash.createUser")}</button>`)}<div class="dash"><div class="dash-main">
+    ${watchBanner([[t("ui.bUsers", { n: active }), t("ui.bUsersSub"), "admin-users"], [t("ui.bInv", { n: S.d.invitations.length }), t("ui.bInvSub"), "admin-users", S.d.invitations.length > 0], [t("ui.bSetup", { n: nDone }), t("ui.bSetupSub"), "setup"]])}
+    <div class="rings">${ringCard({ label: t("dash.kUsers"), value: active, detail: t("ui.bInv", { n: S.d.invitations.length }), ico: "admin-users" })}
+      ${ringCard({ label: t("dash.kTypes"), value: S.d.fns.filter((f) => f.active).length, detail: t("nav.templates") + " · " + Object.keys(TEMPLATES).length, ico: "admin-functions" })}
+      ${ringCard({ label: t("dash.setupList"), value: `${nDone} / 4`, detail: t("ui.setupPct", { p: pct(nDone, 4) }), pct: pct(nDone, 4), color: "#11744A", ico: "setup" })}</div>
+    <section class="panel"><header><h2>${t("dash.quick")}</h2></header><div class="body btn-row"><button class="btn" data-act="new-type">＋ ${t("dash.newType")}</button><button class="btn" data-act="invite">${t("adm.invite")}</button><a class="btn" href="#admin-templates">${t("nav.templates")}</a><a class="btn" href="#admin-stages">${t("nav.stages")}</a><a class="btn" href="#setup">${t("nav.setup")}</a></div></section>
+    <div class="grid cols-2">${panelChart(t("dash.usersByRole"), hbars(roleRows))}${panelChart(t("dash.kReqMonth"), `<p class="rc-v num" style="padding:18px 20px 0;margin:0">${month}</p>${hbars(S.d.fns.map((f) => { const n = S.d.requests.filter((r) => r.fn === f.id && r.status !== "draft").length; return { label: L(f), value: n, display: String(n), href: "admin-functions" }; }))}`)}</div></div>
+    <aside class="dash-side"><section class="panel"><header><h2>${t("dash.setupList")}</h2></header><div class="next">${[1, 2, 3, 4].map((n, i) => `<a class="item" href="#${["setup", "admin-stages", "admin-functions", "admin-users"][i]}"><span class="sev ${done[i] ? "good" : "warn"}"></span><span>${t("home.setup" + n)}</span><span class="chip ${done[i] ? "good" : "warn"}">${done[i] ? t("home.setupDone") : t("home.setupTodo")}</span></a>`).join("")}</div></section>
+      ${teamGauge(S.d.requests.filter((r) => r.status !== "draft").filter(inPeriod))}</aside></div></div>`;
 }
 
 window.addEventListener("hashchange", () => { document.body.classList.remove("nav-open"); S.bell = false; render(); window.scrollTo(0, 0); });

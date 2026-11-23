@@ -45,3 +45,15 @@ valves (group plant in Spain). Each team has its own request form and
 engagement types (technical visit, bench demonstration, 3D drawings,
 PED/ATEX/3.1 pack, supplier audit, test campaign, large valve review). All
 users, customers, deals and requests are invented.
+
+### UAT prototype: dashboard redesign (Nov 2026)
+
+Layout approved on a design canvas: left icon rail (counts as badges, labels on
+hover), compact top bar with organisation, "view as", language, global search
+(deals and accounts) and notifications, then per-role home screens built from
+the same blocks — a rule-based **watch list** banner (no AI), a Week / Month /
+Quarter selector that filters support requests, ring KPI cards, pipeline by
+stage (value vs weighted), a gauge of requests by team or type, available
+experts with hours left, and a support-request table. The detailed manager
+analysis (stage chart, conversion, win rate with/without support, forecast)
+stays below. Font: Plus Jakarta Sans (Google Fonts).
