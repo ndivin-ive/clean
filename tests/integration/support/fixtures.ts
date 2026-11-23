@@ -15,6 +15,7 @@ export const TENANT_ONLY_TABLES = [
   "rule_setting",
   "feature_flag",
   "ai_provider_setting",
+  "quote_sequence",
 ] as const;
 
 /** Seller-owned tables (carry owner_id; owner-privacy policies apply). */
@@ -36,6 +37,8 @@ export const OWNED_TABLES = [
   "meeting_brief",
   "action",
   "support_request",
+  "quote",
+  "quote_line",
 ] as const;
 
 export const TENANT_TABLES = [...TENANT_ONLY_TABLES, ...OWNED_TABLES] as const;
@@ -314,6 +317,29 @@ export async function createTenantFixture(
           .values({ dealId, team: "Presales" })
           .returning(),
       );
+      const quoteSequenceId = one(
+        await tx
+          .insert(s.quoteSequence)
+          .values({ year: 2026, lastNumber: 3 })
+          .returning(),
+      );
+      const quoteId = one(
+        await tx
+          .insert(s.quote)
+          .values({
+            dealId,
+            accountId,
+            title: "Platform quote",
+            validUntil: "2099-12-31",
+          })
+          .returning(),
+      );
+      const quoteLineId = one(
+        await tx
+          .insert(s.quoteLine)
+          .values({ quoteId, description: "Platform", unitPrice: 50000 })
+          .returning(),
+      );
 
       return {
         organization: organizationId,
@@ -343,6 +369,9 @@ export async function createTenantFixture(
         meeting_brief: briefId,
         action: actionId,
         support_request: supportId,
+        quote_sequence: quoteSequenceId,
+        quote: quoteId,
+        quote_line: quoteLineId,
       } satisfies Record<TenantTable, string>;
     },
   );

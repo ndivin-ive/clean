@@ -5,6 +5,7 @@ import {
   foreignKey,
   index,
   jsonb,
+  numeric,
   pgTable,
   smallint,
   text,
@@ -36,6 +37,21 @@ export const organization = pgTable(
     // Branding (D-058): accent and dark brand colours, #rrggbb; null = CLEAN default.
     brandColor: text("brand_color"),
     brandInk: text("brand_ink"),
+    // Seller identity printed on quotes (D-060). Edited by an admin; copied into
+    // each quote when it is sent, so a sent quote never changes afterwards.
+    legalName: text("legal_name"),
+    legalAddress: text("legal_address"),
+    legalId: text("legal_id"),
+    vatNumber: text("vat_number"),
+    quoteTerms: text("quote_terms"),
+    quoteValidityDays: smallint("quote_validity_days").notNull().default(30),
+    defaultVatRate: numeric("default_vat_rate", {
+      precision: 5,
+      scale: 2,
+      mode: "number",
+    })
+      .notNull()
+      .default(20),
     // Forecast periods are calendar quarters offset by this month (D-038).
     fiscalYearStartMonth: smallint("fiscal_year_start_month")
       .notNull()
@@ -58,6 +74,14 @@ export const organization = pgTable(
     check(
       "organization_brand_ink_hex",
       sql`${t.brandInk} IS NULL OR ${t.brandInk} ~ '^#[0-9A-Fa-f]{6}$'`,
+    ),
+    check(
+      "organization_quote_validity_range",
+      sql`${t.quoteValidityDays} BETWEEN 1 AND 365`,
+    ),
+    check(
+      "organization_default_vat_range",
+      sql`${t.defaultVatRate} BETWEEN 0 AND 100`,
     ),
     check(
       "organization_fiscal_month_range",

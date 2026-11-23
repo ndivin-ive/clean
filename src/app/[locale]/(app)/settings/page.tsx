@@ -20,6 +20,7 @@ export default async function SettingsPage({
   const t = await getTranslations("Settings");
   const roles = await getTranslations("Roles");
   const common = await getTranslations("Common");
+  const extra = await getTranslations("SettingsExtra");
   const db = getDb();
   const [org] = await withTenant(db, member.ctx, (tx) =>
     tx
@@ -82,6 +83,9 @@ export default async function SettingsPage({
         />
         {can(member.roles, "team.view") ? (
           <Row href="/settings/team" title={t("team")} />
+        ) : null}
+        {can(member.roles, "org.settings") ? (
+          <Row href="/settings/company" title={extra("company")} />
         ) : null}
         {orgCount > 1 ? (
           <form action={switchOrganization}>

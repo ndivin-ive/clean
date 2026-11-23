@@ -5,6 +5,14 @@ import type { Database } from "../db/client";
 import * as s from "../db/schema";
 import { withTenant } from "../db/tenant";
 import { createOrganization } from "../services/organizations";
+import {
+  createQuote,
+  getQuote,
+  getQuoteByToken,
+  respondToQuote,
+  saveQuoteDraft,
+  sendQuote,
+} from "../services/quotes";
 import { LUMEN_DEMO, qualOf, type DemoDataset } from "./demo-data";
 
 export interface DemoIds {
@@ -335,5 +343,74 @@ export async function seedDemo(
     },
   );
 
+  if (data.org.legal)
+    await withTenant(db, { organizationId, userId: users.admin }, (tx) =>
+      tx
+        .update(s.organization)
+        .set(data.org.legal!)
+        .where(eq(s.organization.id, organizationId)),
+    );
+  if (data.quotes?.length)
+    await seedQuotes(
+      db,
+      data,
+      { organizationId, userId: users.seller },
+      ids.deals,
+      now,
+    );
+
   return { organizationId, users, ...ids };
+}
+
+/** Demo quotes go through the real quote service (numbering, freezing, customer answer). */
+async function seedQuotes(
+  db: Database,
+  data: DemoDataset,
+  ctx: { organizationId: string; userId: string },
+  deals: Record<string, string>,
+  now: Date,
+) {
+  const seller = data.users.seller;
+  for (const q of data.quotes ?? []) {
+    const sentAt =
+      q.status === "draft"
+        ? now
+        : new Date(now.getTime() - (q.sentDaysAgo ?? 0) * DAY);
+    const id = await createQuote(db, ctx, deals[q.deal]!, sentAt);
+    const current = (await getQuote(db, ctx, id))!;
+    await saveQuoteDraft(db, ctx, id, {
+      title: current.title,
+      language: current.language,
+      validUntil: current.validUntil,
+      introduction: q.introduction ?? null,
+      terms: current.terms,
+      recipientName: current.recipientName,
+      recipientEmail: current.recipientEmail,
+      lines: q.lines.map((l) => ({
+        description: l.description,
+        quantity: l.quantity,
+        unit: l.unit ?? null,
+        unitPrice: l.unitPrice,
+        discountPct: l.discountPct ?? 0,
+        vatRate: 20,
+        productKey: l.productKey ?? null,
+      })),
+    });
+    if (q.status === "draft") continue;
+    const { token } = await sendQuote(
+      db,
+      ctx,
+      id,
+      { name: seller.name, email: seller.email },
+      sentAt,
+    );
+    if (q.viewed || q.status !== "sent") await getQuoteByToken(db, token);
+    if (q.status === "accepted" || q.status === "declined")
+      await respondToQuote(db, token, {
+        decision: q.status,
+        name: q.responder?.name ?? "",
+        title: q.responder?.title ?? null,
+        reason: q.responder?.reason ?? null,
+      });
+  }
 }

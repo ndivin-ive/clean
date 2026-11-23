@@ -1479,6 +1479,24 @@ export interface DemoUser {
   email: string;
   roles: readonly ("seller" | "manager" | "admin" | "specialist")[];
 }
+export interface DemoQuote {
+  deal: string;
+  status: "draft" | "sent" | "accepted" | "declined";
+  /** Days ago the quote was sent (ignored for drafts). */
+  sentDaysAgo?: number;
+  viewed?: boolean;
+  responder?: { name: string; title: string | null; reason?: string };
+  introduction?: string;
+  lines: {
+    description: string;
+    quantity: number;
+    unit?: string;
+    unitPrice: number;
+    discountPct?: number;
+    productKey?: string;
+  }[];
+}
+
 export interface DemoDataset {
   org: {
     id: string;
@@ -1487,7 +1505,17 @@ export interface DemoDataset {
     salesProfile: SalesProfileKey;
     /** Optional branding (D-058). */
     brand?: Brand;
+    /** Seller identity printed on quotes (D-060). Invented for demos. */
+    legal?: {
+      legalName: string;
+      legalAddress: string;
+      legalId: string;
+      vatNumber: string;
+      quoteTerms: string;
+    };
   };
+  /** Demo quotes (D-060), created through the quote service as the seller. */
+  quotes?: DemoQuote[];
   /** Email domain of the demo users (used to clean them up). */
   domain: string;
   users: {
@@ -1524,7 +1552,19 @@ export interface DemoDataset {
 
 /** The generic demo ("Lumen Data"), B2B profile, English. */
 export const LUMEN_DEMO: DemoDataset = {
-  org: { ...DEMO_ORG, defaultLanguage: "en", salesProfile: "generic" },
+  org: {
+    ...DEMO_ORG,
+    defaultLanguage: "en",
+    salesProfile: "generic",
+    legal: {
+      legalName: "Lumen Data SAS (demo)",
+      legalAddress: "1 demo street\n75000 Paris, France",
+      legalId: "000 000 000 (demo)",
+      vatNumber: "FR00 000000000 (demo)",
+      quoteTerms:
+        "Annual subscription billed in advance. Payment within 30 days.",
+    },
+  },
   domain: DEMO_DOMAIN,
   users: DEMO_USERS,
   accounts: DEMO_ACCOUNTS,

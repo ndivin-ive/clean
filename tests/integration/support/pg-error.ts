@@ -14,4 +14,5 @@ export async function pgErrorCode(promise: Promise<unknown>): Promise<string> {
 export const PG = {
   insufficientPrivilege: "42501",
   foreignKeyViolation: "23503",
+  checkViolation: "23514",
 } as const;

@@ -73,6 +73,7 @@ Pre-pivot work (support booking, checkpoints 1–2) is summarised in `docs/PIVOT
 - [x] P3. Rules engine: `rankActions`, `assessDeal`, `assessAccount`, coverage + full unit tests; `docs/RULES.md` (done before P2: pure logic, no external dependency)
 - [x] P4. Demo book seed (2 key + 8 accounts, 12 deals, 40 people, 6 months of interactions, signals); Today shows ranked actions (read-only until P7)
 - [x] P5. Accounts and people: list (search, tiers, health, next action), account page (health reasons, coverage, relationship map, people, deals, timeline, signals)
+- [x] P5b. Quotes (added by the product owner, D-060–D-063): quote per deal, draft editor, send (number, frozen document, private customer link, optional email), customer accept/decline page, new version, new link, mark deal won on the seller's decision; company legal identity settings; Deals tab lists deals and quotes
 - [ ] P6. Deals: board/list, deal page, stakeholders, qualification with evidence, close plan, health reasons
 - [ ] P7. Today: ranked actions (do / snooze / dismiss / teach), week-ahead strip
 - [ ] P8. Capture: note / paste (voice off by default), rule-based proposals, review and approve

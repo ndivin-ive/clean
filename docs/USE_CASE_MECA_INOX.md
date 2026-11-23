@@ -112,7 +112,30 @@ l’information reste lisible. À valider avec l’équipe commerciale.
 
 ![Aujourd’hui, téléphone](img/meca-inox-today-phone.png)
 
-## 5. Limites et suites
+## 5. Devis (D-060 à D-063)
+
+Pour une PME comme Meca-Inox, le devis est l’étape où l’affaire se joue. Depuis
+l’onglet **Affaires**, le commercial crée un devis pour une affaire : les lignes
+sont préremplies (montant de l’affaire, gammes du profil industriel), la TVA et
+la validité viennent des réglages de la société. À l’envoi, le devis reçoit un
+numéro (DEV-2026-0004), il est figé et un lien privé est créé pour le client
+(copiable, et envoyé par e-mail si souhaité).
+
+Le client ouvre le lien sans compte, voit le devis aux couleurs du vendeur,
+peut l’imprimer, l’accepter (nom, fonction, case « bon pour accord ») ou le
+refuser avec un motif. Le commercial voit « consulté le… » puis « accepté par… »
+et décide lui-même de passer l’affaire en gagnée.
+
+Démo : 4 devis inventés (offre acide nitrique expirée, référencement OEM en
+brouillon, commande de stock distributeur envoyée, arrêt d’intercampagne accepté).
+L’identité légale utilisée est **inventée et marquée « démo »**, jamais celle de
+la vraie société.
+
+![Éditeur de devis](img/meca-inox-quote-editor.png)
+
+![Page client : devis à accepter](img/meca-inox-quote-customer.png)
+
+## 6. Limites et suites
 
 - **Pas de connexion réelle** à l’ERP, à la messagerie ou au CRM de Meca-Inox :
   hors périmètre et soumis à accord (règle « stop and ask »).

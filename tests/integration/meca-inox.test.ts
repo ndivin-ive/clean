@@ -11,6 +11,8 @@ import type { DemoIds } from "@/server/seed/demo";
 import { MECA_INOX_DEMO as M } from "@/server/seed/meca-inox-data";
 import { loadBook } from "@/server/services/book";
 import { getOrganizationBrand } from "@/server/services/organizations";
+import { listDealsWithQuotes } from "@/server/services/quotes";
+import { displayStatus } from "@/domain/quotes";
 import { appDb, closePools, ownerPool } from "./support/db";
 import { demo } from "./support/demo";
 
@@ -134,5 +136,24 @@ describe("Meca-Inox use case", () => {
         [ids.organizationId],
       ),
     ).rejects.toThrow(/organization_brand_color_hex/);
+  });
+  it("has demo quotes at each step: expired offer, draft, sent, accepted", async () => {
+    const deals = await listDealsWithQuotes(appDb, tenant());
+    const q = (key: string) =>
+      deals.find((d) => d.id === ids.deals[key])!.quotes[0]!;
+    const today = NOW.toISOString().slice(0, 10);
+    expect([
+      q("d1").number,
+      displayStatus(q("d1").status, q("d1").validUntil, today),
+    ]).toEqual(["DEV-2026-0001", "expired"]);
+    expect([q("d3").number, q("d3").status]).toEqual([null, "draft"]);
+    expect([q("d4").number, q("d4").status, q("d4").viewedAt !== null]).toEqual(
+      ["DEV-2026-0002", "sent", true],
+    );
+    expect([q("d6").number, q("d6").status, q("d6").subtotal]).toEqual([
+      "DEV-2026-0003",
+      "accepted",
+      70572,
+    ]);
   });
 });

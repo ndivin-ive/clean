@@ -19,6 +19,7 @@
 | Name, email, role of users                                        | Customer's employees                | Sign-up / invitation            | Contract (Art. 6(1)(b)) with the customer                                                                   |
 | Business contact details, title, relationship notes, interactions | Customers' and prospects' employees | Entered or pasted by the seller | Legitimate interest in B2B relationship management (Art. 6(1)(f)), subject to the customer's balancing test |
 | Pasted notes and emails                                           | People mentioned in them            | The seller                      | Same; processed only to produce proposals (minimisation, Art. 5(1)(c))                                      |
+| Name and job title of the person answering a quote, date and time | Customers' employees                | Typed by them on the quote page | Contract or pre-contractual steps (Art. 6(1)(b)): proof of acceptance of the offer                          |
 
 Contacts are usually not collected from the data subject, so the controller owes
 them information under **Art. 14**. CLEAN will provide wording the customer can
@@ -32,6 +33,7 @@ reuse; meeting that duty is the customer's responsibility.
 - **Voice dictation off by default:** in Chrome, the Web Speech API sends audio to an online recognition service (MDN: https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition). It stays off until a user turns it on after a notice (D-042).
 - **No AI in Phase 1.** When enabled (Phase 3), prompts only include data the user can see, and no provider may train on customer data (rule 5).
 - **Secrets:** the AI provider key is write-only for the application role; it cannot be read back (tested). Secret columns are removed from the audit trail.
+- **Quote page (D-060, D-061):** the customer opens a quote through a private link, without an account. Only the SHA-256 hash of the 256-bit link token is stored; the link can be replaced at any time. The page is never indexed and sends no referrer. The database returns the document fields only (no internal ids, owner or deal data). An answer records the name and job title the person types, the date and time, and an optional reason; no IP address, device data or cookie is kept.
 - **EU-first:** database and hosting in an EU region (data_region `eu`).
 
 ## Retention (proposed defaults, to confirm)

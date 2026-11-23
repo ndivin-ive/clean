@@ -125,3 +125,12 @@ export const supportStatusEnum = pgEnum("support_status", [
   "done",
   "withdrawn",
 ]);
+
+/** Quote lifecycle (D-060): draft → sent → accepted | declined; a revision supersedes the previous version. */
+export const quoteStatusEnum = pgEnum("quote_status", [
+  "draft",
+  "sent",
+  "accepted",
+  "declined",
+  "superseded",
+]);

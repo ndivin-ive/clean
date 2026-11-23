@@ -58,3 +58,38 @@ export async function invitationEmail(
     ),
   };
 }
+
+export async function quoteEmail(
+  locale: AppLocale,
+  q: {
+    url: string;
+    reference: string;
+    title: string;
+    seller: string;
+    total: number;
+    currency: string;
+    validUntil: string;
+  },
+) {
+  const t = await getTranslations({ locale, namespace: "EmailQuote" });
+  const fmt = locale === "fr" ? "fr-FR" : "en-GB";
+  const total = new Intl.NumberFormat(fmt, {
+    style: "currency",
+    currency: q.currency,
+  }).format(q.total);
+  const date = new Intl.DateTimeFormat(fmt, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${q.validUntil}T12:00:00Z`));
+  return {
+    subject: t("subject", { ref: q.reference, seller: q.seller }),
+    ...layout(
+      t("title", { ref: q.reference }),
+      t("intro", { seller: q.seller, title: q.title, total, date }),
+      t("cta"),
+      q.url,
+      t("footer"),
+    ),
+  };
+}

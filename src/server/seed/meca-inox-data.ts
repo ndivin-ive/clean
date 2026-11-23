@@ -64,6 +64,15 @@ export const MECA_INOX_DEMO: DemoDataset = {
     // Public brand colours read from meca-inox-valves.com with Firecrawl (branding format), 23 Nov 2026.
     // Colours only: no logo or font is copied (D-058).
     brand: { color: "#EC001B", ink: "#233044" },
+    // Invented legal identity, clearly marked as a demo: never the real company's.
+    legal: {
+      legalName: "Meca-Inox (démo) SAS",
+      legalAddress: "Zone industrielle de démonstration\n27140 Gisors, France",
+      legalId: "000 000 000 (démo)",
+      vatNumber: "FR00 000000000 (démo)",
+      quoteTerms:
+        "Prix en euros hors taxes, départ usine. Délai : 6 à 8 semaines après commande, selon disponibilité.\nPaiement à 45 jours fin de mois. Garantie 3 ans ; pièces détachées disponibles 20 ans.\nVannes testées à 100 % selon EN 12266-1, certificats matière 3.1 sur demande.",
+    },
   },
   domain: "meca-inox.example",
   users: {
@@ -1368,5 +1377,151 @@ export const MECA_INOX_DEMO: DemoDataset = {
       daysAgo: 2,
     },
     { deal: "d1", kind: "amount", from: "380000", to: "420000", daysAgo: 5 },
+  ],
+  quotes: [
+    {
+      deal: "d1",
+      status: "sent",
+      sentDaysAgo: 50,
+      viewed: true,
+      introduction:
+        "Suite à la visite de l’unité acide nitrique et à la spécification révision C.",
+      lines: [
+        {
+          description:
+            "Vanne 3 pièces inox 1.4408 DN15 PN63, sécurité feu ISO 10497",
+          quantity: 400,
+          unitPrice: 58,
+          discountPct: 12,
+          productKey: "valves_3p",
+        },
+        {
+          description:
+            "Vanne 3 pièces inox 1.4408 DN25 PN63, sécurité feu ISO 10497",
+          quantity: 450,
+          unitPrice: 79,
+          discountPct: 12,
+          productKey: "valves_3p",
+        },
+        {
+          description:
+            "Vanne 3 pièces inox 1.4408 DN50 PN40, sécurité feu ISO 10497",
+          quantity: 250,
+          unitPrice: 152,
+          discountPct: 12,
+          productKey: "valves_3p",
+        },
+        {
+          description:
+            "Vanne 3 pièces inox 1.4408 DN80 PN40, sécurité feu ISO 10497",
+          quantity: 100,
+          unitPrice: 298,
+          discountPct: 12,
+          productKey: "valves_3p",
+        },
+        {
+          description: "Dossier DESP catégorie III et certificats matière 3.1",
+          quantity: 1,
+          unit: "forfait",
+          unitPrice: 3200,
+        },
+      ],
+    },
+    {
+      deal: "d3",
+      status: "draft",
+      lines: [
+        {
+          description:
+            "Vanne 2 pièces hygiénique DN25, raccords clamp, Ra 0,8 µm",
+          quantity: 500,
+          unitPrice: 96,
+          productKey: "valves_2p",
+        },
+        {
+          description:
+            "Vanne 2 pièces hygiénique DN40, raccords clamp, Ra 0,8 µm",
+          quantity: 300,
+          unitPrice: 128,
+          productKey: "valves_2p",
+        },
+        {
+          description:
+            "Actionneur pneumatique simple effet avec boîtier de fins de course",
+          quantity: 800,
+          unitPrice: 145,
+          productKey: "actuation",
+        },
+      ],
+    },
+    {
+      deal: "d4",
+      status: "sent",
+      sentDaysAgo: 4,
+      viewed: true,
+      introduction:
+        "Commande de stock du premier trimestre, tarif distributeur 2027.",
+      lines: [
+        {
+          description: "Vanne 3 pièces inox DN15 PN63, taraudée",
+          quantity: 400,
+          unitPrice: 62,
+          discountPct: 35,
+          productKey: "valves_3p",
+        },
+        {
+          description: "Vanne 3 pièces inox DN25 PN63, taraudée",
+          quantity: 300,
+          unitPrice: 84,
+          discountPct: 35,
+          productKey: "valves_3p",
+        },
+        {
+          description: "Vanne 3 pièces inox DN50 PN40, à souder",
+          quantity: 120,
+          unitPrice: 168,
+          discountPct: 35,
+          productKey: "valves_3p",
+        },
+        {
+          description: "Vanne 2 pièces à brides DIN DN80 PN16",
+          quantity: 40,
+          unitPrice: 310,
+          discountPct: 35,
+          productKey: "valves_2p",
+        },
+      ],
+    },
+    {
+      deal: "d6",
+      status: "accepted",
+      sentDaysAgo: 6,
+      responder: { name: "Franck Dubois", title: "Acheteur" },
+      introduction:
+        "Remplacement des 300 repères vapeur pendant l’arrêt d’intercampagne de janvier.",
+      lines: [
+        {
+          description: "Vanne 3 pièces vapeur +280 °C DN25, à souder",
+          quantity: 240,
+          unitPrice: 210,
+          discountPct: 8,
+          productKey: "valves_3p",
+        },
+        {
+          description: "Vanne 3 pièces vapeur +280 °C DN50, à souder",
+          quantity: 60,
+          unitPrice: 395,
+          discountPct: 8,
+          productKey: "valves_3p",
+        },
+        {
+          description:
+            "Assistance technique pendant l’arrêt (2 jours sur site)",
+          quantity: 1,
+          unit: "forfait",
+          unitPrice: 2400,
+        },
+      ],
+    },
   ],
 };
