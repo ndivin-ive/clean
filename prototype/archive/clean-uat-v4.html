@@ -435,6 +435,41 @@ main { padding: 0 0 48px; }
 .chip.accent { background: #E3EEFF; color: #1D4FA0; }
 .chip.bad { background: var(--bad-soft); }
 @media print { .rail, .utility, .proto-bar { display: none; } }
+
+/* quotes (devis) */
+.qdoc { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+.qdoc h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0 6px; }
+.qdoc-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; border-bottom: 3px solid var(--accent); padding-bottom: 14px; }
+.qdoc-kicker { color: var(--accent); font-weight: 800; letter-spacing: 0.08em; font-size: 12px; }
+.qdoc-title { font-size: 22px; margin: 4px 0; }
+.qdoc-dates { margin: 0; display: grid; gap: 6px; text-align: right; }
+.qdoc-dates dt, .qdoc-totals dt { font-size: 12px; color: var(--muted); }
+.qdoc-dates dd { margin: 0; font-weight: 700; }
+.qdoc-parties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.qdoc .pre { white-space: pre-line; }
+.qdoc-table td, .qdoc-table th { padding: 9px 8px; }
+.qdoc-totals { margin: 0 0 0 auto; min-width: min(360px, 100%); display: flex; flex-direction: column; gap: 6px; }
+.qdoc-totals div { display: flex; justify-content: space-between; gap: 18px; }
+.qdoc-totals dd { margin: 0; }
+.qdoc-totals .grand { border-top: 2px solid var(--fg); padding-top: 8px; font-weight: 800; font-size: 17px; }
+.qdoc-totals .grand dt { color: var(--fg); font-size: 17px; }
+.qdoc-ok { border: 1.5px solid var(--good); color: var(--good); border-radius: 10px; padding: 10px 12px; font-weight: 700; }
+.qlines { display: flex; flex-direction: column; gap: 12px; }
+.qline { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin: 0; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.qline-top { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+.qline-top select { flex: 0 0 auto; max-width: 100%; }
+.qline-top input { flex: 1 1 280px; min-width: 0; }
+.qline-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; width: 100%; align-items: end; }
+.qline-grid label, .qline-total { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--muted); }
+.qline-grid input { width: 100%; box-sizing: border-box; }
+.qline-total b { color: var(--fg); font-size: 14px; text-align: right; padding: 7px 0; }
+input[aria-invalid="true"] { border-color: var(--bad); }
+.cust-banner { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; background: var(--brand-ink, #141A26); color: #fff; padding: 10px max(16px, env(safe-area-inset-left, 0px)); font-size: 13px; }
+.cust-banner .btn { background: #fff; }
+main.cust { max-width: 880px; margin: 0 auto; padding: 28px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+.cust-intro { font-size: 17px; }
+@media (max-width: 640px) { .qline-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .qdoc { padding: 18px; } .qdoc-parties { grid-template-columns: minmax(0, 1fr); } .qdoc-dates { text-align: left; } }
+@media print { .cust-banner, .btn-row, .page-head .crumbs { display: none !important; } .qdoc { box-shadow: none; padding: 0; } }
 </style>
 
 <div id="app"></div>
@@ -1007,7 +1042,7 @@ function applyWorkspace(key) {
   S.ws = WORKSPACES[key] ? key : "lumen"; store("clean.ws", S.ws);
   const w = WS();
   ENG_TYPES = w.types; TEMPLATES = w.templates;
-  S.d = w.seed(); S.draft = null; S.setupStep = 1; S.bell = false; S.tpl = undefined;
+  S.d = typeof QUOTES_READY !== "undefined" && QUOTES_READY ? withQuotes(w.seed(), S.ws) : w.seed(); S.draft = null; S.setupStep = 1; S.bell = false; S.tpl = undefined;
   const st = document.documentElement.style;
   // Brand (D-058): Meca-Inox public colours, colours only (no logo). Red on white = 4.6:1 (WCAG AA).
   if (w.brand) { st.setProperty("--accent", w.brand.color); st.setProperty("--accent-soft", "rgba(236, 0, 27, 0.09)"); st.setProperty("--on-accent", "#ffffff"); st.setProperty("--brand-ink", w.brand.ink); }
@@ -1576,6 +1611,7 @@ function render() {
     <label class="ctl"><input type="checkbox" id="notes-toggle" data-act="notes" ${document.body.classList.contains("hide-notes") ? "" : "checked"}> ${t("reviewNotes")}</label>
     <button class="btn sm ghost" data-act="reset">${t("reset")}</button></div>`;
   if (route.name === "signin") { $("#app").innerHTML = bar + viewAuth(); return; }
+  if (route.name === "customer") { $("#app").innerHTML = bar + route.view(); return; }
   const mine = S.d.notifications.filter((n) => n.user === me().id), unread = mine.filter((n) => n.unread).length;
   const act = activeNav(route);
   const top = `<header class="utility">
@@ -1742,7 +1778,7 @@ document.addEventListener("click", (e) => {
     case "bell": S.bell = !S.bell; render(); break;
     case "read-n": { const n = S.d.notifications.find((x) => x.id === id); if (n) n.unread = false; S.bell = false; break; }
     case "period": S.period = b.dataset.v; render(); break;
-    case "reset": S.d = WS().seed(); S.draft = null; S.setupStep = 1; toast(t("reset")); render(); break;
+    case "reset": S.d = withQuotes(WS().seed(), S.ws); S.draft = null; S.setupStep = 1; toast(t("reset")); render(); break;
     case "signout": S.authStep = "email"; break;
     case "sso": toast(t("notes.signin").replace(/<[^>]+>/g, "").split(".")[0]); break;
     case "auth-open": S.authStep = "org"; render(); break;
@@ -2057,6 +2093,269 @@ function homeAdmin() {
     <aside class="dash-side"><section class="panel"><header><h2>${t("dash.setupList")}</h2></header><div class="next">${[1, 2, 3, 4].map((n, i) => `<a class="item" href="#${["setup", "admin-stages", "admin-functions", "admin-users"][i]}"><span class="sev ${done[i] ? "good" : "warn"}"></span><span>${t("home.setup" + n)}</span><span class="chip ${done[i] ? "good" : "warn"}">${done[i] ? t("home.setupDone") : t("home.setupTodo")}</span></a>`).join("")}</div></section>
       ${teamGauge(S.d.requests.filter((r) => r.status !== "draft").filter(inPeriod))}</aside></div></div>`;
 }
+
+var QUOTES_READY = true;
+/* ───────────────────────── quotes (devis) — mirrors the app module, D-060 to D-063 ───────────────────────── */
+const I18N_QUOTES = {
+  en: { qt: {
+    nav: "Quotes", title: "Quotes", lead: "Quotes for your deals. A sent quote is frozen and the customer answers through a private link.", new: "New quote", newFor: "Create a quote for", pickDeal: "Deal", create: "Create",
+    draft: "Draft quote", ref: "Quote {ref}", status: { draft: "Draft", sent: "Sent", accepted: "Accepted", declined: "Declined", superseded: "Replaced", expired: "Expired" },
+    header: "Quote details", titleF: "Title", validUntil: "Valid until", lang: "Document language", recipient: "Recipient", rName: "Name", rEmail: "Email", intro: "Introduction", terms: "Terms and conditions",
+    lines: "Lines", desc: "Description", qty: "Qty", unit: "Unit", price: "Unit price excl. VAT", disc: "Disc. %", vat: "VAT %", lineTotal: "Total excl. VAT", addLine: "Add a line", rmLine: "Remove line {n}", product: "Catalogue", free: "Free line",
+    subtotal: "Total excl. VAT", vatLine: "VAT {rate} %", vatOn: "VAT {rate} % on {base}", total: "Total incl. VAT", discounts: "Including discounts",
+    save: "Save draft", saved: "Draft saved.", send: "Send to the customer", sendHelp: "Sending freezes the quote, gives it a number and creates a private link for the customer to accept or decline it.", emailToo: "Also email the link to {email}", del: "Delete draft", deleted: "Draft deleted.",
+    p: { no_lines: "Add at least one line.", invalid_line: "A line is incomplete (description, quantity above 0, prices and rates between 0 and 100).", zero_total: "The total must be above zero.", expired: "The validity date is in the past.", seller: "Your company’s legal name and address are missing." },
+    sent: "Quote sent: {ref}.", emailed: "Link emailed to {email} (simulated).", link: "Customer link", linkHelp: "In the app only a fingerprint of the link is stored, so it is shown once; you can create a new one at any time.", copy: "Copy link", copied: "Link copied.", openCustomer: "Open the customer view",
+    renew: "Create a new link", renewHelp: "The previous link stops working.", renewed: "New link created.", revise: "Create a new version", reviseHelp: "Same number, next version. Sending it replaces this one.", won: "Mark the deal as won", wonHelp: "The customer accepted. Moving the deal is your decision: it goes to the won stage with the quote’s net amount.", wonDone: "Deal marked as won.", dealWon: "The deal is won.", print: "Print or save as PDF",
+    follow: "Follow-up", viewed: "Viewed by the customer on {d}", notViewed: "Not viewed yet", acceptedBy: "Accepted by {n} on {d}", declinedBy: "Declined by {n} on {d}", reason: "Reason: {r}", newer: "Open version {v}", readOnly: "Read-only: this quote belongs to {n}.",
+    cols: { ref: "Quote", deal: "Deal", total: "Total incl. VAT", status: "Status", valid: "Valid until" }, none: "No quotes yet. Create one from a deal.", dealPanel: "Quotes", dealNone: "No quote for this deal yet.",
+    doc: { quote: "QUOTE", no: "No. {ref}", draftNo: "Draft — not sent", date: "Date", from: "From", to: "For", attn: "For the attention of {n}", legalId: "Company ID", vatNo: "VAT number", contact: "Your contact: {n} · {e}", d: "Description", q: "Qty", up: "Unit price", rm: "Disc.", tva: "VAT", amt: "Excl. VAT", accepted: "Accepted electronically by {n}{t} on {d}." },
+    cust: { banner: "Customer view (simulation): this is the page the customer opens from the link, without an account.", back: "Back to the quote", intro: "{s} sent you this quote. You can accept or decline it below.", acceptT: "Accept this quote", name: "Your name", job: "Your job title (optional)", agree: "I accept this quote and its terms.", accept: "Accept the quote", declineT: "Decline", reason: "Reason (optional)", decline: "Decline the quote",
+      accepted: "Thank you. This quote was accepted on {d} by {n}.", declined: "This quote was declined on {d}.", expired: "This quote expired on {d}. Please contact {s}.", superseded: "This quote has been replaced by a newer version. Please use the most recent link.", invalid: "This link is not valid.", needName: "Please enter your name.", needAgree: "Please tick the box to confirm.", privacy: "Electronic acceptance: your name, job title, date and time are recorded with the quote. Nothing else is kept." },
+    notif: "{n} {a} quote {ref}", accepted: "accepted", declined: "declined",
+  } },
+  fr: { qt: {
+    nav: "Devis", title: "Devis", lead: "Les devis de vos affaires. Un devis envoyé est figé et le client répond par un lien privé.", new: "Nouveau devis", newFor: "Créer un devis pour", pickDeal: "Affaire", create: "Créer",
+    draft: "Devis en brouillon", ref: "Devis {ref}", status: { draft: "Brouillon", sent: "Envoyé", accepted: "Accepté", declined: "Refusé", superseded: "Remplacé", expired: "Expiré" },
+    header: "En-tête du devis", titleF: "Objet", validUntil: "Valable jusqu’au", lang: "Langue du document", recipient: "Destinataire", rName: "Nom", rEmail: "E-mail", intro: "Introduction", terms: "Conditions générales",
+    lines: "Lignes", desc: "Désignation", qty: "Qté", unit: "Unité", price: "Prix unitaire HT", disc: "Remise %", vat: "TVA %", lineTotal: "Total HT", addLine: "Ajouter une ligne", rmLine: "Supprimer la ligne {n}", product: "Catalogue", free: "Ligne libre",
+    subtotal: "Total HT", vatLine: "TVA {rate} %", vatOn: "TVA {rate} % sur {base}", total: "Total TTC", discounts: "Dont remises",
+    save: "Enregistrer le brouillon", saved: "Brouillon enregistré.", send: "Envoyer au client", sendHelp: "L’envoi fige le devis, lui attribue un numéro et crée un lien privé pour que le client l’accepte ou le refuse.", emailToo: "Envoyer aussi le lien par e-mail à {email}", del: "Supprimer le brouillon", deleted: "Brouillon supprimé.",
+    p: { no_lines: "Ajoutez au moins une ligne.", invalid_line: "Une ligne est incomplète (désignation, quantité supérieure à 0, prix et taux entre 0 et 100).", zero_total: "Le total doit être supérieur à zéro.", expired: "La date de validité est dépassée.", seller: "La raison sociale et l’adresse de votre société manquent." },
+    sent: "Devis envoyé : {ref}.", emailed: "Lien envoyé par e-mail à {email} (simulation).", link: "Lien client", linkHelp: "Dans l’application, seule une empreinte du lien est conservée : il n’est affiché qu’une fois ; vous pouvez en créer un nouveau à tout moment.", copy: "Copier le lien", copied: "Lien copié.", openCustomer: "Ouvrir la vue client",
+    renew: "Créer un nouveau lien", renewHelp: "L’ancien lien cesse de fonctionner.", renewed: "Nouveau lien créé.", revise: "Créer une nouvelle version", reviseHelp: "Même numéro, version suivante. Son envoi remplace celle-ci.", won: "Passer l’affaire en gagnée", wonHelp: "Le client a accepté. Déplacer l’affaire reste votre décision : elle passe à l’étape gagnée avec le montant HT du devis.", wonDone: "Affaire passée en gagnée.", dealWon: "L’affaire est gagnée.", print: "Imprimer ou enregistrer en PDF",
+    follow: "Suivi", viewed: "Consulté par le client le {d}", notViewed: "Pas encore consulté", acceptedBy: "Accepté par {n} le {d}", declinedBy: "Refusé par {n} le {d}", reason: "Motif : {r}", newer: "Ouvrir la version {v}", readOnly: "Lecture seule : ce devis appartient à {n}.",
+    cols: { ref: "Devis", deal: "Affaire", total: "Total TTC", status: "Statut", valid: "Validité" }, none: "Aucun devis pour l’instant. Créez-en un depuis une affaire.", dealPanel: "Devis", dealNone: "Aucun devis pour cette affaire.",
+    doc: { quote: "DEVIS", no: "N° {ref}", draftNo: "Brouillon — non envoyé", date: "Date", from: "Émetteur", to: "Client", attn: "À l’attention de {n}", legalId: "SIREN", vatNo: "N° de TVA intracommunautaire", contact: "Votre contact : {n} · {e}", d: "Désignation", q: "Qté", up: "P.U. HT", rm: "Rem.", tva: "TVA", amt: "Montant HT", accepted: "Bon pour accord électronique de {n}{t} le {d}." },
+    cust: { banner: "Vue client (simulation) : c’est la page que le client ouvre depuis le lien, sans compte.", back: "Revenir au devis", intro: "{s} vous a adressé ce devis. Vous pouvez l’accepter ou le refuser ci-dessous.", acceptT: "Accepter ce devis", name: "Votre nom", job: "Votre fonction (facultatif)", agree: "Bon pour accord : j’accepte ce devis et ses conditions.", accept: "Accepter le devis", declineT: "Refuser", reason: "Motif (facultatif)", decline: "Refuser le devis",
+      accepted: "Merci. Ce devis a été accepté le {d} par {n}.", declined: "Ce devis a été refusé le {d}.", expired: "Ce devis a expiré le {d}. Contactez {s}.", superseded: "Ce devis a été remplacé par une version plus récente. Utilisez le dernier lien reçu.", invalid: "Ce lien n’est pas valide.", needName: "Saisissez votre nom.", needAgree: "Cochez la case pour confirmer.", privacy: "Acceptation électronique : votre nom, votre fonction, la date et l’heure sont enregistrés avec le devis. Rien d’autre n’est conservé." },
+    notif: "{n} a {a} le devis {ref}", accepted: "accepté", declined: "refusé",
+  } },
+};
+(function merge(target, extra) { for (const [k, v] of Object.entries(extra)) { if (v && typeof v === "object" && !Array.isArray(v)) merge((target[k] ??= {}), v); else target[k] = v; } })(I18N, I18N_QUOTES);
+
+/* invented seller identities (demo) and catalogues */
+WORKSPACES.lumen.legal = { name: "Lumen Data SAS (demo)", address: "1 demo street\n75000 Paris, France", id: "000 000 000 (demo)", vat: "FR00 000000000 (demo)", terms: "Annual subscription billed in advance. Payment within 30 days.", validity: 30, vatRate: 20 };
+WORKSPACES.lumen.catalogue = [["Analytics platform — annual subscription", "Plateforme analytique — abonnement annuel"], ["Data integration", "Intégration de données"], ["Managed service", "Service managé"], ["Onboarding and training", "Mise en service et formation"]];
+WORKSPACES.meca.legal = { name: "Meca-Inox (démo) SAS", address: "Zone industrielle de démonstration\n27140 Gisors, France", id: "000 000 000 (démo)", vat: "FR00 000000000 (démo)", terms: "Prix en euros hors taxes, départ usine. Délai : 6 à 8 semaines après commande.\nPaiement à 45 jours fin de mois. Garantie 3 ans ; pièces détachées disponibles 20 ans.\nVannes testées à 100 % selon EN 12266-1, certificats matière 3.1 sur demande.", validity: 30, vatRate: 20 };
+WORKSPACES.meca.catalogue = [["3-piece ball valve", "Vanne 3 pièces inox"], ["2-piece flanged valve (DIN)", "Vanne 2 pièces à brides DIN"], ["Pneumatic actuator", "Actionneur pneumatique"], ["Check valve", "Clapet anti-retour"], ["Special design", "Conception spéciale"], ["PED file and 3.1 certificates", "Dossier DESP et certificats 3.1"]];
+
+const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+const qmoney = (n) => new Intl.NumberFormat(locale(), { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
+const qnum = (n) => new Intl.NumberFormat(locale(), { maximumFractionDigits: 2 }).format(n);
+const lineAmt = (l) => { const gross = r2(l.qty * l.price), net = r2(gross * (1 - l.disc / 100)); return { gross, net, disc: r2(gross - net), vat: r2(net * l.vat / 100) }; };
+const lineOk = (l) => l.desc.trim() && l.qty > 0 && l.price >= 0 && l.disc >= 0 && l.disc <= 100 && l.vat >= 0 && l.vat <= 100;
+function qTotals(lines) {
+  const by = new Map(); let sub = 0, vat = 0, disc = 0;
+  for (const l of lines.filter(lineOk)) { const a = lineAmt(l); sub = r2(sub + a.net); vat = r2(vat + a.vat); disc = r2(disc + a.disc); const x = by.get(l.vat) || { base: 0, vat: 0 }; by.set(l.vat, { base: r2(x.base + a.net), vat: r2(x.vat + a.vat) }); }
+  return { sub, vat, disc, total: r2(sub + vat), byRate: [...by.entries()].sort((a, b) => b[0] - a[0]).map(([rate, v]) => ({ rate, ...v })) };
+}
+const qRef = (q) => (q.number ? (q.revision > 1 ? `${q.number}-v${q.revision}` : q.number) : null);
+const qStatus = (q) => (q.status === "sent" && q.validUntil < iso(TODAY) ? "expired" : q.status);
+const qPill = (s) => `<span class="chip ${{ draft: "", sent: "accent", accepted: "good", declined: "bad", superseded: "", expired: "warn" }[s]}">${esc(t("qt.status." + s))}</span>`;
+const newToken = () => { const a = new Uint8Array(24); (window.crypto || {}).getRandomValues?.(a); return Array.from(a, (b) => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"[b % 64]).join("") || uid("tok"); };
+const visibleQuotes = () => { const ids = new Set(visibleOpps().map((o) => o.id)); return (S.d.quotes || []).filter((q) => ids.has(q.opp)); };
+const quote = (id) => (S.d.quotes || []).find((q) => q.id === id);
+const canEditQuote = (q) => q.owner === me().id;
+const recipientFor = (o) => { const cs = S.d.contacts.filter((c) => c.account === o.account); return cs.find((c) => ["decision_maker", "sponsor"].includes(c.role)) || cs[0] || null; };
+const slug = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "");
+const emailOf = (name, acc) => `${slug(name)}@${slug(acc).replace(/\./g, "-")}.example`;
+
+function makeQuote(o, over = {}) {
+  const w = WS(), lg = w.legal, rc = recipientFor(o);
+  return { id: uid("q"), opp: o.id, owner: o.owner, number: null, revision: 1, status: "draft", title: o.name, lang: S.ws === "meca" ? "fr" : S.lang, validUntil: addDays(lg.validity), intro: "", terms: lg.terms,
+    recipient: rc ? rc.name : "", recipientEmail: rc ? emailOf(rc.name, account(o.account).name) : "", lines: [{ desc: o.name, qty: 1, unit: "", price: o.amount || 0, disc: 0, vat: lg.vatRate }], token: null, sentAt: null, viewedAt: null, respondedAt: null, responder: null, reason: null, supersededBy: null, ...over };
+}
+function sendProblems(q) {
+  const out = [], lg = WS().legal;
+  if (!q.lines.length) out.push("no_lines"); else if (!q.lines.every(lineOk)) out.push("invalid_line"); else if (qTotals(q.lines).total <= 0) out.push("zero_total");
+  if (q.validUntil < iso(TODAY)) out.push("expired");
+  if (!lg.name || !lg.address) out.push("seller");
+  return out;
+}
+function sendQuoteNow(q, sentDaysAgo = 0) {
+  if (!q.number) { const y = TODAY.getFullYear(); S.d.quoteSeq[y] = (S.d.quoteSeq[y] || 0) + 1; q.number = `DEV-${y}-${String(S.d.quoteSeq[y]).padStart(4, "0")}`; }
+  q.status = "sent"; q.sentAt = addDays(-sentDaysAgo); q.token = newToken();
+  q.seller = { ...WS().legal, sellerName: user(q.owner).name, sellerEmail: user(q.owner).email };
+  if (q.revision > 1) for (const p of S.d.quotes) if (p !== q && p.number === q.number && p.revision < q.revision && ["sent", "declined"].includes(p.status)) { p.status = "superseded"; p.supersededBy = q.id; }
+}
+function withQuotes(d, key) {
+  d.quotes = []; d.quoteSeq = {};
+  const saved = S.d; S.d = d;
+  const L_ = (desc, qty, price, disc = 0, unit = "") => ({ desc, qty, unit, price, disc, vat: 20 });
+  const add = (oid, status, lines, extra = {}) => { const o = d.opps.find((x) => x.id === oid); if (!o) return; const q = makeQuote(o, { lines, intro: extra.intro || "" }); if (extra.sent != null) { q.validUntil = addDays(30 - extra.sent); }
+    d.quotes.push(q); if (status === "draft") return q; sendQuoteNow(q, extra.sent || 0); if (extra.viewed) q.viewedAt = addDays(-Math.max(0, (extra.sent || 0) - 1));
+    if (status === "accepted" || status === "declined") { q.status = status; q.respondedAt = addDays(-1); q.viewedAt ||= addDays(-2); q.responder = extra.by; q.reason = extra.reason || null; } return q; };
+  if (key === "meca") {
+    add("o1", "sent", [L_("Vanne 3 pièces inox 1.4408 DN15 PN63, sécurité feu ISO 10497", 400, 58, 12), L_("Vanne 3 pièces inox 1.4408 DN25 PN63, sécurité feu ISO 10497", 450, 79, 12), L_("Vanne 3 pièces inox 1.4408 DN50 PN40, sécurité feu ISO 10497", 250, 152, 12), L_("Vanne 3 pièces inox 1.4408 DN80 PN40, sécurité feu ISO 10497", 100, 298, 12), L_("Dossier DESP catégorie III et certificats matière 3.1", 1, 3200, 0, "forfait")], { sent: 50, viewed: true, intro: "Suite à la visite de l’unité acide nitrique et à la spécification révision C." });
+    add("o2", "draft", [L_("Vanne 2 pièces hygiénique DN25, raccords clamp, Ra 0,8 µm", 500, 96), L_("Vanne 2 pièces hygiénique DN40, raccords clamp, Ra 0,8 µm", 300, 128), L_("Actionneur pneumatique simple effet avec boîtier de fins de course", 800, 145)]);
+    add("o10", "sent", [L_("Vanne 3 pièces inox DN15 PN63, taraudée", 400, 62, 35), L_("Vanne 3 pièces inox DN25 PN63, taraudée", 300, 84, 35), L_("Vanne 3 pièces inox DN50 PN40, à souder", 120, 168, 35), L_("Vanne 2 pièces à brides DIN DN80 PN16", 40, 310, 35)], { sent: 4, viewed: true, intro: "Commande de stock du premier trimestre, tarif distributeur 2027." });
+    add("o3", "accepted", [L_("Vanne 3 pièces vapeur +280 °C DN25, à souder", 240, 210, 8), L_("Vanne 3 pièces vapeur +280 °C DN50, à souder", 60, 395, 8), L_("Assistance technique pendant l’arrêt (2 jours sur site)", 1, 2400, 0, "forfait")], { sent: 6, by: { name: "Isabelle Caron", title: "Responsable maintenance" }, intro: "Remplacement des 300 repères vapeur pendant l’arrêt d’intercampagne de janvier." });
+  } else {
+    add("o3", "sent", [L_("Store analytics platform — annual subscription", 1, 52000), L_("Onboarding and training", 1, 8000, 10, "package")], { sent: 3, viewed: true, intro: "Renewal of the store data platform for three years, as discussed with Claire." });
+    add("o2", "draft", [L_("Patient flow dashboards — annual subscription", 1, 85000), L_("Integration with the bed management system", 1, 10000)]);
+  }
+  S.d = saved;
+  return d;
+}
+
+/* views */
+function quoteDoc(q) {
+  const s = q.seller || { ...WS().legal, sellerName: user(q.owner).name, sellerEmail: user(q.owner).email }, o = opp(q.opp), a = account(o.account), tt = qTotals(q.lines);
+  return `<article class="qdoc"><header class="qdoc-head"><div><p class="qdoc-kicker">${t("qt.doc.quote")}</p><h2 class="qdoc-title">${esc(q.title)}</h2><p class="muted">${qRef(q) ? esc(t("qt.doc.no", { ref: qRef(q) })) : t("qt.doc.draftNo")}</p></div>
+    <dl class="qdoc-dates"><div><dt>${t("qt.doc.date")}</dt><dd>${fmtDate(q.sentAt || iso(TODAY))}</dd></div><div><dt>${t("qt.validUntil")}</dt><dd>${fmtDate(q.validUntil)}</dd></div></dl></header>
+    <div class="qdoc-parties"><section><h3>${t("qt.doc.from")}</h3><p><b>${esc(s.name)}</b></p><p class="pre">${esc(s.address)}</p><p>${t("qt.doc.legalId")} ${esc(s.id)}</p><p>${t("qt.doc.vatNo")} ${esc(s.vat)}</p></section>
+      <section><h3>${t("qt.doc.to")}</h3><p><b>${esc(a.name)}</b></p>${q.recipient ? `<p>${esc(t("qt.doc.attn", { n: q.recipient }))}</p>` : ""}</section></div>
+    ${q.intro ? `<p class="pre">${esc(q.intro)}</p>` : ""}
+    <div class="table-wrap"><table class="qdoc-table"><thead><tr><th>${t("qt.doc.d")}</th><th class="r">${t("qt.doc.q")}</th><th class="r">${t("qt.doc.up")}</th><th class="r">${t("qt.doc.rm")}</th><th class="r">${t("qt.doc.tva")}</th><th class="r">${t("qt.doc.amt")}</th></tr></thead><tbody>
+      ${q.lines.filter(lineOk).map((l) => `<tr><td>${esc(l.desc)}</td><td class="r num">${qnum(l.qty)}${l.unit ? " " + esc(l.unit) : ""}</td><td class="r num">${qmoney(l.price)}</td><td class="r num">${l.disc ? qnum(l.disc) + " %" : "—"}</td><td class="r num">${qnum(l.vat)} %</td><td class="r num">${qmoney(lineAmt(l).net)}</td></tr>`).join("")}</tbody></table></div>
+    <dl class="qdoc-totals"><div><dt>${t("qt.subtotal")}</dt><dd class="num">${qmoney(tt.sub)}</dd></div>${tt.byRate.map((v) => `<div><dt>${esc(t("qt.vatOn", { rate: qnum(v.rate), base: qmoney(v.base) }))}</dt><dd class="num">${qmoney(v.vat)}</dd></div>`).join("")}<div class="grand"><dt>${t("qt.total")}</dt><dd class="num">${qmoney(tt.total)}</dd></div></dl>
+    ${q.terms ? `<section><h3>${t("qt.terms")}</h3><p class="pre">${esc(q.terms)}</p></section>` : ""}
+    <p class="muted small">${esc(t("qt.doc.contact", { n: s.sellerName, e: s.sellerEmail }))}</p>
+    ${q.status === "accepted" && q.responder ? `<p class="qdoc-ok">${esc(t("qt.doc.accepted", { n: q.responder.name, t: q.responder.title ? ", " + q.responder.title : "", d: fmtDate(q.respondedAt) }))}</p>` : ""}</article>`;
+}
+function viewQuotes() {
+  const qs = visibleQuotes().sort((a, b) => (b.sentAt || "9999").localeCompare(a.sentAt || "9999"));
+  return `<div class="page"><div class="page-head"><div><h1>${t("qt.title")}</h1><p class="lead">${t("qt.lead")}</p></div>${["ae", "manager"].includes(S.role) ? `<button class="btn primary" data-act="quote-pick">＋ ${t("qt.new")}</button>` : ""}</div>
+    <section class="panel">${qs.length ? `<div class="table-wrap"><table><thead><tr><th>${t("qt.cols.ref")}</th><th>${t("qt.cols.deal")}</th><th>${t("cols.owner")}</th><th class="r">${t("qt.cols.total")}</th><th>${t("qt.cols.valid")}</th><th>${t("qt.cols.status")}</th></tr></thead><tbody>
+      ${qs.map((q) => { const o = opp(q.opp); return `<tr class="link" data-href="quote-${q.id}"><td><a href="#quote-${q.id}">${esc(qRef(q) || t("qt.draft"))}</a></td><td>${esc(q.title)}<div class="muted small">${esc(account(o.account).name)}</div></td><td>${esc(user(q.owner).name)}</td><td class="r num">${qmoney(qTotals(q.lines).total)}</td><td class="num">${fmtDate(q.validUntil)}</td><td>${qPill(qStatus(q))}</td></tr>`; }).join("")}</tbody></table></div>` : `<p class="empty">${t("qt.none")}</p>`}</section></div>`;
+}
+function quotesPanel(o) {
+  const qs = (S.d.quotes || []).filter((q) => q.opp === o.id);
+  return `<section class="panel"><header><h2>${t("qt.dealPanel")}</h2>${isOpenOpp(o) && o.owner === me().id ? `<button class="btn sm primary" data-act="quote-new" data-opp="${o.id}">＋ ${t("qt.new")}</button>` : ""}</header>${qs.length ? `<div class="next">${qs.map((q) => `<a class="item" href="#quote-${q.id}"><span class="sev ${qStatus(q) === "accepted" ? "good" : qStatus(q) === "expired" || qStatus(q) === "declined" ? "bad" : ""}"></span><span>${esc(qRef(q) || t("qt.draft"))}<br><span class="muted small num">${qmoney(qTotals(q.lines).total)}</span></span>${qPill(qStatus(q))}</a>`).join("")}</div>` : `<p class="empty">${t("qt.dealNone")}</p>`}</section>`;
+}
+function editorLine(l, i) {
+  const cat = WS().catalogue;
+  return `<fieldset class="qline" aria-label="${esc(t("qt.lines"))} ${i + 1}"><div class="qline-top"><select data-ql="${i}" data-k="cat" aria-label="${t("qt.product")}"><option value="">${t("qt.free")}</option>${cat.map((c, j) => `<option value="${j}">${esc(c[S.lang === "fr" ? 1 : 0])}</option>`).join("")}</select>
+    <input type="text" data-ql="${i}" data-k="desc" value="${esc(l.desc)}" placeholder="${esc(t("qt.desc"))}" aria-label="${esc(t("qt.desc"))}" aria-invalid="${!l.desc.trim()}"></div>
+    <div class="qline-grid">${[["qty", t("qt.qty")], ["unit", t("qt.unit")], ["price", t("qt.price")], ["disc", t("qt.disc")], ["vat", t("qt.vat")]].map(([k, lab]) => `<label><span>${lab}</span><input type="${k === "unit" ? "text" : "number"}" step="any" data-ql="${i}" data-k="${k}" value="${esc(l[k])}"></label>`).join("")}
+      <div class="qline-total"><span>${t("qt.lineTotal")}</span><b class="num" id="qlt-${i}">${lineOk(l) ? qmoney(lineAmt(l).net) : "—"}</b></div></div>
+    <button type="button" class="btn sm ghost danger" data-act="quote-rm-line" data-i="${i}">${esc(t("qt.rmLine", { n: i + 1 }))}</button></fieldset>`;
+}
+function totalsHtml(q) {
+  const tt = qTotals(q.lines);
+  return `<dl class="qdoc-totals"><div><dt>${t("qt.subtotal")}</dt><dd class="num">${qmoney(tt.sub)}</dd></div>${tt.disc ? `<div class="muted"><dt>${t("qt.discounts")}</dt><dd class="num">${qmoney(tt.disc)}</dd></div>` : ""}${tt.byRate.map((v) => `<div><dt>${esc(t("qt.vatLine", { rate: qnum(v.rate) }))}</dt><dd class="num">${qmoney(v.vat)}</dd></div>`).join("")}<div class="grand"><dt>${t("qt.total")}</dt><dd class="num">${qmoney(tt.total)}</dd></div></dl>`;
+}
+function viewQuote(id) {
+  const q = quote(id); if (!q || !visibleQuotes().includes(q)) return viewNotFound();
+  const o = opp(q.opp), a = account(o.account), st = qStatus(q), mine = canEditQuote(q), ref = qRef(q);
+  const head = `<div class="page-head"><div><p class="crumbs"><a href="#quotes">${t("qt.title")}</a> › <a href="#deal-${o.id}">${esc(o.name)}</a></p><h1>${ref ? esc(t("qt.ref", { ref })) : t("qt.draft")}</h1><div class="chips" style="margin-top:6px">${qPill(st)}<span class="chip">${esc(a.name)}</span></div></div></div>`;
+  if (q.status === "draft" && mine) {
+    const probs = S.qProblems || []; S.qProblems = null;
+    return `<div class="page" style="max-width:980px">${head}${probs.length ? `<div class="flag" role="alert">${probs.map((p) => `<p>${esc(t("qt.p." + p))}</p>`).join("")}</div>` : ""}
+      <section class="panel"><header><h2>${t("qt.header")}</h2></header><div class="body form"><div class="fields-2">
+        <div class="field"><label for="qf-title" class="req">${t("qt.titleF")}</label><input type="text" id="qf-title" data-qf="title" value="${esc(q.title)}"></div>
+        <div class="field"><label for="qf-valid" class="req">${t("qt.validUntil")}</label><input type="date" id="qf-valid" data-qf="validUntil" value="${q.validUntil}"></div>
+        <div class="field"><label for="qf-rn">${t("qt.recipient")} · ${t("qt.rName")}</label><input type="text" id="qf-rn" data-qf="recipient" value="${esc(q.recipient)}"></div>
+        <div class="field"><label for="qf-re">${t("qt.recipient")} · ${t("qt.rEmail")}</label><input type="email" id="qf-re" data-qf="recipientEmail" value="${esc(q.recipientEmail)}"></div></div>
+        <div class="field"><label for="qf-intro">${t("qt.intro")}</label><textarea id="qf-intro" data-qf="intro">${esc(q.intro)}</textarea></div></div></section>
+      <section class="panel"><header><h2>${t("qt.lines")}</h2><button class="btn sm" data-act="quote-add-line">＋ ${t("qt.addLine")}</button></header><div class="body qlines">${q.lines.map(editorLine).join("")}</div>
+        <div class="body" id="qt-totals" aria-live="polite">${totalsHtml(q)}</div></section>
+      <section class="panel"><header><h2>${t("qt.terms")}</h2></header><div class="body"><textarea data-qf="terms" aria-label="${t("qt.terms")}" style="min-height:110px">${esc(q.terms)}</textarea></div></section>
+      <section class="panel"><div class="body form">${q.recipientEmail ? `<label class="checks"><label><input type="checkbox" id="qf-email" checked> ${esc(t("qt.emailToo", { email: q.recipientEmail }))}</label></label>` : ""}
+        <div class="btn-row"><button class="btn primary" data-act="quote-send">${t("qt.send")}</button><button class="btn" data-act="quote-save">${t("qt.save")}</button><span class="spacer" style="flex:1"></span><button class="btn danger" data-act="quote-del">${t("qt.del")}</button></div><p class="muted small">${t("qt.sendHelp")}</p></div></section></div>`;
+  }
+  const newer = (S.d.quotes || []).find((x) => x.number && x.number === q.number && x.revision > q.revision);
+  const link = q.token ? `${location.href.split("#")[0]}#q-${q.token}` : "";
+  const won = stage(o.stage).won;
+  return `<div class="page" style="max-width:980px">${head}${mine ? "" : `<div class="note">${esc(t("qt.readOnly", { n: user(q.owner).name }))}</div>`}
+    <div class="grid cols-2"><section class="panel"><header><h2>${t("qt.follow")}</h2></header><div class="next">
+      <div class="item"><span class="sev ${q.viewedAt ? "good" : ""}"></span><span>${q.viewedAt ? esc(t("qt.viewed", { d: fmtDate(q.viewedAt) })) : t("qt.notViewed")}</span><span></span></div>
+      ${q.respondedAt && q.responder ? `<div class="item"><span class="sev ${q.status === "declined" ? "bad" : "good"}"></span><span>${esc(t(q.status === "declined" ? "qt.declinedBy" : "qt.acceptedBy", { n: q.responder.name, d: fmtDate(q.respondedAt) }))}${q.reason ? `<br><span class="muted small">${esc(t("qt.reason", { r: q.reason }))}</span>` : ""}</span><span></span></div>` : ""}
+      ${newer ? `<a class="item" href="#quote-${newer.id}"><span class="sev"></span><span>${esc(t("qt.newer", { v: newer.revision }))}</span><span class="muted">›</span></a>` : ""}</div></section>
+    ${q.status === "sent" && mine ? `<section class="panel"><header><h2>${t("qt.link")}</h2></header><div class="body form"><div class="btn-row"><input type="text" readonly value="${esc(link)}" aria-label="${t("qt.link")}" style="flex:1;min-width:200px" id="qf-link"><button class="btn" data-act="quote-copy">${t("qt.copy")}</button></div><a class="btn primary" href="#q-${q.token}">${t("qt.openCustomer")} ›</a><p class="muted small">${t("qt.linkHelp")}</p></div></section>` : q.status !== "superseded" && q.token ? `<section class="panel"><header><h2>${t("qt.link")}</h2></header><div class="body"><a class="btn" href="#q-${q.token}">${t("qt.openCustomer")} ›</a></div></section>` : ""}</div>
+    ${mine ? `<div class="btn-row no-print">${q.status === "accepted" && !won ? `<button class="btn primary" data-act="quote-won" title="${esc(t("qt.wonHelp"))}">${t("qt.won")}</button>` : ""}${q.status === "accepted" && won ? `<span class="chip good">${t("qt.dealWon")}</span>` : ""}${q.status === "sent" ? `<button class="btn" data-act="quote-renew" title="${esc(t("qt.renewHelp"))}">${t("qt.renew")}</button>` : ""}${["sent", "declined"].includes(q.status) && !newer ? `<button class="btn" data-act="quote-revise" title="${esc(t("qt.reviseHelp"))}">${t("qt.revise")}</button>` : ""}<button class="btn ghost" data-act="quote-print">${t("qt.print")}</button></div>
+      ${q.status === "accepted" && !won ? `<p class="muted small">${t("qt.wonHelp")}</p>` : ""}` : ""}
+    ${quoteDoc(q)}</div>`;
+}
+function viewCustomerQuote(token) {
+  const q = (S.d.quotes || []).find((x) => x.token === token && x.status !== "draft");
+  const back = q ? `<a class="btn sm" href="#quote-${q.id}">‹ ${t("qt.cust.back")}</a>` : `<a class="btn sm" href="#home">‹ ${t("nav.home")}</a>`;
+  const top = `<div class="cust-banner no-print"><span>${t("qt.cust.banner")}</span>${back}</div>`;
+  if (!q) return `${top}<main id="main" class="cust"><p class="panel empty">${t("qt.cust.invalid")}</p></main>`;
+  if (q.status === "superseded") return `${top}<main id="main" class="cust"><p class="panel empty">${t("qt.cust.superseded")}</p></main>`;
+  if (!q.viewedAt) q.viewedAt = iso(TODAY);
+  const st = qStatus(q), s = q.seller, err = S.custError; S.custError = null;
+    return `${top}<main id="main" class="cust"><p class="cust-intro">${esc(t("qt.cust.intro", { s: s.name }))}</p>
+    ${err ? `<div class="flag" role="alert">${esc(t("qt.cust." + err))}</div>` : ""}
+    ${st === "accepted" ? `<div class="flag info" role="status">${esc(t("qt.cust.accepted", { d: fmtDate(q.respondedAt), n: q.responder.name }))}</div>` : ""}
+    ${st === "declined" ? `<div class="flag info" role="status">${esc(t("qt.cust.declined", { d: fmtDate(q.respondedAt) }))}</div>` : ""}
+    ${st === "expired" ? `<div class="flag" role="status">${esc(t("qt.cust.expired", { d: fmtDate(q.validUntil), s: s.name }))}</div>` : ""}
+    ${quoteDoc(q)}
+    ${st === "sent" ? `<section class="panel no-print"><header><h2>${t("qt.cust.acceptT")}</h2></header><div class="body form"><div class="fields-2"><div class="field"><label for="cu-name" class="req">${t("qt.cust.name")}</label><input type="text" id="cu-name" maxlength="120" autocomplete="name"></div><div class="field"><label for="cu-job">${t("qt.cust.job")}</label><input type="text" id="cu-job" maxlength="120"></div></div>
+      <label class="checks"><label><input type="checkbox" id="cu-agree"> ${t("qt.cust.agree")}</label></label><button class="btn primary" data-act="cust-accept" data-tok="${esc(token)}">${t("qt.cust.accept")}</button><p class="muted small">${t("qt.cust.privacy")}</p></div></section>
+      <details class="panel no-print"><summary class="body"><b>${t("qt.cust.declineT")}</b></summary><div class="body form"><div class="field"><label for="cu-dname" class="req">${t("qt.cust.name")}</label><input type="text" id="cu-dname" maxlength="120"></div><div class="field"><label for="cu-reason">${t("qt.cust.reason")}</label><textarea id="cu-reason" maxlength="2000"></textarea></div><button class="btn danger" data-act="cust-decline" data-tok="${esc(token)}">${t("qt.cust.decline")}</button></div></details>` : ""}
+    <div class="no-print"><button class="btn" data-act="quote-print">${t("qt.print")}</button></div></main>`;
+}
+
+/* wiring: routes, navigation, deal page, actions */
+ROUTES.quotes = viewQuotes; GUARD.quotes = ["ae", "manager", "admin"];
+for (const r of ["ae", "manager", "admin"]) { const n = NAV[r], i = n.indexOf("pipeline"); n.splice(i + 1, 0, "quotes"); }
+NAV_LABEL.quotes = "qt.nav";
+ICO.quotes = '<path d="M7 3h7l4 4v14H7z" stroke-linejoin="round"/><path d="M10 11h5M10 14.5h5M10 18h3" stroke-linecap="round"/>';
+const parseRouteBase = parseRoute;
+parseRoute = function () {
+  const h = (location.hash || "#home").slice(1);
+  if (h.startsWith("q-")) return { name: "customer", view: () => viewCustomerQuote(h.slice(2)) };
+  if (h.startsWith("quote-")) return { name: "quote", view: GUARD.quotes.includes(S.role) ? () => viewQuote(h.slice(6)) : viewNotFound };
+  return parseRouteBase();
+};
+const activeNavBase = activeNav;
+activeNav = function (route) { return route.name === "quote" ? "quotes" : activeNavBase(route); };
+const viewDealBase = viewDeal;
+viewDeal = function (id) {
+  const html = viewDealBase(id), o = opp(id); if (!o || !visibleOpps().includes(o)) return html;
+  const marker = `<section class="panel"><header><h2>${t("deal.history")}</h2>`;
+  return html.includes(marker) ? html.replace(marker, quotesPanel(o) + marker) : html;
+};
+ROUTES.pipeline = ROUTES.pipeline; // unchanged
+function readEditor(q) {
+  for (const el of document.querySelectorAll("[data-qf]")) q[el.dataset.qf] = el.value;
+  for (const el of document.querySelectorAll("[data-ql]")) { const l = q.lines[+el.dataset.ql], k = el.dataset.k; if (!l || k === "cat") continue; l[k] = ["qty", "price", "disc", "vat"].includes(k) ? (el.value === "" ? NaN : +el.value) : el.value; }
+}
+document.addEventListener("input", (e) => {
+  const el = e.target; if (!el.matches("[data-qf], [data-ql]")) return;
+  const q = quote((location.hash.match(/^#quote-(.+)$/) || [])[1]); if (!q || q.status !== "draft") return;
+  readEditor(q);
+  q.lines.forEach((l, i) => { const c = document.getElementById("qlt-" + i); if (c) c.textContent = lineOk(l) ? qmoney(lineAmt(l).net) : "—"; });
+  const tt = document.getElementById("qt-totals"); if (tt) tt.innerHTML = totalsHtml(q);
+});
+document.addEventListener("change", (e) => {
+  const el = e.target; if (!el.matches('[data-ql][data-k="cat"]') || el.value === "") return;
+  const q = quote((location.hash.match(/^#quote-(.+)$/) || [])[1]); if (!q) return;
+  readEditor(q); const l = q.lines[+el.dataset.ql]; if (!l.desc.trim() || l.desc === opp(q.opp).name) l.desc = WS().catalogue[+el.value][S.lang === "fr" ? 1 : 0]; render();
+});
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act; if (!act.startsWith("quote-") && !act.startsWith("cust-")) return;
+  const qid = (location.hash.match(/^#quote-(.+)$/) || [])[1], q = qid && quote(qid);
+  switch (act) {
+    case "quote-new": { const o = opp(b.dataset.opp); const nq = makeQuote(o); S.d.quotes.push(nq); location.hash = `quote-${nq.id}`; break; }
+    case "quote-pick": { const deals = visibleOpps().filter((o) => isOpenOpp(o) && o.owner === me().id);
+      openDialog(t("qt.new"), `<div class="field"><label for="dl-qopp">${t("qt.pickDeal")}</label><select id="dl-qopp">${deals.map((o) => `<option value="${o.id}">${esc(o.name)} · ${esc(account(o.account).name)}</option>`).join("")}</select></div>`, t("qt.create"), (d) => { const o = opp(d.querySelector("#dl-qopp").value); if (!o) return; const nq = makeQuote(o); S.d.quotes.push(nq); location.hash = `quote-${nq.id}`; }); break; }
+    case "quote-add-line": readEditor(q); q.lines.push({ desc: "", qty: 1, unit: "", price: 0, disc: 0, vat: WS().legal.vatRate }); render(); break;
+    case "quote-rm-line": readEditor(q); q.lines.splice(+b.dataset.i, 1); render(); break;
+    case "quote-save": readEditor(q); toast(t("qt.saved")); break;
+    case "quote-del": S.d.quotes = S.d.quotes.filter((x) => x !== q); toast(t("qt.deleted")); location.hash = `deal-${q.opp}`; break;
+    case "quote-send": { readEditor(q); const probs = sendProblems(q); if (probs.length) { S.qProblems = probs; render(); window.scrollTo(0, 0); break; }
+      const email = $("#qf-email")?.checked && q.recipientEmail; sendQuoteNow(q); toast(email ? t("qt.emailed", { email: q.recipientEmail }) : t("qt.sent", { ref: qRef(q) })); render(); window.scrollTo(0, 0); break; }
+    case "quote-copy": navigator.clipboard?.writeText($("#qf-link").value).catch(() => {}); $("#qf-link").select(); toast(t("qt.copied")); break;
+    case "quote-renew": q.token = newToken(); toast(t("qt.renewed")); render(); break;
+    case "quote-revise": { const nq = makeQuote(opp(q.opp), { number: q.number, revision: q.revision + 1, title: q.title, intro: q.intro, terms: q.terms, recipient: q.recipient, recipientEmail: q.recipientEmail, lines: q.lines.map((l) => ({ ...l })) }); S.d.quotes.push(nq); location.hash = `quote-${nq.id}`; break; }
+    case "quote-won": { const o = opp(q.opp), wonSt = S.d.stages.find((s) => s.won); o.history.push({ from: o.stage, to: wonSt.id, at: iso(TODAY) + "T10:00:00" }); o.stage = wonSt.id; o.moved = iso(TODAY); o.amount = qTotals(q.lines).sub; toast(t("qt.wonDone")); render(); break; }
+    case "quote-print": window.print(); break;
+    case "cust-accept": case "cust-decline": {
+      const cq = S.d.quotes.find((x) => x.token === b.dataset.tok); if (!cq || qStatus(cq) !== "sent") break;
+      const accept = act === "cust-accept", name = (accept ? $("#cu-name") : $("#cu-dname")).value.trim();
+      if (!name) { S.custError = "needName"; render(); break; }
+      if (accept && !$("#cu-agree").checked) { S.custError = "needAgree"; render(); break; }
+      cq.status = accept ? "accepted" : "declined"; cq.respondedAt = iso(TODAY); cq.responder = { name, title: accept ? $("#cu-job").value.trim() || null : null }; cq.reason = accept ? null : $("#cu-reason").value.trim() || null;
+      const ref = qRef(cq); notify(cq.owner, `${name} ${accept ? "accepted" : "declined"} quote ${ref}.`, `${name} a ${accept ? "accepté" : "refusé"} le devis ${ref}.`, `quote-${cq.id}`);
+      render(); window.scrollTo(0, 0); break; }
+  }
+});
+
+S.d = withQuotes(S.d, S.ws);
 
 window.addEventListener("hashchange", () => { document.body.classList.remove("nav-open"); S.bell = false; render(); window.scrollTo(0, 0); });
 render();
