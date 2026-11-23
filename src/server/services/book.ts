@@ -37,8 +37,10 @@ export async function loadBook(
 ): Promise<{ book: Book; labels: BookLabels }> {
   const me = ctx.userId;
   return withTenant(db, ctx, async (tx) => {
+    // One transaction = one connection: queries run one after another
+    // (pg deprecates concurrent queries on a client).
     const [stageRows, criteriaRows, cadenceRows, settingRows, adjustmentRows] =
-      await Promise.all([
+      await sequential([
         tx
           .select()
           .from(s.pipelineStage)
@@ -85,7 +87,7 @@ export async function loadBook(
       .where(eq(s.deal.ownerId, me));
     const dealIds = dealRows.map((d) => d.id);
     const [stakeRows, qualRows, closeEvents] = dealIds.length
-      ? await Promise.all([
+      ? await sequential([
           tx
             .select()
             .from(s.dealStakeholder)
@@ -276,4 +278,13 @@ export async function loadBook(
     };
     return { book, labels };
   });
+}
+
+/** Await query builders one at a time, keeping tuple types. */
+async function sequential<T extends readonly unknown[]>(
+  queries: readonly [...{ [K in keyof T]: PromiseLike<T[K]> }],
+): Promise<T> {
+  const out: unknown[] = [];
+  for (const q of queries) out.push(await q);
+  return out as unknown as T;
 }

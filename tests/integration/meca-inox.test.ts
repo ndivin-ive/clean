@@ -10,7 +10,8 @@ import { withTenant } from "@/server/db/tenant";
 import type { DemoIds } from "@/server/seed/demo";
 import { MECA_INOX_DEMO as M } from "@/server/seed/meca-inox-data";
 import { loadBook } from "@/server/services/book";
-import { appDb, closePools } from "./support/db";
+import { getOrganizationBrand } from "@/server/services/organizations";
+import { appDb, closePools, ownerPool } from "./support/db";
 import { demo } from "./support/demo";
 
 const NOW = new Date("2026-11-20T09:00:00Z");
@@ -121,5 +122,17 @@ describe("Meca-Inox use case", () => {
     expect(await n("seller")).toBe(12);
     expect(await n("peer")).toBe(0);
     expect(await n("admin")).toBe(0);
+  });
+  it("carries the brand colours, and the database refuses anything but #rrggbb", async () => {
+    expect(await getOrganizationBrand(appDb, tenant())).toEqual({
+      name: "Meca-Inox (démo)",
+      brand: { color: "#EC001B", ink: "#233044" },
+    });
+    await expect(
+      ownerPool.query(
+        "UPDATE organization SET brand_color = '#000;}*{x:y' WHERE id = $1",
+        [ids.organizationId],
+      ),
+    ).rejects.toThrow(/organization_brand_color_hex/);
   });
 });

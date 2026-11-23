@@ -33,6 +33,9 @@ export const organization = pgTable(
     teamVisibility: boolean("team_visibility").notNull().default(false),
     // Starting configuration (stages, criteria, cadences, catalogue) — src/domain/profiles.ts (D-056).
     salesProfile: text("sales_profile").notNull().default("generic"),
+    // Branding (D-058): accent and dark brand colours, #rrggbb; null = CLEAN default.
+    brandColor: text("brand_color"),
+    brandInk: text("brand_ink"),
     // Forecast periods are calendar quarters offset by this month (D-038).
     fiscalYearStartMonth: smallint("fiscal_year_start_month")
       .notNull()
@@ -48,6 +51,14 @@ export const organization = pgTable(
   },
   (t) => [
     check("organization_name_not_blank", sql`btrim(${t.name}) <> ''`),
+    check(
+      "organization_brand_color_hex",
+      sql`${t.brandColor} IS NULL OR ${t.brandColor} ~ '^#[0-9A-Fa-f]{6}$'`,
+    ),
+    check(
+      "organization_brand_ink_hex",
+      sql`${t.brandInk} IS NULL OR ${t.brandInk} ~ '^#[0-9A-Fa-f]{6}$'`,
+    ),
     check(
       "organization_fiscal_month_range",
       sql`${t.fiscalYearStartMonth} BETWEEN 1 AND 12`,

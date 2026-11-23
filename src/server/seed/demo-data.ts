@@ -4,6 +4,7 @@
  * every Today rule: a single-threaded deal, stalled deals, a quiet champion, a
  * renewal with a stale plan, a CEO leaving, a meeting tomorrow without a brief.
  */
+import type { Brand } from "@/domain/branding";
 import type { SalesProfileKey } from "@/domain/profiles";
 import type {
   DecisionRole,
@@ -1484,6 +1485,8 @@ export interface DemoDataset {
     name: string;
     defaultLanguage: "en" | "fr";
     salesProfile: SalesProfileKey;
+    /** Optional branding (D-058). */
+    brand?: Brand;
   };
   /** Email domain of the demo users (used to clean them up). */
   domain: string;

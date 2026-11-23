@@ -15,18 +15,18 @@ owner privacy, audit, grants). The previous model is in git history at `523bdad`
 
 ## Tenant-scoped (organisation settings)
 
-| Table                   | Key columns                                                                                                |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| organization            | name, default_language, **sales_profile**, plan, data_region, **team_visibility**, fiscal_year_start_month |
-| membership              | user_id, roles (seller / manager / admin / specialist), manager_user_id, is_active                         |
-| invitation              | email, roles, token_hash (SHA-256), expires_at, accepted_at                                                |
-| notification            | user_id, kind, payload, read_at — recipient-only read policy                                               |
-| pipeline_stage          | name_en/fr, exit_criterion_en/fr, sort_order, probability, **typical_days**, is_won, is_lost               |
-| qualification_criterion | key, label_en/fr, help_en/fr, sort_order, required_late                                                    |
-| role_cadence            | role, days                                                                                                 |
-| rule_setting            | key, value (weights and thresholds)                                                                        |
-| feature_flag            | key, enabled                                                                                               |
-| ai_provider_setting     | provider (off …), endpoint, encrypted_key (write-only for the app), enabled_features                       |
+| Table                   | Key columns                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| organization            | name, default_language, **sales_profile**, **brand_color**, **brand_ink**, plan, data_region, **team_visibility**, fiscal_year_start_month |
+| membership              | user_id, roles (seller / manager / admin / specialist), manager_user_id, is_active                                                         |
+| invitation              | email, roles, token_hash (SHA-256), expires_at, accepted_at                                                                                |
+| notification            | user_id, kind, payload, read_at — recipient-only read policy                                                                               |
+| pipeline_stage          | name_en/fr, exit_criterion_en/fr, sort_order, probability, **typical_days**, is_won, is_lost                                               |
+| qualification_criterion | key, label_en/fr, help_en/fr, sort_order, required_late                                                                                    |
+| role_cadence            | role, days                                                                                                                                 |
+| rule_setting            | key, value (weights and thresholds)                                                                                                        |
+| feature_flag            | key, enabled                                                                                                                               |
+| ai_provider_setting     | provider (off …), endpoint, encrypted_key (write-only for the app), enabled_features                                                       |
 
 ## Seller-owned
 

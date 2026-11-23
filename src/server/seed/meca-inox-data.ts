@@ -61,6 +61,9 @@ export const MECA_INOX_DEMO: DemoDataset = {
     name: "Meca-Inox (démo)",
     defaultLanguage: "fr",
     salesProfile: "industrial_equipment",
+    // Public brand colours read from meca-inox-valves.com with Firecrawl (branding format), 23 Nov 2026.
+    // Colours only: no logo or font is copied (D-058).
+    brand: { color: "#EC001B", ink: "#233044" },
   },
   domain: "meca-inox.example",
   users: {

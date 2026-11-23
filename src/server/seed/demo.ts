@@ -54,6 +54,7 @@ export async function seedDemo(
       name: data.org.name,
       defaultLanguage: data.org.defaultLanguage,
       salesProfile: profile.key,
+      brand: data.org.brand ?? null,
     },
     data.org.id,
   );

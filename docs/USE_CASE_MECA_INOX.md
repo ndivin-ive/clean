@@ -83,12 +83,43 @@ de Julien (testé), comme pour toute organisation.
 
 ![Compte clé Chimelys Normandie](img/meca-inox-account.png)
 
-## 4. Limites et suites
+## 4. Identité visuelle (D-058)
+
+Chaque organisation peut avoir une couleur d’accent et une couleur foncée de
+marque (`organization.brand_color`, `organization.brand_ink`, format `#rrggbb`
+contrôlé en base). Pour la démo, elles ont été relevées sur le site public avec
+l’outil Firecrawl (format `branding`, 23 novembre 2026) :
+
+| Élément relevé     | Valeur                         | Utilisation dans CLEAN                                                                                                                                    |
+| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Couleur principale | `#EC001B` (rouge)              | Accent : boutons, liens, onglet actif, avatar                                                                                                             |
+| Couleur secondaire | `#233044` (bleu marine)        | Pastille de marque « MI »                                                                                                                                 |
+| Polices            | Barlow (texte), Effra (titres) | **Non reprises** : Effra est une police commerciale ; Barlow demanderait une police web supplémentaire. CLEAN garde la police système (style iOS, D-040). |
+| Logo               | fichier SVG du site            | **Non copié** (marque déposée, règle « clean-room ») : la pastille affiche les initiales.                                                                 |
+
+Contraste (WCAG AA, 4,5:1), calculé par `src/domain/branding.ts` et testé :
+
+| Thème  | Accent appliqué                      | Contraste sur la carte | Texte sur l’accent |
+| ------ | ------------------------------------ | ---------------------- | ------------------ |
+| Clair  | `#ec001b` (inchangé)                 | 4,6:1 sur blanc        | blanc              |
+| Sombre | `#f14256` (éclairci automatiquement) | ≥ 4,5:1 sur `#1c1c1e`  | noir               |
+
+Point d’attention : le rouge de Meca-Inox est proche du rouge « à risque » des
+indicateurs de santé. Les statuts gardent leur libellé et leur pastille, donc
+l’information reste lisible. À valider avec l’équipe commerciale.
+
+![Aujourd’hui, thème sombre](img/meca-inox-today-dark.png)
+
+![Aujourd’hui, téléphone](img/meca-inox-today-phone.png)
+
+## 5. Limites et suites
 
 - **Pas de connexion réelle** à l’ERP, à la messagerie ou au CRM de Meca-Inox :
   hors périmètre et soumis à accord (règle « stop and ask »).
 - Les pages Affaires (P6), les actions sur Aujourd’hui (P7), la saisie (P8) et le
   plan de compte vivant (P9) arrivent dans les étapes suivantes de la phase 1.
+- Réglage de la marque par l’administrateur dans l’application : prévu avec
+  les Réglages (P12) ; aujourd’hui, la valeur est fixée à la création (seed).
 - Pistes propres à l’industrie, non engagées : suivi des appels d’offres par lot,
   canal distributeur (comptes partenaires et revente), base installée et pièces
   détachées, variation du prix de l’inox dans les contrats-cadres.

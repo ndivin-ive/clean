@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
+import { isHex, type Brand } from "@/domain/branding";
 import { salesProfile, type SalesProfileKey } from "@/domain/profiles";
 import { DEFAULT_RULE_SETTINGS } from "@/domain/settings/defaults";
 import { FLAGS } from "@/domain/flags";
@@ -50,6 +51,7 @@ export async function createOrganization(
     name: string;
     defaultLanguage: "en" | "fr";
     salesProfile?: SalesProfileKey;
+    brand?: Brand | null;
   },
   /** Fixed id for the demo seed; random otherwise. */
   id?: string,
@@ -64,6 +66,8 @@ export async function createOrganization(
       name,
       defaultLanguage: input.defaultLanguage,
       salesProfile: profile.key,
+      brandColor: isHex(input.brand?.color) ? input.brand.color : null,
+      brandInk: isHex(input.brand?.ink) ? input.brand.ink : null,
       setupCompletedAt: new Date(),
     });
     await tx
@@ -139,4 +143,31 @@ export async function selectOrganization(
       ),
     );
   return true;
+}
+
+export interface OrganizationBrand {
+  name: string;
+  brand: Brand | null;
+}
+
+/** Name and branding of the active organisation (tenant-scoped read). */
+export async function getOrganizationBrand(
+  db: Database,
+  ctx: { organizationId: string; userId: string },
+): Promise<OrganizationBrand | null> {
+  const [row] = await withTenant(db, ctx, (tx) =>
+    tx
+      .select({
+        name: s.organization.name,
+        color: s.organization.brandColor,
+        ink: s.organization.brandInk,
+      })
+      .from(s.organization)
+      .where(eq(s.organization.id, ctx.organizationId)),
+  );
+  if (!row) return null;
+  return {
+    name: row.name,
+    brand: isHex(row.color) ? { color: row.color, ink: row.ink } : null,
+  };
 }

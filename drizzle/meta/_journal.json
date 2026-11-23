@@ -36,6 +36,13 @@
       "when": 1795430467697,
       "tag": "0004_sales_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795431487374,
+      "tag": "0005_branding",
+      "breakpoints": true
     }
   ]
 }
