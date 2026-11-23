@@ -29,6 +29,13 @@
       "when": 1795201267586,
       "tag": "0003_accept_invitation",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795430467697,
+      "tag": "0004_sales_profile",
+      "breakpoints": true
     }
   ]
 }

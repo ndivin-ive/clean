@@ -31,6 +31,8 @@ export const organization = pgTable(
     dataRegion: text("data_region").notNull().default("eu"),
     // Rule 2: sellers' records are private unless the admin turns this on (D-033).
     teamVisibility: boolean("team_visibility").notNull().default(false),
+    // Starting configuration (stages, criteria, cadences, catalogue) — src/domain/profiles.ts (D-056).
+    salesProfile: text("sales_profile").notNull().default("generic"),
     // Forecast periods are calendar quarters offset by this month (D-038).
     fiscalYearStartMonth: smallint("fiscal_year_start_month")
       .notNull()

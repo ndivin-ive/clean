@@ -16,7 +16,7 @@ pnpm install
 cp .env.example .env
 docker compose up -d        # PostgreSQL 16 + Mailpit (http://localhost:8025)
 pnpm db:migrate
-pnpm db:seed                # invented demo organisation "Lumen Data (demo)"
+pnpm db:seed                # invented demo organisations "Lumen Data (demo)" and "Meca-Inox (démo)"
 pnpm dev                    # http://localhost:3000/en  ·  /fr
 ```
 

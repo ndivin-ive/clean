@@ -4,6 +4,7 @@
  * every Today rule: a single-threaded deal, stalled deals, a quiet champion, a
  * renewal with a stale plan, a CEO leaving, a meeting tomorrow without a brief.
  */
+import type { SalesProfileKey } from "@/domain/profiles";
 import type {
   DecisionRole,
   ForecastCategory,
@@ -653,9 +654,12 @@ export const QUAL_ORDER = [
   "champion",
   "competition",
 ] as const;
-export const qualOf = (q: Q): Record<string, QualificationStatus> =>
+export const qualOf = (
+  q: Q,
+  keys: readonly string[] = QUAL_ORDER,
+): Record<string, QualificationStatus> =>
   Object.fromEntries(
-    QUAL_ORDER.map((k, i) => [
+    keys.map((k, i) => [
       k,
       ({ u: "unknown", p: "partial", c: "confirmed" } as const)[
         (q[i] ?? "u") as "u" | "p" | "c"
@@ -668,14 +672,8 @@ export interface DemoDeal {
   account: string;
   name: string;
   amount: number;
-  stage:
-    | "lead"
-    | "discovery"
-    | "solution"
-    | "proposal"
-    | "negotiation"
-    | "won"
-    | "lost";
+  /** Stage key from the dataset's sales profile (src/domain/profiles.ts). */
+  stage: string;
   lostFrom?: string;
   closeInDays: number;
   daysInStage: number;
@@ -1473,3 +1471,67 @@ export const DEMO_RECENT_EVENTS: {
   { deal: "d5", kind: "forecast", from: "best_case", to: "commit", daysAgo: 3 },
   { deal: "d6", kind: "amount", from: "240000", to: "260000", daysAgo: 2 },
 ];
+
+/* ── datasets ──────────────────────────────────────────────────────────── */
+export interface DemoUser {
+  name: string;
+  email: string;
+  roles: readonly ("seller" | "manager" | "admin" | "specialist")[];
+}
+export interface DemoDataset {
+  org: {
+    id: string;
+    name: string;
+    defaultLanguage: "en" | "fr";
+    salesProfile: SalesProfileKey;
+  };
+  /** Email domain of the demo users (used to clean them up). */
+  domain: string;
+  users: {
+    admin: DemoUser;
+    manager: DemoUser;
+    seller: DemoUser;
+    peer: DemoUser;
+  };
+  accounts: DemoAccount[];
+  people: DemoPerson[];
+  deals: DemoDeal[];
+  evidence: typeof DEMO_EVIDENCE;
+  steps: typeof DEMO_STEPS;
+  interactions: typeof DEMO_INTERACTIONS;
+  meetings: typeof DEMO_MEETINGS;
+  signals: {
+    account: string;
+    person: string | null;
+    type:
+      | "job_change"
+      | "tender"
+      | "news"
+      | "hiring"
+      | "funding"
+      | "product_launch"
+      | "custom";
+    title: string;
+    daysAgo: number;
+    relevance: number;
+  }[];
+  plans: typeof DEMO_PLANS;
+  recentEvents: typeof DEMO_RECENT_EVENTS;
+}
+
+/** The generic demo ("Lumen Data"), B2B profile, English. */
+export const LUMEN_DEMO: DemoDataset = {
+  org: { ...DEMO_ORG, defaultLanguage: "en", salesProfile: "generic" },
+  domain: DEMO_DOMAIN,
+  users: DEMO_USERS,
+  accounts: DEMO_ACCOUNTS,
+  people: DEMO_PEOPLE,
+  deals: DEMO_DEALS,
+  evidence: DEMO_EVIDENCE,
+  steps: DEMO_STEPS,
+  interactions: DEMO_INTERACTIONS,
+  meetings: DEMO_MEETINGS,
+  signals: DEMO_SIGNALS,
+  plans: DEMO_PLANS,
+  recentEvents: DEMO_RECENT_EVENTS,
+};

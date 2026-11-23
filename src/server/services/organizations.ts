@@ -1,11 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import {
-  DEFAULT_CADENCES,
-  DEFAULT_CRITERIA,
-  DEFAULT_RULE_SETTINGS,
-  DEFAULT_STAGES,
-} from "@/domain/settings/defaults";
+import { salesProfile, type SalesProfileKey } from "@/domain/profiles";
+import { DEFAULT_RULE_SETTINGS } from "@/domain/settings/defaults";
 import { FLAGS } from "@/domain/flags";
 import type { Database } from "../db/client";
 import * as s from "../db/schema";
@@ -42,32 +38,39 @@ export async function listMyOrganizations(
 }
 
 /**
- * Create an organisation with the creator as admin + seller, and seed default
- * settings: stages, qualification criteria, role cadences, rule weights,
- * feature flags (off) and AI provider (off).
+ * Create an organisation with the creator as admin + seller, and seed its
+ * settings from the chosen sales profile (src/domain/profiles.ts): stages,
+ * qualification criteria, role cadences, rule weights; feature flags (off) and
+ * AI provider (off).
  */
 export async function createOrganization(
   db: Database,
   userId: string,
-  input: { name: string; defaultLanguage: "en" | "fr" },
+  input: {
+    name: string;
+    defaultLanguage: "en" | "fr";
+    salesProfile?: SalesProfileKey;
+  },
   /** Fixed id for the demo seed; random otherwise. */
   id?: string,
 ): Promise<string> {
   const name = input.name.trim();
   if (!name) throw new Error("Organisation name is required");
   const organizationId = id ?? randomUUID();
+  const profile = salesProfile(input.salesProfile);
   await withTenant(db, { organizationId, userId }, async (tx) => {
     await tx.insert(s.organization).values({
       id: organizationId,
       name,
       defaultLanguage: input.defaultLanguage,
+      salesProfile: profile.key,
       setupCompletedAt: new Date(),
     });
     await tx
       .insert(s.membership)
       .values({ userId, roles: ["admin", "seller"] });
     await tx.insert(s.pipelineStage).values(
-      DEFAULT_STAGES.map((st, i) => ({
+      profile.stages.map((st, i) => ({
         nameEn: st.nameEn,
         nameFr: st.nameFr,
         exitCriterionEn: st.exitEn,
@@ -80,7 +83,7 @@ export async function createOrganization(
       })),
     );
     await tx.insert(s.qualificationCriterion).values(
-      DEFAULT_CRITERIA.map((c, i) => ({
+      profile.criteria.map((c, i) => ({
         key: c.key,
         labelEn: c.labelEn,
         labelFr: c.labelFr,
@@ -91,13 +94,16 @@ export async function createOrganization(
       })),
     );
     await tx.insert(s.roleCadence).values(
-      Object.entries(DEFAULT_CADENCES).map(([role, days]) => ({
+      Object.entries(profile.cadences).map(([role, days]) => ({
         role: role as (typeof s.roleCadence.$inferInsert)["role"],
         days: days!,
       })),
     );
     await tx.insert(s.ruleSetting).values(
-      Object.entries(DEFAULT_RULE_SETTINGS).map(([key, value]) => ({
+      Object.entries({
+        ...DEFAULT_RULE_SETTINGS,
+        ...profile.ruleOverrides,
+      }).map(([key, value]) => ({
         key,
         value,
       })),

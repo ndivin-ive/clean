@@ -86,7 +86,10 @@
     "namePlaceholder": "e.g. Lumen Data",
     "language": "Default language",
     "submit": "Create organisation",
-    "error": "Enter a name for your organisation."
+    "error": "Enter a name for your organisation.",
+    "profile": "Sales profile",
+    "profileName": "{profile, select, generic {B2B software and services} industrial_equipment {Industrial equipment (manufacturer, distributors, OEMs)} other {Other}}",
+    "profileHelp": "Sets the starting stages, qualification criteria and contact rhythms. You can change them later in Settings."
   },
   "Invite": {
     "title": "Invitation",

@@ -86,7 +86,10 @@
     "namePlaceholder": "ex. Lumen Data",
     "language": "Langue par défaut",
     "submit": "Créer l’organisation",
-    "error": "Saisissez un nom pour votre organisation."
+    "error": "Saisissez un nom pour votre organisation.",
+    "profile": "Profil de vente",
+    "profileName": "{profile, select, generic {Logiciels et services B2B} industrial_equipment {Équipement industriel (fabricant, distributeurs, OEM)} other {Autre}}",
+    "profileHelp": "Définit les étapes, critères de qualification et rythmes de contact de départ. Vous pourrez les modifier dans les Réglages."
   },
   "Invite": {
     "title": "Invitation",

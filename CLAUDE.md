@@ -9,7 +9,7 @@ sales companion for account executives and account managers. It ranks what
 matters today, prepares every interaction, keeps accounts and relationships
 current, and turns notes into updates the seller approves. Brief: `docs/SPEC.md`.
 Pivot history: `docs/PIVOT.md`. Decisions: `docs/DECISIONS.md`. Rules:
-`docs/RULES.md`. Privacy: `docs/PRIVACY.md`. UI direction: iOS-style (D-040),
+`docs/RULES.md`. Privacy: `docs/PRIVACY.md`. Use case (industrial profile): `docs/USE_CASE_MECA_INOX.md`. UI direction: iOS-style (D-040),
 prototype in `prototype/companion-ios.html`.
 
 ## Stack

@@ -1,29 +1,15 @@
 import { asc, eq } from "drizzle-orm";
-import { DEFAULT_STAGES } from "@/domain/settings/defaults";
+import { salesProfile } from "@/domain/profiles";
 import { toIsoDate } from "@/domain/time";
 import type { Database } from "../db/client";
 import * as s from "../db/schema";
 import { withTenant } from "../db/tenant";
 import { createOrganization } from "../services/organizations";
-import {
-  DEMO_ACCOUNTS,
-  DEMO_DEALS,
-  DEMO_EVIDENCE,
-  DEMO_INTERACTIONS,
-  DEMO_MEETINGS,
-  DEMO_ORG,
-  DEMO_PEOPLE,
-  DEMO_PLANS,
-  DEMO_RECENT_EVENTS,
-  DEMO_SIGNALS,
-  DEMO_STEPS,
-  DEMO_USERS,
-  qualOf,
-} from "./demo-data";
+import { LUMEN_DEMO, qualOf, type DemoDataset } from "./demo-data";
 
 export interface DemoIds {
   organizationId: string;
-  users: Record<keyof typeof DEMO_USERS, string>;
+  users: Record<keyof DemoDataset["users"], string>;
   accounts: Record<string, string>;
   people: Record<string, string>;
   deals: Record<string, string>;
@@ -32,60 +18,67 @@ export interface DemoIds {
 const DAY = 86_400_000;
 
 /**
- * Seed the invented demo organisation into a database whose demo data has been
- * cleared. Everything is written through `withTenant`, as the record's owner,
- * so row-level security and the audit trail apply exactly as in the app.
+ * Seed one invented demo organisation (a dataset) into a database whose
+ * previous copy has been cleared. Everything is written through `withTenant`,
+ * as the record's owner, so row-level security and the audit trail apply
+ * exactly as in the app. Stages and criteria come from the dataset's profile.
  */
 export async function seedDemo(
   db: Database,
+  data: DemoDataset = LUMEN_DEMO,
   now = new Date(),
 ): Promise<DemoIds> {
   const at = (days: number) => new Date(now.getTime() + days * DAY);
   const day = (days: number) => toIsoDate(at(days));
+  const profile = salesProfile(data.org.salesProfile);
 
-  // Users (global identity table).
   const users = {} as DemoIds["users"];
-  for (const [key, u] of Object.entries(DEMO_USERS) as [
-    keyof typeof DEMO_USERS,
-    (typeof DEMO_USERS)[keyof typeof DEMO_USERS],
-  ][]) {
+  for (const key of Object.keys(data.users) as (keyof DemoDataset["users"])[]) {
+    const u = data.users[key];
     const [row] = await db
       .insert(s.authUser)
-      .values({ name: u.name, email: u.email, emailVerified: true })
+      .values({
+        name: u.name,
+        email: u.email,
+        emailVerified: true,
+        language: data.org.defaultLanguage,
+      })
       .returning({ id: s.authUser.id });
     users[key] = row!.id;
   }
 
-  // Organisation created by the admin with all defaults, then the team.
   const organizationId = await createOrganization(
     db,
     users.admin,
-    { name: DEMO_ORG.name, defaultLanguage: "en" },
-    DEMO_ORG.id,
+    {
+      name: data.org.name,
+      defaultLanguage: data.org.defaultLanguage,
+      salesProfile: profile.key,
+    },
+    data.org.id,
   );
   await withTenant(db, { organizationId, userId: users.admin }, async (tx) => {
     await tx
       .update(s.membership)
-      .set({ roles: [...DEMO_USERS.admin.roles] })
+      .set({ roles: [...data.users.admin.roles] })
       .where(eq(s.membership.userId, users.admin));
     await tx
       .insert(s.membership)
-      .values({ userId: users.manager, roles: [...DEMO_USERS.manager.roles] });
+      .values({ userId: users.manager, roles: [...data.users.manager.roles] });
     await tx.insert(s.membership).values([
       {
         userId: users.seller,
-        roles: [...DEMO_USERS.seller.roles],
+        roles: [...data.users.seller.roles],
         managerUserId: users.manager,
       },
       {
         userId: users.peer,
-        roles: [...DEMO_USERS.peer.roles],
+        roles: [...data.users.peer.roles],
         managerUserId: users.manager,
       },
     ]);
   });
 
-  // The seller's book, written as the seller.
   const ids = await withTenant(
     db,
     { organizationId, userId: users.seller },
@@ -94,12 +87,18 @@ export async function seedDemo(
         .select({ id: s.pipelineStage.id })
         .from(s.pipelineStage)
         .orderBy(asc(s.pipelineStage.sortOrder));
-      const stage = Object.fromEntries(
-        DEFAULT_STAGES.map((st, i) => [st.key, stageRows[i]!.id]),
-      ) as Record<(typeof DEFAULT_STAGES)[number]["key"], string>;
+      const stage: Record<string, string> = Object.fromEntries(
+        profile.stages.map((st, i) => [st.key, stageRows[i]!.id]),
+      );
+      const openKeys = profile.stages
+        .filter((st) => !st.isWon && !st.isLost)
+        .map((st) => st.key);
+      const wonKey = profile.stages.find((st) => st.isWon)!.key;
+      const lostKey = profile.stages.find((st) => st.isLost)!.key;
+      const criteriaKeys = profile.criteria.map((c) => c.key);
 
       const accounts: Record<string, string> = {};
-      for (const a of DEMO_ACCOUNTS) {
+      for (const a of data.accounts) {
         const [row] = await tx
           .insert(s.account)
           .values({
@@ -119,7 +118,13 @@ export async function seedDemo(
       }
 
       const people: Record<string, string> = {};
-      for (const p of DEMO_PEOPLE) {
+      for (const p of data.people) {
+        const domain = data.accounts.find((a) => a.key === p.account)!.domain;
+        const local = p.name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[^a-z ]/g, "")
+          .replace(/ +/g, ".");
         const [row] = await tx
           .insert(s.person)
           .values({
@@ -127,14 +132,7 @@ export async function seedDemo(
             name: p.name,
             title: p.title,
             department: p.department,
-            email: `${p.name
-              .toLowerCase()
-              .normalize("NFD")
-              .replace(/[^a-z ]/g, "")
-              .replace(
-                / +/g,
-                ".",
-              )}@${DEMO_ACCOUNTS.find((a) => a.key === p.account)!.domain}`,
+            email: `${local}@${domain}`,
           })
           .returning({ id: s.person.id });
         people[p.key] = row!.id;
@@ -148,21 +146,14 @@ export async function seedDemo(
       }
 
       const deals: Record<string, string> = {};
-      const order = [
-        "lead",
-        "discovery",
-        "solution",
-        "proposal",
-        "negotiation",
-      ] as const;
-      for (const d of DEMO_DEALS) {
+      for (const d of data.deals) {
         const [row] = await tx
           .insert(s.deal)
           .values({
             accountId: accounts[d.account]!,
             name: d.name,
             amount: d.amount,
-            stageId: stage[d.stage],
+            stageId: stage[d.stage]!,
             closeDate: day(d.closeInDays),
             compellingEvent: d.compellingEvent,
             nextStep: d.nextStep,
@@ -181,39 +172,37 @@ export async function seedDemo(
             roleInDeal: role,
           })),
         );
-        const qual = qualOf(d.qual);
+        const qual = qualOf(d.qual, criteriaKeys);
         await tx.insert(s.dealQualification).values(
           Object.entries(qual).map(([criterionKey, status]) => ({
             dealId,
             criterionKey,
             status,
             evidence:
-              DEMO_EVIDENCE.find(
+              data.evidence.find(
                 (e) => e.deal === d.key && e.criterion === criterionKey,
               )?.text ?? null,
           })),
         );
         // Stage history: walk the path, the last move at stage entry, earlier moves 12 days apart.
         const path: string[] =
-          d.stage === "won"
-            ? [...order, "won"]
-            : d.stage === "lost"
+          d.stage === wonKey
+            ? [...openKeys, wonKey]
+            : d.stage === lostKey
               ? [
-                  ...order.slice(
+                  ...openKeys.slice(
                     0,
-                    order.indexOf(
-                      (d.lostFrom ?? "lead") as (typeof order)[number],
-                    ) + 1,
+                    openKeys.indexOf(d.lostFrom ?? openKeys[0]!) + 1,
                   ),
-                  "lost",
+                  lostKey,
                 ]
-              : order.slice(0, order.indexOf(d.stage) + 1);
+              : openKeys.slice(0, openKeys.indexOf(d.stage) + 1);
         await tx.insert(s.dealEvent).values(
           path.map((to, i) => ({
             dealId,
             kind: "stage" as const,
-            fromValue: i ? stage[path[i - 1] as keyof typeof stage] : null,
-            toValue: stage[to as keyof typeof stage],
+            fromValue: i ? stage[path[i - 1]!]! : null,
+            toValue: stage[to]!,
             occurredAt: at(-d.daysInStage - (path.length - 1 - i) * 12),
           })),
         );
@@ -227,7 +216,7 @@ export async function seedDemo(
           });
         }
       }
-      for (const e of DEMO_RECENT_EVENTS)
+      for (const e of data.recentEvents)
         await tx.insert(s.dealEvent).values({
           dealId: deals[e.deal]!,
           kind: e.kind,
@@ -235,7 +224,7 @@ export async function seedDemo(
           toValue: e.to,
           occurredAt: at(-e.daysAgo),
         });
-      for (const st of DEMO_STEPS)
+      for (const st of data.steps)
         await tx.insert(s.closePlanStep).values({
           dealId: deals[st.deal]!,
           title: st.title,
@@ -246,27 +235,33 @@ export async function seedDemo(
 
       // Interactions: notable ones, plus a check-in for every last contact not already covered.
       const covered = new Set(
-        DEMO_INTERACTIONS.flatMap((i) =>
+        data.interactions.flatMap((i) =>
           i.people.map((p) => `${p}@${i.daysAgo}`),
         ),
       );
-      const generated = DEMO_PEOPLE.filter(
-        (p) =>
-          p.lastDaysAgo !== null && !covered.has(`${p.key}@${p.lastDaysAgo}`),
-      ).map((p) => ({
-        account: p.account,
-        deal:
-          DEMO_DEALS.find(
-            (d) =>
-              d.account === p.account &&
-              d.stakeholders.some(([k]) => k === p.key),
-          )?.key ?? null,
-        type: "call" as const,
-        daysAgo: p.lastDaysAgo!,
-        people: [p.key],
-        summary: `Check-in call with ${p.name}.`,
-      }));
-      for (const i of [...DEMO_INTERACTIONS, ...generated]) {
+      const checkIn =
+        data.org.defaultLanguage === "fr"
+          ? (n: string) => `Point téléphonique avec ${n}.`
+          : (n: string) => `Check-in call with ${n}.`;
+      const generated = data.people
+        .filter(
+          (p) =>
+            p.lastDaysAgo !== null && !covered.has(`${p.key}@${p.lastDaysAgo}`),
+        )
+        .map((p) => ({
+          account: p.account,
+          deal:
+            data.deals.find(
+              (d) =>
+                d.account === p.account &&
+                d.stakeholders.some(([k]) => k === p.key),
+            )?.key ?? null,
+          type: "call" as const,
+          daysAgo: p.lastDaysAgo!,
+          people: [p.key],
+          summary: checkIn(p.name),
+        }));
+      for (const i of [...data.interactions, ...generated]) {
         const [row] = await tx
           .insert(s.interaction)
           .values({
@@ -286,7 +281,7 @@ export async function seedDemo(
           })),
         ]);
       }
-      for (const m of DEMO_MEETINGS) {
+      for (const m of data.meetings) {
         const start = new Date(
           Math.round((now.getTime() + m.inHours * 3_600_000) / 3_600_000) *
             3_600_000,
@@ -311,7 +306,7 @@ export async function seedDemo(
         ]);
       }
 
-      for (const g of DEMO_SIGNALS)
+      for (const g of data.signals)
         await tx.insert(s.signal).values({
           accountId: accounts[g.account]!,
           personId: g.person ? people[g.person]! : null,
@@ -320,7 +315,7 @@ export async function seedDemo(
           detectedAt: at(-g.daysAgo),
           relevance: g.relevance,
         });
-      for (const p of DEMO_PLANS) {
+      for (const p of data.plans) {
         await tx.insert(s.accountPlan).values({
           accountId: accounts[p.account]!,
           objectives: p.objectives,
