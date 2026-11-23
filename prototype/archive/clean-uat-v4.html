@@ -57,7 +57,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
 .brand { font-weight: 750; letter-spacing: 0.08em; display: flex; align-items: center; gap: 10px; }
 .brand-mark { display: inline-grid; grid-template-columns: repeat(5, 6px); gap: 2px; }
-.brand-mark i { height: 14px; background: var(--accent); border-radius: 1px; opacity: 0.35; }
+.brand-mark i { height: 14px; background: var(--brand-ink, var(--accent)); border-radius: 1px; opacity: 0.35; }
 .brand-mark i:nth-child(1) { opacity: 1; } .brand-mark i:nth-child(2) { opacity: 0.85; } .brand-mark i:nth-child(3) { opacity: 0.7; } .brand-mark i:nth-child(4) { opacity: 0.55; }
 .org { color: var(--muted); font-size: 0.85rem; border-left: 1px solid var(--border); padding-left: 12px; }
 .topbar .grow { flex: 1; }
@@ -305,7 +305,7 @@ const I18N = {
   en: {
     protoBar: "UAT prototype · demo data · changes stay in this browser tab only",
     reviewNotes: "Review notes", reset: "Reset demo", signOut: "Sign out",
-    viewAs: "View as", language: "Language", menu: "Menu", notifications: "Notifications", noNotifications: "No notifications",
+    viewAs: "View as", orgPick: "Organisation", language: "Language", menu: "Menu", notifications: "Notifications", noNotifications: "No notifications",
     roles: { ae: "Account executive", manager: "Sales manager", specialist: "Specialist", lead: "Support team lead", admin: "Admin" },
     nav: { home: "Home", pipeline: "Pipeline", accounts: "Accounts", requests: "My requests", assignments: "My assignments", triage: "Triage queue", analytics: "Analytics", admin: "Administration", functions: "Support functions", templates: "Request templates", stages: "Pipeline stages", users: "Users & roles", setup: "Setup wizard", phase2: "Phase 2", work: "Work", support: "Support" },
     home: { greet: "Good afternoon, {name}", next: "What to do next", nothing: "Nothing needs your attention right now.",
@@ -366,7 +366,7 @@ const I18N = {
   fr: {
     protoBar: "Prototype de recette · données de démonstration · les changements restent dans cet onglet",
     reviewNotes: "Notes de revue", reset: "Réinitialiser", signOut: "Se déconnecter",
-    viewAs: "Voir en tant que", language: "Langue", menu: "Menu", notifications: "Notifications", noNotifications: "Aucune notification",
+    viewAs: "Voir en tant que", orgPick: "Organisation", language: "Langue", menu: "Menu", notifications: "Notifications", noNotifications: "Aucune notification",
     roles: { ae: "Commercial", manager: "Responsable commercial", specialist: "Expert", lead: "Responsable d’équipe d’appui", admin: "Administrateur" },
     nav: { home: "Accueil", pipeline: "Pipeline", accounts: "Comptes", requests: "Mes demandes", assignments: "Mes affectations", triage: "File de tri", analytics: "Analyses", admin: "Administration", functions: "Équipes d’appui", templates: "Modèles de demande", stages: "Étapes du pipeline", users: "Utilisateurs et rôles", setup: "Assistant de configuration", phase2: "Phase 2", work: "Travail", support: "Appui" },
     home: { greet: "Bonjour {name}", next: "Prochaines actions", nothing: "Rien ne requiert votre attention pour le moment.",
@@ -547,7 +547,7 @@ let uidN = 100; const uid = (p) => `${p}${++uidN}`;
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } }
 
 /* ───────────────────────── demo data (all invented) ───────────────────────── */
-function seed() {
+function seedLumen() {
   const users = [
     { id: "u1", name: "Camille Martin", email: "camille.martin@lumendata.example", roles: ["ae"], manager: "u3", hours: 0, skills: [] },
     { id: "u2", name: "Thomas Leroy", email: "thomas.leroy@lumendata.example", roles: ["ae"], manager: "u3", hours: 0, skills: [] },
@@ -700,9 +700,9 @@ const COMMON = {
   target: { key: "target", type: "date", required: true, label_en: "Target date", label_fr: "Date cible" },
   confirmed: { key: "confirmed", type: "checkbox", required: false, label_en: "Date confirmed with the customer", label_fr: "Date confirmée avec le client" },
 };
-const ENG_TYPES = { technical_deep_dive: ["Technical deep dive", "Approfondissement technique"], pricing_review: ["Pricing review", "Revue tarifaire"], contract_review: ["Contract review", "Revue contractuelle"], discovery_call: ["Discovery call", "Appel de découverte"], demo: ["Demo", "Démonstration"], workshop: ["Workshop", "Atelier"], business_case: ["Business case", "Analyse de rentabilité"], executive_briefing: ["Executive briefing", "Briefing de direction"], proof_of_concept: ["Proof of concept", "Preuve de concept"], onboarding_review: ["Onboarding review", "Revue d’intégration"] };
+let ENG_TYPES = { technical_deep_dive: ["Technical deep dive", "Approfondissement technique"], pricing_review: ["Pricing review", "Revue tarifaire"], contract_review: ["Contract review", "Revue contractuelle"], discovery_call: ["Discovery call", "Appel de découverte"], demo: ["Demo", "Démonstration"], workshop: ["Workshop", "Atelier"], business_case: ["Business case", "Analyse de rentabilité"], executive_briefing: ["Executive briefing", "Briefing de direction"], proof_of_concept: ["Proof of concept", "Preuve de concept"], onboarding_review: ["Onboarding review", "Revue d’intégration"] };
 const sec = (key, en, fr, fields) => ({ key, label_en: en, label_fr: fr, fields });
-const TEMPLATES = {
+let TEMPLATES = {
   t1: { id: "t1", name_en: "Presales demo / discovery", name_fr: "Démo / découverte avant-vente", versions: [{ v: 1, status: "published", at: addDays(-60) }, { v: 2, status: "draft", at: addDays(-1) }],
     schema: { sections: [sec("goal", "Goal", "Objectif", [COMMON.objective, COMMON.success, COMMON.outcomes]), sec("people", "People", "Participants", [COMMON.attendees, COMMON.senior]), sec("context", "Context", "Contexte", [COMMON.plan, COMMON.topics, COMMON.followup]), sec("logistics", "Logistics", "Logistique", [COMMON.type(["discovery_call", "demo", "proof_of_concept"]), COMMON.duration, COMMON.role, COMMON.deliverables, COMMON.extras, COMMON.target, COMMON.confirmed])] } },
   t2: { id: "t2", name_en: "Strategic workshop or executive briefing", name_fr: "Atelier stratégique ou briefing de direction", versions: [{ v: 1, status: "published", at: addDays(-45) }],
@@ -715,6 +715,163 @@ const TEMPLATES = {
     schema: { sections: [sec("goal", "Goal", "Objectif", [COMMON.objective, COMMON.success, COMMON.outcomes]), sec("people", "People", "Participants", [COMMON.attendees, COMMON.senior]), sec("context", "Context", "Contexte", [COMMON.plan, { ...COMMON.topics, label_en: "Pricing or contract questions", label_fr: "Questions tarifaires ou contractuelles" }, COMMON.followup]), sec("logistics", "Logistics", "Logistique", [COMMON.type(["pricing_review", "contract_review"]), COMMON.duration, COMMON.role, COMMON.target, COMMON.confirmed])] } },
 };
 
+/* ───────────────────────── Meca-Inox workspace (use case, docs/USE_CASE_MECA_INOX.md) ─────────────────────────
+   Industrial valve manufacturer: stages from the industrial_equipment profile; support teams of a valve maker
+   (applications, engineering office, quality and certification, testing, large custom valves, quoting).
+   Organisation facts come from the public site meca-inox-valves.com; every customer, person, deal and request is INVENTED. */
+const STAGES_MECA = [{"id":"s1","name_en":"Detection","name_fr":"Détection","exit_en":"Need or project identified (new build, shutdown, tender)","exit_fr":"Besoin ou projet identifié (travaux neufs, arrêt technique, appel d’offres)","prob":10,"target":21,"won":false,"lost":false},{"id":"s2","name_en":"Technical qualification","name_fr":"Qualification technique","exit_en":"Specification received: fluid, size, pressure, temperature, standards","exit_fr":"Spécification reçue : fluide, DN, pression, température, normes","prob":25,"target":21,"won":false,"lost":false},{"id":"s3","name_en":"Engineering and quoting","name_fr":"Étude et chiffrage","exit_en":"Technical solution validated by engineering; price built","exit_fr":"Solution technique validée par le bureau d’études ; prix construit","prob":40,"target":14,"won":false,"lost":false},{"id":"s4","name_en":"Offer submitted","name_fr":"Offre remise","exit_en":"Technical and commercial offer under review by the customer","exit_fr":"Offre technique et commerciale en revue chez le client","prob":60,"target":30,"won":false,"lost":false},{"id":"s5","name_en":"Negotiation and vendor listing","name_fr":"Négociation et référencement","exit_en":"Terms agreed and supplier approved (vendor list, audit)","exit_fr":"Conditions convenues et fournisseur référencé (liste fournisseurs, audit)","prob":80,"target":45,"won":false,"lost":false},{"id":"s6","name_en":"Order won","name_fr":"Commande gagnée","exit_en":"Purchase order received","exit_fr":"Commande reçue","prob":100,"target":0,"won":true,"lost":false},{"id":"s7","name_en":"Lost","name_fr":"Perdue","exit_en":"Loss reason captured","exit_fr":"Motif de perte renseigné","prob":0,"target":0,"won":false,"lost":true}];
+const ENG_TYPES_MECA = {
+  site_visit_tech: ["Technical site visit", "Visite technique sur site"], product_demo: ["Bench demonstration", "Démonstration sur banc"], sizing_review: ["Valve selection review", "Revue de sélection des vannes"],
+  special_design: ["Special design study", "Étude de conception spéciale"], drawings_3d: ["3D drawings and data sheets", "Plans 3D et fiches techniques"],
+  pricing_review: ["Pricing review", "Revue tarifaire"], contract_review: ["Contract or framework review", "Revue de contrat ou contrat-cadre"],
+  certification_pack: ["PED / ATEX / 3.1 pack", "Dossier DESP / ATEX / 3.1"], supplier_audit: ["Supplier audit preparation", "Préparation d’audit fournisseur"],
+  test_campaign: ["Test campaign", "Campagne d’essais"],
+  large_custom_review: ["Large valve review", "Revue grandes vannes"], factory_visit: ["Factory visit (Gisors)", "Visite d’usine (Gisors)"],
+};
+const typeField = (types, map) => ({ key: "type", type: "select", required: true, label_en: "Engagement type", label_fr: "Type d’intervention", options: types.map((k) => OPT(k, map[k][0], map[k][1])) });
+const topicsAs = (en, fr) => ({ ...COMMON.topics, label_en: en, label_fr: fr });
+const mecaTpl = (id, en, fr, types, topics, extra, versions = [{ v: 1, status: "published", at: addDays(-40) }]) => ({ id, name_en: en, name_fr: fr, versions,
+  schema: { sections: [sec("goal", "Goal", "Objectif", [COMMON.objective, COMMON.success, COMMON.outcomes]), sec("people", "People", "Participants", [COMMON.attendees, COMMON.senior]), sec("context", "Context", "Contexte", [COMMON.plan, topics, COMMON.followup]), sec("logistics", "Logistics", "Logistique", [typeField(types, ENG_TYPES_MECA), COMMON.duration, COMMON.role, ...extra, COMMON.target, COMMON.confirmed])] } });
+const TEMPLATES_MECA = {
+  t1: mecaTpl("t1", "Technical visit or bench demonstration", "Visite technique ou démonstration sur banc", ["site_visit_tech", "product_demo", "sizing_review"], topicsAs("Process data: fluid, size (DN), pressure, temperature", "Données process : fluide, DN, pression, température"), [COMMON.deliverables, COMMON.extras], [{ v: 1, status: "published", at: addDays(-60) }, { v: 2, status: "draft", at: addDays(-1) }]),
+  t5: mecaTpl("t5", "Offer review / quoting", "Revue d’offre / chiffrage", ["pricing_review", "contract_review"], topicsAs("Price, lead-time or terms questions", "Questions de prix, de délais ou de conditions"), []),
+  t6: mecaTpl("t6", "Engineering study", "Étude technique (bureau d’études)", ["special_design", "drawings_3d"], topicsAs("Operating conditions and constraints", "Conditions de service et contraintes"), [COMMON.deliverables]),
+  t7: mecaTpl("t7", "Quality pack or supplier audit", "Dossier qualité ou audit fournisseur", ["certification_pack", "supplier_audit"], topicsAs("Standards and certificates required", "Normes et certificats exigés"), [COMMON.deliverables]),
+  t8: mecaTpl("t8", "Test campaign", "Campagne d’essais", ["test_campaign"], topicsAs("Test conditions (medium, temperature, pressure)", "Conditions d’essai (fluide, température, pression)"), [COMMON.extras]),
+  t9: mecaTpl("t9", "Large custom valve project", "Projet de vanne sur mesure grandes dimensions", ["large_custom_review", "factory_visit"], topicsAs("Sizes, pressure class and installation", "Diamètres, classe de pression et installation"), [COMMON.deliverables, COMMON.extras]),
+};
+
+function seedMeca() {
+  const D = "meca-inox.example";
+  const U = (id, name, roles, manager, hours, skills) => ({ id, name, email: `${name.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]+/g, ".")}@${D}`, roles, manager, hours, skills, active: true });
+  const users = [
+    U("u1", "Julien Morel", ["ae"], "u3", 0, []), U("u2", "Claire Dumas", ["ae"], "u3", 0, []), U("u3", "Olivier Garnier", ["manager", "ae"], null, 0, []),
+    U("u4", "Mathieu Leblanc", ["specialist"], null, 16, ["Applications", "Vannes 3 pièces", "FR", "EN"]),
+    U("u5", "Nadège Fontaine", ["lead", "specialist"], null, 20, ["Conceptions spéciales", "CAO 3D", "FR"]),
+    U("u6", "Rachid Haddad", ["lead", "specialist"], null, 8, ["Avant-vente", "Sélection de vannes", "FR", "AR"]),
+    U("u7", "Sébastien Caron", ["lead", "specialist"], null, 12, ["Essais cryogéniques", "EN 12266-1", "FR"]),
+    U("u8", "Isabel Martín", ["lead", "specialist"], null, 6, ["Grandes dimensions", "ES", "EN"]),
+    U("u9", "Sandrine Lefort", ["admin"], null, 0, []),
+    U("u10", "Émilie Roche", ["lead", "specialist"], null, 10, ["DESP", "ATEX", "Certificats 3.1", "Audits"]),
+    U("u11", "Antoine Vidal", ["lead", "specialist"], null, 20, ["Chiffrage", "Conditions générales", "FR", "EN"]),
+  ];
+  const stages = STAGES_MECA.map((s) => ({ ...s }));
+  const accounts = [
+    ["a1", "Chimelys Normandie", "FR", "Chemicals", "expand", "u1"], ["a2", "Procélia Équipements", "FR", "OEM · CIP skids", "new_logo", "u1"],
+    ["a3", "Cryonova Systems", "DE", "OEM · LNG", "new_logo", "u2"], ["a4", "Coopérative Sucrière de Picardie", "FR", "Sugar", "retain", "u1"],
+    ["a5", "Hydrelis", "FR", "Hydrogen", "new_logo", "u2"], ["a6", "Robinetterie Industrielle du Nord", "FR", "Stockist distributor", "expand", "u3"],
+    ["a7", "BioSynthèse Pharma", "FR", "Pharma CDMO", "expand", "u2"], ["a8", "Ingéprocess", "FR", "EPC engineering", "new_logo", "u1"],
+    ["a9", "Brasserie des Trois Vallées", "FR", "Brewery", "retain", "u3"], ["a10", "Gaz Atlantique", "FR", "Industrial gases", "new_logo", "u2"],
+  ].map(([id, name, country, industry, rel, owner]) => ({ id, name, country, industry, rel, owner }));
+  const contacts = [
+    ["c1", "a1", "Bertrand Lacombe", "Directeur d’usine", "decision_maker"], ["c2", "a1", "Sophie Marchetti", "Ingénieure procédés", "technical_evaluator"],
+    ["c3", "a2", "Élise Fontaine", "Cheffe de projet skids", "sponsor"], ["c4", "a3", "Thomas Weber", "Managing Director", "decision_maker"],
+    ["c5", "a5", "Julie Chevalier", "Ingénieure systèmes hydrogène", "influencer"], ["c6", "a3", "Stefan Krause", "Head of Purchasing", "procurement"],
+    ["c7", "a8", "Sylvie Lambert", "Directrice de projet", "decision_maker"], ["c8", "a6", "Jean-Luc Mercier", "Gérant", "sponsor"],
+  ].map(([id, account, name, title, role]) => ({ id, account, name, title, role }));
+  const OPEN_IDS = ["s1", "s2", "s3", "s4", "s5"];
+  const path = (stage, lostFrom) => stage === "s6" ? [...OPEN_IDS, "s6"] : stage === "s7" ? [...OPEN_IDS.slice(0, OPEN_IDS.indexOf(lostFrom || "s1") + 1), "s7"] : OPEN_IDS.slice(0, OPEN_IDS.indexOf(stage) + 1);
+  const o = (id, account, owner, name, amount, stage, close, moved, whyNow, nextStep, lostFrom) => {
+    const steps = path(stage, lostFrom), gap = 8 + (Number(id.slice(1)) % 5) * 4;
+    const history = steps.map((to, i) => ({ from: i ? steps[i - 1] : undefined, to, at: addDays(-moved - (steps.length - 1 - i) * gap) }));
+    return { id, account, owner, name, amount, currency: "EUR", stage, close: addDays(close), moved: addDays(-moved), whyNow, nextStep, nextDue: null, history };
+  };
+  const opps = [
+    o("o1", "a1", "u1", "Travaux neufs acide nitrique : 1 200 vannes 3 pièces", 420000, "s4", 50, 52, "Démarrage de l’unité prévu en septembre ; fuites récurrentes sur l’unité existante.", "Revue technique de l’offre"),
+    o("o2", "a2", "u1", "Référencement OEM : vannes 2 pièces hygiéniques", 260000, "s3", 70, 8, "Nouvelle gamme de skids lancée en mars.", "Envoyer les plans 3D"),
+    o("o3", "a4", "u1", "Arrêt d’intercampagne : 300 vannes vapeur", 88000, "s5", 20, 12, "Arrêt technique en janvier.", "Caler la livraison avant l’arrêt"),
+    o("o4", "a8", "u1", "Prescription vannes sécurité feu : terminal chimique", 610000, "s1", 160, 30, "Appel d’offres publié pour le lot robinetterie.", ""),
+    o("o5", "a1", "u1", "Contrat-cadre maintenance 2027", 180000, "s5", 25, 10, "", "Valider la grille de prix 2027"),
+    o("o6", "a3", "u2", "Vannes cryogéniques −196 °C pour remorques GNL", 340000, "s2", 110, 18, "Homologation de la nouvelle remorque au T3.", "Organiser les essais cryogéniques"),
+    o("o7", "a5", "u2", "Électrolyseur 20 MW : vannes sur mesure", 520000, "s3", 90, 36, "Aide publique conditionnée à une mise en service en 2027.", "Réunion avec l’usine espagnole du groupe"),
+    o("o8", "a7", "u2", "Vannes vapeur propre Ra 0,4 µm", 150000, "s4", 18, 5, "Qualification de la ligne avant l’audit réglementaire.", "Revue documentaire qualité"),
+    o("o9", "a10", "u2", "Maintenance du centre de remplissage", 45000, "s1", 100, 2, "", ""),
+    o("o10", "a6", "u3", "Commande de stock T1 (distributeur)", 95000, "s5", 9, 1, "Inventaire de fin d’année.", "Confirmer les quantités par référence"),
+    o("o11", "a9", "u3", "Vannes NEP de la salle de brassage", 32000, "s6", -5, 5, "", ""),
+    o("o12", "a10", "u2", "Vannes sécurité feu du centre de remplissage", 64000, "s7", -12, 12, "", "", "s4"),
+  ];
+  const fns = [
+    { id: "f1", name_en: "Applications & presales", name_fr: "Applications et avant-vente", desc_en: "Valve selection, technical site visits and bench demonstrations.", desc_fr: "Sélection des vannes, visites techniques et démonstrations sur banc.", lead: "u6", members: ["u4", "u6"], template: "t1",
+      types: ["site_visit_tech", "product_demo", "sizing_review"], rules: { who: "everyone", approval: false, response: 8, maxOpen: 4, selfAssign: true } },
+    { id: "f5", name_en: "Engineering office", name_fr: "Bureau d’études", desc_en: "Special designs, 3D drawings and data sheets.", desc_fr: "Conceptions spéciales, plans 3D et fiches techniques.", lead: "u5", members: ["u5"], template: "t6",
+      types: ["special_design", "drawings_3d"], rules: { who: "everyone", approval: false, response: 16, maxOpen: 3, selfAssign: true } },
+    { id: "f6", name_en: "Quoting & sales administration", name_fr: "Chiffrage et administration des ventes", desc_en: "Prices, lead times, framework contracts and terms.", desc_fr: "Prix, délais, contrats-cadres et conditions.", lead: "u11", members: ["u11"], template: "t5",
+      types: ["pricing_review", "contract_review"], rules: { who: "sales", approval: false, response: 8, maxOpen: 6, selfAssign: true } },
+    { id: "f3", name_en: "Quality & certification", name_fr: "Qualité et certification", desc_en: "PED, ATEX and fire-safe files, 3.1 material certificates, supplier audits.", desc_fr: "Dossiers DESP, ATEX et sécurité feu, certificats matière 3.1, audits fournisseurs.", lead: "u10", members: ["u10"], template: "t7",
+      types: ["certification_pack", "supplier_audit"], rules: { who: "everyone", approval: false, response: 16, maxOpen: 3, selfAssign: false } },
+    { id: "f2", name_en: "Testing laboratory", name_fr: "Laboratoire d’essais", desc_en: "Cryogenic, steam and tightness tests (EN 12266-1).", desc_fr: "Essais cryogéniques, vapeur et étanchéité (EN 12266-1).", lead: "u7", members: ["u7"], template: "t8",
+      types: ["test_campaign"], rules: { who: "everyone", approval: true, response: 16, maxOpen: 3, selfAssign: false } },
+    { id: "f4", name_en: "Large custom valves (group plant, Spain)", name_fr: "Grandes vannes sur mesure (usine du groupe, Espagne)", desc_en: "Large-diameter custom valves for big projects.", desc_fr: "Vannes sur mesure de grand diamètre pour les grands projets.", lead: "u8", members: ["u8"], template: "t9",
+      types: ["large_custom_review", "factory_visit"], rules: { who: "everyone", approval: true, response: 24, maxOpen: 2, selfAssign: false } },
+  ].map((f) => ({ ...f, active: true }));
+  const r = (id, opp, requester, fn, status, answers, target, events, assignee, extra = {}) => ({ id, opp, requester, fn, status, answers, target: addDays(target), events, assignee, effort: [], outcome: null, version: 1, ...extra });
+  const ev = (from, to, by, ago, note) => ({ from, to, by, at: addDays(-ago) + "T10:00:00", note });
+  const A = (over) => ({ objective: "", success: "", outcomes: [], attendees: [], senior: "", plan: "none", topics: "", followup: "", type: "site_visit_tech", duration: "half_day", role: "lead", deliverables: [], extras: [], confirmed: false, ...over });
+  const requests = [
+    r("r1", "o1", "u1", "f1", "accepted", A({ objective: "Visite technique de l’unité acide nitrique afin que Sophie Marchetti valide la sélection DN15–DN80 et les brides tournantes.", success: "Sophie Marchetti (ingénieure procédés) valide la liste des repères et Bertrand Lacombe accepte l’audit fournisseur à Gisors avant le 15.", outcomes: ["technical_validation", "next_meeting"], attendees: [{ name: "Sophie Marchetti", title: "Ingénieure procédés", role: "technical_evaluator" }, { name: "Bertrand Lacombe", title: "Directeur d’usine", role: "decision_maker" }], senior: "director", plan: "documented", topics: "Fuites récurrentes sur l’unité existante ; réparabilité ; délai de livraison avant le démarrage.", followup: "Julien Morel envoie la liste des repères sous 3 jours", type: "site_visit_tech", duration: "half_day", role: "lead", deliverables: ["written_summary"], extras: ["site_visit"], confirmed: true }), 12,
+      [ev(null, "draft", "u1", 6), ev("draft", "new", "u1", 5), ev("new", "accepted", "u6", 4, "Mathieu connaît déjà l’unité.")], "u4"),
+    r("r2", "o6", "u2", "f2", "new", A({ objective: "Campagne d’essais cryogéniques à −196 °C pour les vannes des remorques GNL.", success: "", outcomes: ["technical_validation"], attendees: [{ name: "Thomas Weber", title: "Managing Director", role: "decision_maker" }], senior: "c_level", plan: "informal", topics: "", followup: "", type: "test_campaign", duration: "full_day", role: "co_present" }), 6,
+      [ev(null, "draft", "u2", 2), ev("draft", "new", "u2", 1)], null),
+    r("r3", "o8", "u2", "f3", "needs_information", A({ objective: "Préparer le dossier qualité de la ligne de lyophilisation.", success: "La responsable assurance qualité valide les certificats matière 3.1.", outcomes: ["technical_validation"], attendees: [], senior: "", plan: "none", topics: "Certificats matière, rugosité Ra 0,4 µm", type: "certification_pack", duration: "full_day", role: "lead", deliverables: ["written_summary"] }), 9,
+      [ev(null, "draft", "u2", 5), ev("draft", "new", "u2", 4), ev("new", "needs_information", "u10", 3, "Qui valide les certificats matière chez BioSynthèse ? Merci de le nommer.")], null),
+    r("r4", "o2", "u1", "f5", "scheduled", A({ objective: "Intégrer nos vannes 2 pièces dans les plans 3D des skids NEP afin que le directeur technique référence Meca-Inox.", success: "Élise Fontaine présente les plans au comité technique le 15.", outcomes: ["technical_validation"], attendees: [{ name: "Élise Fontaine", title: "Cheffe de projet skids", role: "sponsor" }], senior: "manager", plan: "formal", topics: "Encombrement, raccords clamp, déclaration de conformité contact alimentaire.", followup: "Julien Morel", type: "drawings_3d", duration: "half_day", role: "lead", deliverables: ["written_summary"], confirmed: true }), 4,
+      [ev(null, "draft", "u1", 9), ev("draft", "new", "u1", 8), ev("new", "accepted", "u5", 7), ev("accepted", "scheduled", "u5", 6, "Calé avec Élise.")], "u5", { booking: addDays(4) }),
+    r("r5", "o3", "u1", "f1", "delivered", A({ objective: "Démonstration sur banc des vannes vapeur afin que la sucrerie confirme les 300 remplacements.", success: "La responsable maintenance confirme la liste et le calendrier.", outcomes: ["next_meeting"], attendees: [{ name: "Isabelle Caron", title: "Responsable maintenance", role: "decision_maker" }], senior: "manager", plan: "documented", topics: "Vapeur jusqu’à +280 °C, maintenance sans dépose.", followup: "Julien Morel", type: "product_demo", duration: "1h", role: "co_present", confirmed: true }), -2,
+      [ev(null, "draft", "u1", 14), ev("draft", "new", "u1", 13), ev("new", "accepted", "u6", 12), ev("accepted", "scheduled", "u4", 10), ev("scheduled", "delivered", "u4", 2)], "u4", { booking: addDays(-2) }),
+    r("r6", "o10", "u3", "f6", "outcome_recorded", A({ objective: "Revue tarifaire de la commande de stock T1 afin que le distributeur commande avant son inventaire.", success: "Jean-Luc Mercier valide la grille de prix.", outcomes: ["business_case"], attendees: [{ name: "Jean-Luc Mercier", title: "Gérant", role: "sponsor" }], senior: "c_level", plan: "formal", topics: "Remise sur volume, délais.", followup: "Olivier Garnier", type: "pricing_review", duration: "half_day", role: "lead", confirmed: true }), -20,
+      [ev(null, "draft", "u3", 40), ev("draft", "new", "u3", 39), ev("new", "accepted", "u11", 38), ev("accepted", "scheduled", "u11", 36), ev("scheduled", "delivered", "u11", 20), ev("delivered", "outcome_recorded", "u11", 19)], "u11",
+      { effort: [{ user: "u11", hours: 4, activity: "prep", date: addDays(-22) }, { user: "u11", hours: 3, activity: "delivery", date: addDays(-20) }, { user: "u11", hours: 1, activity: "follow_up", date: addDays(-19) }],
+        outcome: { result: "decision", impact: 5, notes: "Grille de prix validée ; affaire passée en négociation." } }),
+    r("r7", "o7", "u2", "f4", "new", A({ objective: "Revue des grandes vannes de l’électrolyseur.", success: "", outcomes: [], attendees: [{ name: "Julie Chevalier", title: "Ingénieure systèmes hydrogène", role: "influencer" }], senior: "", plan: "none", topics: "DN600, classe de pression, intégration, architecture, revue sécurité", type: "large_custom_review", duration: "full_day", role: "lead" }), 3,
+      [ev(null, "draft", "u2", 1), ev("draft", "new", "u2", 0)], null),
+    r("r8", "o4", "u1", "f3", "draft", A({ objective: "Dossier sécurité feu pour la spécification du terminal", type: "certification_pack", duration: "1h" }), 15, [ev(null, "draft", "u1", 0)], null),
+  ];
+  const notifications = [
+    { id: "n5", user: "u1", text_en: "Olivier Garnier sent you an action on “Prescription vannes sécurité feu”.", text_fr: "Olivier Garnier vous a envoyé une action sur « Prescription vannes sécurité feu ».", link: "actions", unread: true },
+    { id: "n1", user: "u2", text_en: "Émilie Roche asked for information on “Vannes vapeur propre Ra 0,4 µm”.", text_fr: "Émilie Roche demande des précisions sur « Vannes vapeur propre Ra 0,4 µm ».", link: "request-r3", unread: true },
+    { id: "n2", user: "u6", text_en: "New request from Claire Dumas needs triage.", text_fr: "Nouvelle demande de Claire Dumas à trier.", link: "triage", unread: true },
+    { id: "n3", user: "u4", text_en: "You were assigned “Travaux neufs acide nitrique”.", text_fr: "Vous êtes affecté à « Travaux neufs acide nitrique ».", link: "request-r1", unread: true },
+    { id: "n4", user: "u1", text_en: "Nadège Fontaine scheduled the 3D drawing session.", text_fr: "Nadège Fontaine a planifié la séance plans 3D.", link: "request-r4", unread: false },
+  ];
+  const invitations = [{ email: `lucas.perrin@${D}`, roles: ["ae"] }];
+  const closedDeal = (id, account, owner, name, amount, won, ago, supported, lostFrom) => ({ ...o(id, account, owner, name, amount, won ? "s6" : "s7", -ago, ago, "", "", lostFrom), supported });
+  opps.push(
+    closedDeal("o13", "a3", "u2", "Vannes de remplissage GNL (série 1)", 90000, true, 40, true),
+    closedDeal("o14", "a7", "u2", "Clapets anti-retour utilités", 40000, false, 55, false, "s2"),
+    closedDeal("o15", "a1", "u1", "Remplacement vannes unité engrais", 30000, true, 62, true),
+    closedDeal("o16", "a5", "u2", "Banc d’essai hydrogène", 65000, false, 70, false, "s4"),
+    closedDeal("o17", "a4", "u1", "Vannes motorisées chaufferie", 52000, false, 48, true, "s5"),
+    closedDeal("o18", "a6", "u3", "Stock distributeur T3", 110000, true, 35, true),
+    closedDeal("o19", "a10", "u2", "Vannes sécurité feu (stockage)", 38000, true, 80, false),
+    closedDeal("o20", "a8", "u1", "Étude terminal vrac", 26000, false, 66, false, "s1"),
+  );
+  Object.entries({ o1: -3, o2: 2, o3: 5, o6: 9, o7: -2, o8: 6, o10: 1, o5: 4 }).forEach(([id, d]) => { opps.find((x) => x.id === id).nextDue = addDays(d); });
+  const actions = [
+    { id: "x1", from: "u3", to: "u1", opp: "o4", title: "Rencontrer la directrice de projet EPC et fixer une prochaine étape sur la prescription sécurité feu", note: "Appel d’offres publié ; l’affaire n’a pas de prochaine étape.", due: addDays(2), status: "open", created: addDays(-1) },
+    { id: "x2", from: "u3", to: "u2", opp: "o7", title: "Demander une revue à l’équipe grandes vannes avant la réunion électrolyseur", note: "", due: addDays(-1), status: "open", created: addDays(-4) },
+    { id: "x3", from: "u3", to: "u1", opp: "o2", title: "Envoyer les plans 3D à Élise Fontaine", note: "", due: addDays(-3), status: "done", created: addDays(-6), doneAt: addDays(-3) },
+    { id: "x4", from: "u3", to: "u2", opp: "o9", title: "Qualifier les besoins et le budget de maintenance du centre de remplissage", note: "", due: addDays(5), status: "open", created: addDays(0) },
+  ];
+  return { users, stages, accounts, contacts, opps, fns, requests, notifications, invitations, actions };
+}
+
+const ENG_TYPES_LUMEN = ENG_TYPES, TEMPLATES_LUMEN = TEMPLATES;
+const WORKSPACES = {
+  lumen: { org: "Lumen Data SAS", orgs: ["Lumen Data SAS", "Lumen Data Benelux BV"], domain: "lumendata.example", invite: "nora.blanc@lumendata.example\nyann.perrin@lumendata.example", brand: null, seed: () => seedLumen(), types: ENG_TYPES_LUMEN, templates: TEMPLATES_LUMEN },
+  meca: { org: "Meca-Inox (démo)", orgs: ["Meca-Inox (démo)", "Meca-Inox Maroc (démo)"], domain: "meca-inox.example", invite: "lucas.perrin@meca-inox.example\nchloe.henry@meca-inox.example", brand: { color: "#ec001b", ink: "#233044" }, seed: () => seedMeca(), types: ENG_TYPES_MECA, templates: TEMPLATES_MECA },
+};
+const WS = () => WORKSPACES[S.ws];
+function applyWorkspace(key) {
+  S.ws = WORKSPACES[key] ? key : "lumen"; store("clean.ws", S.ws);
+  const w = WS();
+  ENG_TYPES = w.types; TEMPLATES = w.templates;
+  S.d = w.seed(); S.draft = null; S.setupStep = 1; S.bell = false; S.tpl = undefined;
+  const st = document.documentElement.style;
+  // Brand (D-058): Meca-Inox public colours, colours only (no logo). Red on white = 4.6:1 (WCAG AA).
+  if (w.brand) { st.setProperty("--accent", w.brand.color); st.setProperty("--accent-soft", "rgba(236, 0, 27, 0.09)"); st.setProperty("--on-accent", "#ffffff"); st.setProperty("--brand-ink", w.brand.ink); }
+  else for (const v of ["--accent", "--accent-soft", "--on-accent", "--brand-ink"]) st.removeProperty(v);
+}
+
 /* ───────────────────────── rules engine (mirrors brief §6 defaults) ───────────────────────── */
 const RULES = {
   weights: { objective: 15, success: 15, outcomes: 5, attendees: 15, dm: 5, senior: 5, plan: 10, opp: 5, topics: 10, followup: 5, leadtime: 10 },
@@ -724,7 +881,7 @@ const RULES = {
 };
 const OUTCOME_WORDS = /\b(so that|in order to|decide|agree|approve|sign|afin|pour que|décid|valid|approuv|sign)/i;
 const COMMIT_WORDS = /\b(agrees?|commits?|confirms?|signs?|names?|presents?|validates?|approves?|s’engage|confirme|valide|signe|présente|approuve)\b/i;
-const TECH_WORDS = /\b(api|integration|intégration|architecture|security|sécurité|sso|network|réseau|migration)\b/gi;
+const TECH_WORDS = /\b(api|integration|intégration|architecture|security|sécurité|sso|network|réseau|migration|dn\d*|pressure|pression|atex|cryog\w*)\b/gi;
 function assess(a, hasOpp) {
   const W = RULES.weights, crit = [];
   const add = (key, pts, max) => crit.push({ key, pts, max, state: pts >= max ? "ok" : pts > 0 ? "part" : "no" });
@@ -763,8 +920,9 @@ function assess(a, hasOpp) {
 
 /* ───────────────────────── state ───────────────────────── */
 const ROLE_USER = { ae: "u1", manager: "u3", specialist: "u4", lead: "u6", admin: "u9" };
-const S = { lang: store("clean.lang") === "fr" ? "fr" : "en", role: store("clean.role") || "ae", signedIn: true, view: "board", d: seed(), draft: null, filters: { status: "open", band: "all", actions: "open", userRole: "all" }, bell: false, toast: null, setupStep: 1, authStep: "email", authEmail: "" };
+const S = { lang: store("clean.lang") === "fr" ? "fr" : "en", role: store("clean.role") || "ae", ws: "lumen", signedIn: true, view: "board", d: null, draft: null, filters: { status: "open", band: "all", actions: "open", userRole: "all" }, bell: false, toast: null, setupStep: 1, authStep: "email", authEmail: "" };
 if (!ROLE_USER[S.role]) S.role = "ae";
+applyWorkspace(store("clean.ws") === "meca" ? "meca" : "lumen");
 const me = () => S.d.users.find((u) => u.id === ROLE_USER[S.role]);
 const user = (id) => S.d.users.find((u) => u.id === id) || { name: t("misc.none") };
 const stage = (id) => S.d.stages.find((s) => s.id === id);
@@ -1306,10 +1464,10 @@ function viewStages() {
 function viewSetup() {
   const n = S.setupStep, labels = [t("setup.s1"), t("setup.s2"), t("setup.s3"), t("setup.s4")];
   let body = "";
-  if (n === 1) body = `<div class="field"><label for="su-org">${t("setup.orgName")}</label><input type="text" id="su-org" value="Lumen Data SAS"></div><div class="field"><label for="su-lang">${t("setup.defLang")}</label><select id="su-lang" data-act="lang-select"><option value="en" ${S.lang === "en" ? "selected" : ""}>English</option><option value="fr" ${S.lang === "fr" ? "selected" : ""}>Français</option></select></div>`;
+  if (n === 1) body = `<div class="field"><label for="su-org">${t("setup.orgName")}</label><input type="text" id="su-org" value="${esc(WS().org)}"></div><div class="field"><label for="su-lang">${t("setup.defLang")}</label><select id="su-lang" data-act="lang-select"><option value="en" ${S.lang === "en" ? "selected" : ""}>English</option><option value="fr" ${S.lang === "fr" ? "selected" : ""}>Français</option></select></div>`;
   if (n === 2) body = `<p class="muted">${t("setup.stagesHint")}</p><div class="flow">${S.d.stages.map((s) => `<span class="${s.won ? "done" : ""}">${esc(L(s))} · ${s.prob}%</span>`).join("<i>›</i>")}</div><p><a href="#admin-stages">${t("nav.stages")} ›</a></p>`;
   if (n === 3) body = `<div class="field"><label for="su-fn">${t("setup.fnName")}</label><input type="text" id="su-fn" value="${esc(L(S.d.fns[0]))}"></div><div class="field"><label for="su-fnd">${t("setup.fnDesc")}</label><textarea id="su-fnd">${esc(S.d.fns[0][`desc_${S.lang}`])}</textarea></div>`;
-  if (n === 4) body = `<div class="field"><label for="su-inv">${t("adm.invite")}</label><span class="hint">${t("setup.inviteHint")}</span><textarea id="su-inv">nora.blanc@lumendata.example\nyann.perrin@lumendata.example</textarea></div>`;
+  if (n === 4) body = `<div class="field"><label for="su-inv">${t("adm.invite")}</label><span class="hint">${t("setup.inviteHint")}</span><textarea id="su-inv">${esc(WS().invite)}</textarea></div>`;
   return `<div class="page" style="max-width:760px">${adminTabs("setup")}<div><p class="eyebrow">${t("setup.step", { n })}</p><h1>${t("setup.title")}</h1></div>
     <div class="steps">${labels.map((l, i) => `<span class="${i + 1 === n ? "on" : ""}">${i + 1}. ${esc(l)}</span>`).join("")}</div>
     <section class="panel"><div class="body form">${body}</div></section>
@@ -1323,7 +1481,7 @@ function viewAuth() {
   if (S.authStep === "email") box = `<h1>${t("auth.title")}</h1><form class="form" data-form="signin"><div class="field"><label for="au-email">${t("auth.email")}</label><input type="email" id="au-email" required value="${esc(S.authEmail || me().email)}" autocomplete="email"></div><button class="btn primary" type="submit" style="justify-content:center">${t("auth.send")}</button></form>
     <div class="divider">${t("auth.or")}</div><button class="btn" style="justify-content:center" data-act="sso">${t("auth.google")}</button><button class="btn" style="justify-content:center" data-act="sso">${t("auth.microsoft")}</button>${note("signin")}`;
   else if (S.authStep === "sent") box = `<h1>${t("auth.check")}</h1><p>${t("auth.sent", { e: esc(S.authEmail) })}</p><button class="btn primary" data-act="auth-open" style="justify-content:center">${t("auth.openDemo")}</button><button class="btn ghost" data-act="auth-reset">${t("auth.resend")}</button>`;
-  else box = `<h1>${t("auth.pickOrg")}</h1><p class="muted">${t("auth.pickLead")}</p><div class="next panel">${["Lumen Data SAS", "Lumen Data Benelux BV"].map((o, i) => `<a class="item" href="#home" data-act="auth-org"><span class="sev ${i ? "" : "good"}"></span><span><b>${o}</b><br><span class="muted small">${t("roles." + S.role)}</span></span><span>›</span></a>`).join("")}</div>${note("orgpick")}`;
+  else box = `<h1>${t("auth.pickOrg")}</h1><p class="muted">${t("auth.pickLead")}</p><div class="next panel">${WS().orgs.map((o, i) => `<a class="item" href="#home" data-act="auth-org"><span class="sev ${i ? "" : "good"}"></span><span><b>${o}</b><br><span class="muted small">${t("roles." + S.role)}</span></span><span>›</span></a>`).join("")}</div>${note("orgpick")}`;
   return `<div class="auth"><div class="panel box"><div class="brand"><span class="brand-mark"><i></i><i></i><i></i><i></i><i></i></span>CLEAN</div>${box}
     <div class="ctl" style="justify-content:center"><select data-act="lang-select" aria-label="${t("language")}"><option value="en" ${S.lang === "en" ? "selected" : ""}>English</option><option value="fr" ${S.lang === "fr" ? "selected" : ""}>Français</option></select></div></div></div>`;
 }
@@ -1380,7 +1538,8 @@ function render() {
   const mine = S.d.notifications.filter((n) => n.user === me().id), unread = mine.filter((n) => n.unread).length;
   const act = activeNav(route);
   const top = `<div class="appbar"><header class="topbar">
-    <a class="brand" href="#home" style="color:inherit;text-decoration:none"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CLEAN</a><span class="org">Lumen Data SAS</span><span class="grow"></span>
+    <a class="brand" href="#home" style="color:inherit;text-decoration:none"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CLEAN</a><span class="org">${esc(WS().org)}</span><span class="grow"></span>
+    <label class="ctl"><label for="ws-pick">${t("orgPick")}</label><select id="ws-pick" data-act="ws"><option value="lumen" ${S.ws === "lumen" ? "selected" : ""}>Lumen Data</option><option value="meca" ${S.ws === "meca" ? "selected" : ""}>Meca-Inox</option></select></label>
     <label class="ctl"><label for="role-pick">${t("viewAs")}</label><select id="role-pick" data-act="role">${Object.keys(ROLE_USER).map((k) => `<option value="${k}" ${k === S.role ? "selected" : ""}>${esc(t("roles." + k))} · ${esc(user(ROLE_USER[k]).name.split(" ")[0])}</option>`).join("")}</select></label>
     <label class="ctl"><label for="lang-pick">${t("language")}</label><select id="lang-pick" data-act="lang-select"><option value="en" ${S.lang === "en" ? "selected" : ""}>EN</option><option value="fr" ${S.lang === "fr" ? "selected" : ""}>FR</option></select></label>
     <div style="position:relative"><button class="btn sm bell" data-act="bell" aria-label="${t("notifications")}" aria-expanded="${S.bell}">🔔${unread ? `<span class="dot num">${unread}</span>` : ""}</button>
@@ -1422,7 +1581,7 @@ function pushActionDialog(to, oppId) {
 function userDialog(u) {
   const rk = Object.keys(I18N.en.roles), member = (f) => u && (f.members.includes(u.id) || f.lead === u.id);
   openDialog(u ? t("usr.edit") : t("usr.create"), `<div class="fields-2"><div class="field"><label for="dl-name" class="req">${t("usr.name")}</label><input type="text" id="dl-name" value="${esc(u?.name)}" required></div>
-    <div class="field"><label for="dl-email" class="req">${t("cols.email")}</label><input type="email" id="dl-email" value="${esc(u?.email)}" required placeholder="name@lumendata.example"></div></div>
+    <div class="field"><label for="dl-email" class="req">${t("cols.email")}</label><input type="email" id="dl-email" value="${esc(u?.email)}" required placeholder="name@${WS().domain}"></div></div>
     <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="lbl req">${t("cols.roles")}</legend><div class="checks">${rk.map((k) => `<label><input type="checkbox" name="u-role" value="${k}" ${u ? (u.roles.includes(k) ? "checked" : "") : k === "ae" ? "checked" : ""}> ${t("roles." + k)}</label>`).join("")}</div></fieldset>
     <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="lbl">${t("usr.supportTypes")}</legend><span class="hint">${t("typ.membersHint")}</span><div class="checks">${S.d.fns.map((f) => `<label><input type="checkbox" name="u-fn" value="${f.id}" ${member(f) ? "checked" : ""} ${u && f.lead === u.id ? "disabled" : ""}> ${esc(L(f))}</label>`).join("")}</div></fieldset>
     <div class="fields-2"><div class="field"><label for="dl-mgr">${t("cols.manager")}</label><select id="dl-mgr"><option value="">${t("misc.none")}</option>${S.d.users.filter((x) => x.roles.includes("manager") && x.id !== u?.id).map((x) => `<option value="${x.id}" ${u?.manager === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>
@@ -1502,6 +1661,7 @@ document.addEventListener("change", (e) => {
   const el = e.target, act = el.dataset.act;
   if (act === "role") { S.role = el.value; store("clean.role", S.role); S.draft = null; S.bell = false; if (!["#home", ""].includes(location.hash)) location.hash = "home"; else render(); }
   else if (act === "lang-select") { S.lang = el.value; store("clean.lang", S.lang); render(); }
+  else if (act === "ws") { applyWorkspace(el.value); if (S.ws === "meca" && S.lang !== "fr") { S.lang = "fr"; store("clean.lang", "fr"); } toast(WS().org); if (location.hash !== "#home") location.hash = "home"; else render(); }
   else if (act === "move") moveDeal(el.dataset.opp, el.value);
   else if (act === "filter") { S.filters[el.dataset.k] = el.value; render(); }
   else if (act === "pick-fn") { S.draft.fn = el.value; S.draft.a.type = ""; render(); }
@@ -1539,7 +1699,7 @@ document.addEventListener("click", (e) => {
     case "view": S.view = b.dataset.v; render(); break;
     case "bell": S.bell = !S.bell; render(); break;
     case "read-n": { const n = S.d.notifications.find((x) => x.id === id); if (n) n.unread = false; S.bell = false; break; }
-    case "reset": S.d = seed(); S.draft = null; S.setupStep = 1; toast(t("reset")); render(); break;
+    case "reset": S.d = WS().seed(); S.draft = null; S.setupStep = 1; toast(t("reset")); render(); break;
     case "signout": S.authStep = "email"; break;
     case "sso": toast(t("notes.signin").replace(/<[^>]+>/g, "").split(".")[0]); break;
     case "auth-open": S.authStep = "org"; render(); break;
